@@ -38,7 +38,7 @@ class Camera:
         self.time_last = 0
         self.inspector_location = (0, 0)
         self.inspector_dict = {"Topology": "", "Resource": "", "Entity type": "", "Location": "", "Action": "", "Stock": "",
-                               "Construction remaining": ""}
+                               "Health": "", "Construction remaining": ""}
 
     def update(self, player_character, map_topology, map_resource, map_entities, keys):
 
@@ -84,6 +84,10 @@ class Camera:
                 if type(inspect_object).__name__ == 'Person':
                     self.inspector_dict["Action"] = str(inspect_object.action_super)
                     self.inspector_dict["Stock"] = str(inspect_object.stock_list)
+                    self.inspector_dict["Health"] = str(inspect_object.health)
+
+                if type(inspect_object).__name__ == 'Wizard':
+                    self.inspector_dict["Health"] = str(inspect_object.health)
 
                 if type(inspect_object).__name__ in ['Tower', 'House']:
                     self.inspector_dict["Construction remaining"] = str(inspect_object.under_construction)
@@ -110,7 +114,7 @@ class Character:
         else:
             cast_attempt = self.select_spell(key_press, keys)
 
-        self.wizard.player_update(map_entities, cast_attempt, move_character_attempt, move_spell_attempt)
+        self.wizard.update(map_entities, cast_attempt, move_character_attempt, move_spell_attempt)
 
     def move_character(self, keys):
         """Detect keyboard input and call wizard.move with appropriate direction tuple."""

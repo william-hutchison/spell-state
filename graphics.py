@@ -138,7 +138,7 @@ class Graphics:
 
     def draw_start(self):
 
-        self.window.fill((20, 20, 40))
+        self.window.fill((0, 0, 0))
         text0 = self.font.render("Select resolution. (1) 1200x800. (2) 2400x1600.", True, (255, 255, 255))
         self.window.blit(text0, (10, 10))
 

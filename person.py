@@ -17,6 +17,8 @@ class Person:
         self.action_super = "idle"
         self.action_construction = None
 
+        self.health = 100
+
     def update(self, map_resource, map_entities):
 
         if glob.time.check(self.time_last_eat, self.ruler_state.time_dur_eat):
@@ -31,6 +33,9 @@ class Person:
             self.harvest(map_resource, map_entities, glob.METAL)
         elif self.action_super == "build":
             self.build(map_entities, self.action_construction)
+
+        if self.health <= 0:
+            self.ruler_state.person_list.remove(self)
 
     def harvest(self, map_resource, map_entities, target_resource):
 
