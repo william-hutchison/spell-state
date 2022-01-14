@@ -13,7 +13,7 @@ class World:
         self.seed = random.randint(0,20)
 
         self.state_list = []
-        self.map_topology = self.gen_topology(self.gen_noise(self.seed))
+        self.map_topology = self.gen_topology(gen_noise(self.seed))
         self.map_resource = self.gen_wood()
         self.map_resource = self.gen_food(self.map_resource)
         self.map_resource = self.gen_metal(self.map_resource)
@@ -93,17 +93,19 @@ class World:
 
         return map_resource
 
-    def gen_noise(self, seed, scale=20, octaves=6, persistence=0.5, lacunarity=2.0):
-    
-        map_new = np.zeros(glob.WORLD_SIZE)
-        for y in range(len(map_new[0])):
-            for x in range(len(map_new[1])):
-                map_new[y][x] = pnoise2(y / scale, x / scale, octaves=octaves, persistence=persistence,
-                                    lacunarity=lacunarity, repeatx=1024, repeaty=1024, base=seed)
-        max_arr = np.max(map_new)
-        min_arr = np.min(map_new)
-        norm_me = lambda x: (x - min_arr) / (max_arr - min_arr)
-        norm_me = np.vectorize(norm_me)
-        map_new = norm_me(map_new)
 
-        return map_new
+def gen_noise(seed, scale=20, octaves=6, persistence=0.5, lacunarity=2.0):
+
+    map_new = np.zeros(glob.WORLD_SIZE)
+    for y in range(len(map_new[0])):
+        for x in range(len(map_new[1])):
+            map_new[y][x] = pnoise2(y / scale, x / scale, octaves=octaves, persistence=persistence,
+                                lacunarity=lacunarity, repeatx=1024, repeaty=1024, base=seed)
+    max_arr = np.max(map_new)
+    min_arr = np.min(map_new)
+    norm_me = lambda x: (x - min_arr) / (max_arr - min_arr)
+    norm_me = np.vectorize(norm_me)
+    map_new = norm_me(map_new)
+
+    return map_new
+

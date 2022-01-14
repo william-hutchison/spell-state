@@ -1,5 +1,6 @@
 import glob
 
+
 class Building:
     
     def __init__(self, ruler_state, location):
@@ -8,6 +9,13 @@ class Building:
         self.location = location
         self.time_last = glob.time.now()
         self.under_construction = 0
+
+        self.stat_dict = {"health max": 100, "health current": 100}
+
+    def update(self):
+
+        if self.stat_dict["health current"] <= 0:
+            self.ruler_state.building_list.remove(self)
 
     def constructing(self, build_amount):
         """Subtract build_amount from under_construction until 0 is reached, then return 0."""
@@ -31,10 +39,6 @@ class Tower(Building):
 
         self.ruler_state.increase_pop_limit(self.ruler_state, 1)
 
-    def update(self):
-
-        pass
-
 
 class House(Building):
     def __init__(self, ruler_state, location):
@@ -45,7 +49,3 @@ class House(Building):
     def constructed(self):
 
         self.ruler_state.increase_pop_limit(self.ruler_state, 1)
-
-    def update(self):
-
-        pass

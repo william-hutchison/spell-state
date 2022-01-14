@@ -39,8 +39,9 @@ class Game:
         self.graphics.update_terrain(self.player.camera.location, self.player.camera.inspector_location,
                                      self.player.character.wizard.location, self.world.map_topology,
                                      self.world.map_resource, self.world.state_list)
-        self.graphics.update_ui(self.world.state_list[0], self.player.camera, self.player.character,
+        self.graphics.update_ui_panel(self.world.state_list[0], self.player.camera, self.player.character,
                                 self.player.camera.inspector_dict)
+        self.graphics.update_ui_wizard(player.spell_dict) # TODO MOVE THIS DICT SOMEWHERE BETTER
         self.graphics.update_window()
         glob.time.update()
 

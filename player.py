@@ -3,6 +3,8 @@ import sys
 
 import glob
 
+spell_dict = {"consume": ["down", "down"], "fireball": ["up", "left"]}
+
 
 class Player:
 
@@ -48,20 +50,24 @@ class Camera:
     def move_camera(self, player_character, keys):
         """Check for keyboard input and set new camera tile location if move detected."""
 
+        # move the camera to follow the player_character
+        if player_character.camera_follow:
+            self.location = (player_character.wizard.location[0] - 20, player_character.wizard.location[1] - 20)
+
+        # prevent camera movement immediately after casting
+        if spell_list := player_character.wizard.spell_list:
+            if spell_list[0].status == "hold":
+                self.time_last = glob.time.now() + 300
+
         # move the camera independently of the player_character
         if 1 in (keys[pg.K_UP], keys[pg.K_LEFT], keys[pg.K_DOWN], keys[pg.K_RIGHT]):
             if not keys[pg.K_SPACE]:
                 if glob.time.check(self.time_last, glob.TIME_CAMERA):
                     move_x = keys[pg.K_RIGHT] - keys[pg.K_LEFT]
                     move_y = keys[pg.K_DOWN] - keys[pg.K_UP]
-
                     self.location = (self.location[0]+move_x, self.location[1]+move_y)
                     player_character.camera_follow = False
                     self.time_last = glob.time.now()
-
-        # move the camera to follow the player_character
-        elif player_character.camera_follow:
-            self.location = (player_character.wizard.location[0]-20, player_character.wizard.location[1]-20)
 
     def move_inspector(self, location_camera, map_topology, map_resource, map_entities, keys):
         """Set new inspector tile location based on camera location. Check for keyboard input and 
@@ -80,14 +86,11 @@ class Camera:
             if inspect_object:
                 self.inspector_dict["Entity type"] = str(type(inspect_object).__name__)
                 self.inspector_dict["Location"] = str(inspect_object.location)
+                self.inspector_dict.update(inspect_object.stat_dict)
 
                 if type(inspect_object).__name__ == 'Person':
                     self.inspector_dict["Action"] = str(inspect_object.action_super)
                     self.inspector_dict["Stock"] = str(inspect_object.stock_list)
-                    self.inspector_dict["Health"] = str(inspect_object.health)
-
-                if type(inspect_object).__name__ == 'Wizard':
-                    self.inspector_dict["Health"] = str(inspect_object.health)
 
                 if type(inspect_object).__name__ in ['Tower', 'House']:
                     self.inspector_dict["Construction remaining"] = str(inspect_object.under_construction)
@@ -155,14 +158,12 @@ class Character:
         # attempt to select spell when space is released
         else:
             if self.casting_string:
+                for key, value in spell_dict.items():
+                    if self.casting_string == value:
 
-                if self.casting_string == ["up", "left"]:
-                    self.casting_string = []
-                    return "fireball"
-                elif self.casting_string == ["down", "down"]:
-                    self.casting_string = []
-                    return "consume"
-                self.casting_string = []
+                        self.casting_string = []
+                        return key
 
+            self.casting_string = []
         return None
 

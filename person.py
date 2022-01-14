@@ -17,7 +17,8 @@ class Person:
         self.action_super = "idle"
         self.action_construction = None
 
-        self.health = 100
+        self.stat_dict = {"health max": 100, "health current": 100}
+
 
     def update(self, map_resource, map_entities):
 
@@ -34,7 +35,7 @@ class Person:
         elif self.action_super == "build":
             self.build(map_entities, self.action_construction)
 
-        if self.health <= 0:
+        if self.stat_dict["health current"] <= 0:
             self.ruler_state.person_list.remove(self)
 
     def harvest(self, map_resource, map_entities, target_resource):
@@ -102,6 +103,6 @@ class Person:
         elif glob.FOOD in self.ruler_state.stock_list:
             tools.item_remove(self.ruler_state.stock_list, glob.FOOD, 1)
         else:
-            print("hungry")
+            pass
 
 
