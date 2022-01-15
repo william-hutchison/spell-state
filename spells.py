@@ -30,12 +30,17 @@ class SpellDirectional(Spell):
 
         if self.status == "moving":
 
+            # check for spell movement
             if self.travel_current <= self.travel_max+1:
                 self.move(self.move_direction)
-            if self.travel_current >= self.travel_max+1:
+            if self.travel_current >= self.travel_max+1 or not 0 <= self.location[0] < glob.WORLD_SIZE[0] or not 0 <= self.location[1] < glob.WORLD_SIZE[1]:
                 self.ruler_wizard.spell_list.remove(self)
+
+            # check for spell impact
             else:
-                self.impact(map_entities)
+                if target := map_entities[self.location[1]][self.location[0]]:
+                    self.impact(target)
+                    self.ruler_wizard.spell_list.remove(self)
 
     def move(self, move_attempt):
 
@@ -54,13 +59,11 @@ class SpellConsume(SpellDirectional):
         self.health_damage = 1000
         self.mana_gain = 60
 
-    def impact(self, map_entities):
+    def impact(self, target):
 
-        if target := map_entities[self.location[1]][self.location[0]]:
-            if type(target).__name__ == "Person":
-                target.stat_dict["health current"] -= self.health_damage
-                self.ruler_wizard.stat_dict["mana current"] += self.mana_gain
-            self.ruler_wizard.spell_list.remove(self)
+        if type(target).__name__ == "Person":
+            target.stat_dict["health current"] -= self.health_damage
+            self.ruler_wizard.stat_dict["mana current"] += self.mana_gain
 
 
 class SpellFireball(SpellDirectional):
@@ -71,11 +74,9 @@ class SpellFireball(SpellDirectional):
         self.travel_max = 10
         self.health_damage = 50
 
-    def impact(self, map_entities):
+    def impact(self, target):
 
-        if target := map_entities[self.location[1]][self.location[0]]:
-            target.stat_dict["health current"] -= self.health_damage
-            self.ruler_wizard.spell_list.remove(self)
+        target.stat_dict["health current"] -= self.health_damage
 
 
 spell_info = [("consume", SpellConsume, 20), ("fireball", SpellFireball, 40)]

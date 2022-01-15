@@ -13,14 +13,17 @@ class World:
         self.seed = random.randint(0,20)
 
         self.state_list = []
-        self.map_topology = self.gen_topology(gen_noise(self.seed))
-        self.map_resource = self.gen_wood()
-        self.map_resource = self.gen_food(self.map_resource)
-        self.map_resource = self.gen_metal(self.map_resource)
+        self.map_topology = np.zeros(glob.WORLD_SIZE)
+        self.map_resource = np.zeros(glob.WORLD_SIZE)
         self.map_entities = np.empty(glob.WORLD_SIZE, dtype=object)
 
+        self.map_topology = gen_topology(self.map_topology, gen_noise(self.seed))
+        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+1), [(1, 0.2), (2, 0.1)],  0.4, glob.FOOD)
+        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+2), [(1, 0.2), (2, 0.4), (3, 0.2)],  0.5, glob.WOOD)
+        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+3), [(4, 0.4)], 0.2, glob.METAL)
+
         for i in range(glob.STATE_NUMBER):
-            self.state_list.append(self.create_state(self.map_entities))
+            self.state_list.append(create_state(self.map_entities))
 
     def update(self):
 
@@ -41,57 +44,40 @@ class World:
                 
         return map_entities
 
-    def create_state(self, map_entities):
 
-        location = (random.randint(0, glob.WORLD_SIZE[0]-1), random.randint(0, glob.WORLD_SIZE[1]-1))
-        
-        return state.State(location, map_entities)
+def gen_topology(map_topology, map_noise):
+    for y in range(len(map_topology[0])):
+        for x in range(len(map_topology[1])):
+            if map_noise[y][x] > 0.8:
+                map_topology[y][x] = 4
+            elif map_noise[y][x] > 0.6:
+                map_topology[y][x] = 3
+            elif map_noise[y][x] > 0.4:
+                map_topology[y][x] = 2
+            elif map_noise[y][x] > 0.2:
+                map_topology[y][x] = 1
+            else:
+                map_topology[y][x] = 0
 
-    def gen_topology(self, map_noise):
-      
-        map_new = np.zeros(glob.WORLD_SIZE)
-        for y in range(len(map_new[0])):
-            for x in range(len(map_new[1])):
-                if map_noise[y][x] > 0.8:
-                    map_new[y][x] = 4
-                elif map_noise[y][x] > 0.6:
-                    map_new[y][x] = 3
-                elif map_noise[y][x] > 0.4:
-                    map_new[y][x] = 2
-                elif map_noise[y][x] > 0.2:
-                    map_new[y][x] = 1
-                else:
-                    map_new[y][x] = 0
+    return map_topology
 
-        return map_new
 
-    def gen_food(self, map_resource):
+def gen_resource(map_resource, map_topology, map_noise, topology_target, chance, resource):
+    for y in range(len(map_resource[1])):
+        for x in range(len(map_resource[0])):
+            for topology in topology_target:
+                if topology[0] == map_topology[y][x]:
+                    if topology[1] > map_noise[y][x]:
+                        if random.randint(0, random.randint(0, chance * 10)):
+                            map_resource[y][x] = resource
 
-        for y in range(len(map_resource[1])):
-            for x in range(len(map_resource[0])):
-                if random.randint(0, 30) == 0:
-                    map_resource[y][x] = glob.FOOD
+    return map_resource
 
-        return map_resource
 
-    def gen_wood(self):
-     
-        map_new = np.zeros(glob.WORLD_SIZE)
-        for y in range(len(map_new[1])):
-            for x in range(len(map_new[0])):
-                if random.randint(0, 30) == 0:
-                    map_new[y][x] = glob.WOOD
+def create_state(map_entities):
+    location = (random.randint(0, glob.WORLD_SIZE[0] - 1), random.randint(0, glob.WORLD_SIZE[1] - 1))
 
-        return map_new
-
-    def gen_metal(self, map_resource):
-
-        for y in range(len(map_resource[1])):
-            for x in range(len(map_resource[0])):
-                if random.randint(0, 30) == 0:
-                    map_resource[y][x] = glob.METAL
-
-        return map_resource
+    return state.State(location, map_entities)
 
 
 def gen_noise(seed, scale=20, octaves=6, persistence=0.5, lacunarity=2.0):

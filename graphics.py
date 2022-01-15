@@ -19,6 +19,7 @@ colour_topology = [(40, 40, 40), (60, 60, 60), (80, 80, 80), (100, 100, 100)]
 colour_states = [(255, 50, 50), (50, 50, 255)]
 window_size = [(1200, 800), (2400, 1600)]
 
+
 class Graphics:
 
     def __init__(self):
@@ -156,4 +157,3 @@ class Graphics:
         self.window.fill((0, 0, 0))
         text0 = self.font.render("Select resolution. (1) 1200x800. (2) 2400x1600.", True, (255, 255, 255))
         self.window.blit(text0, (10, 10))
-
