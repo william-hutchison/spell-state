@@ -16,8 +16,9 @@ class Node:
         return self.position == other.position
 
 
-def astar(maze, start, end, adjacent=False):
-    """Returns a list of tuples as a path from the given start to the given end in the given maze"""
+def astar(maze, start, end, adjacent=False, max_children=100):
+    """Returns a list of tuples as a path from the given start to the given end in the given maze.
+    Returns an empty list if no path is found."""
     
     if adjacent:
         end_list = find_edges(end)
@@ -106,8 +107,8 @@ def astar(maze, start, end, adjacent=False):
             open_list.append(child)
             count += 1
 
-        if count > 100:
-            return None
+        if count > max_children:
+            return []
 
 
 def find_targets(map, target_kind):

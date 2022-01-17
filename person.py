@@ -86,7 +86,7 @@ class Person:
         
         if glob.time.check(self.time_last, self.ruler_state.time_dur_move):
             path = pathfinding.astar(map_entities, self.location, target, adjacent)
-            if path:
+            if len(path) > 1:
                 self.location = path[1]
             else:
                 self.action_super_set("idle")

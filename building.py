@@ -44,8 +44,22 @@ class House(Building):
     def __init__(self, ruler_state, location):
 
         super().__init__(ruler_state, location)
-        self.under_construction = 6000
+        self.under_construction = 4000
 
     def constructed(self):
 
         self.ruler_state.increase_pop_limit(self.ruler_state, 1)
+
+
+class Shrine(Building):
+    def __init__(self, ruler_state, location):
+
+        super().__init__(ruler_state, location)
+        self.under_construction = 6000
+
+    def constructed(self):
+
+        print("hi!")
+
+
+building_info = {"tower": (Tower, []), "house": (House, [(glob.WOOD, 3)]), "shrine": (Shrine, [(glob.METAL, 3)])}

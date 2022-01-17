@@ -8,6 +8,8 @@ import tools
 import glob
 
 
+building_info = building.building_info
+
 class State:
 
     def __init__(self, location, map_entities):
@@ -23,8 +25,8 @@ class State:
         self.time_dur_order = 200
         self.time_dur_birth = 4000
 
-        self.time_dur_move = 200#0
-        self.time_dur_eat = 2000
+        self.time_dur_move = 200
+        self.time_dur_eat = 20000
         self.time_dur_transfer = 100#0
         self.time_dur_construct = 600#0
         self.time_dur_harvest = 400#0
@@ -43,11 +45,20 @@ class State:
             self.assign(self.person_list, self.building_list)
             self.time_last_order = glob.time.now()
 
-        # construct buildings
+        # decide what to construct TODO Intelligently decide what to construct next
         if tools.item_count(self.stock_list, glob.WOOD) > glob.HOUSE_COST:
-            if temp_building := self.create_building("house", map_entities, self.location):
+            build_attempt = "house"
+        elif tools.item_count(self.stock_list, glob.METAL) > glob.SHRINE_COST:
+            build_attempt = "shrine"
+        else:
+            build_attempt = None
+        
+        if build_attempt:
+            if temp_building := self.create_building(build_attempt, map_entities, self.location):
                 self.building_list.append(temp_building)
-
+                for item in building_info[build_attempt][1]:
+                    tools.item_remove(self.stock_list, item[0], item[1])
+        
         # increase population
         if self.pop_current < self.pop_limit:
             if glob.time.check(self.time_last_birth, self.time_dur_birth):
@@ -75,16 +86,22 @@ class State:
         """Create building site of a given kind at an appropriate location. Returns new building
         object."""
 
-        if kind == "tower":
-            return building.Tower(self, location_tower)
+        # check for adequate resources
+        for item in building_info[kind][1]:
+            if not tools.item_count(self.stock_list, item[0]) > item[1]:
+                return None
 
-        elif kind == "house":
+        # construct tower
+        if kind == "tower":
+            return building_info[kind][0](self, location_tower)
+
+        # construct buildings within radius of tower
+        elif kind in ["house", "shrine"]:
             possible_locations = pathfinding.find_within_radius(location_tower, 10)
             possible_locations = pathfinding.find_free(possible_locations, map_entities)
             if possible_locations:
                 location = random.choice(possible_locations)
-                tools.item_remove(self.stock_list, glob.WOOD, glob.HOUSE_COST)
-                return building.House(self, location)
+                return building_info[kind][0](self, location)
 
         return None
 
