@@ -4,7 +4,7 @@ import player
 import world
 import graphics
 import menu
-import glob
+import globe
 
 
 class Game:
@@ -43,7 +43,7 @@ class Game:
                                 self.player.camera.inspector_dict)
         self.graphics.update_ui_wizard(player.spell_dict) # TODO MOVE THIS DICT SOMEWHERE BETTER
         self.graphics.update_window()
-        glob.time.update()
+        globe.time.update()
 
 
 game = Game()

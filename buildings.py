@@ -1,4 +1,4 @@
-import glob
+import globe
 
 
 class Building:
@@ -7,8 +7,9 @@ class Building:
 
         self.ruler_state = ruler_state
         self.location = location
-        self.time_last = glob.time.now()
+        self.time_last = globe.time.now()
         self.under_construction = 0
+        self.under_work = 0
 
         self.stat_dict = {"health max": 100, "health current": 100}
 
@@ -27,6 +28,17 @@ class Building:
 
         return self.under_construction
 
+    def working(self, work_amount):
+        """Subtract build_amount from under_construction until 0 is reached, then return 0."""
+
+        self.under_work -= work_amount
+        if self.under_work <= 0:
+            self.under_work = self.max_work
+            self.work()
+
+            return 0
+        return self.under_work
+
 
 class Tower(Building):
     
@@ -41,6 +53,7 @@ class Tower(Building):
 
 
 class House(Building):
+
     def __init__(self, ruler_state, location):
 
         super().__init__(ruler_state, location)
@@ -52,6 +65,25 @@ class House(Building):
 
 
 class Shrine(Building):
+
+    def __init__(self, ruler_state, location):
+
+        super().__init__(ruler_state, location)
+        self.under_construction = 6000
+        self.max_work = 4000
+        self.under_work = self.max_work
+
+    def constructed(self):
+
+        pass
+
+    def work(self):
+
+        print("work complete")
+
+
+class Tavern(Building):
+
     def __init__(self, ruler_state, location):
 
         super().__init__(ruler_state, location)
@@ -59,7 +91,7 @@ class Shrine(Building):
 
     def constructed(self):
 
-        print("hi!")
+        pass
 
 
-building_info = {"tower": (Tower, []), "house": (House, [(glob.WOOD, 3)]), "shrine": (Shrine, [(glob.METAL, 3)])}
+building_info = {"tower": (Tower, []), "house": (House, [(globe.CODE_WOOD, 3)]), "shrine": (Shrine, [(globe.CODE_METAL, 3)]), "tavern": (Tavern, [(globe.CODE_METAL, 3)])}

@@ -1,4 +1,4 @@
-import glob
+import globe
 
 
 class Spell:
@@ -33,7 +33,7 @@ class SpellDirectional(Spell):
             # check for spell movement
             if self.travel_current <= self.travel_max+1:
                 self.move(self.move_direction)
-            if self.travel_current >= self.travel_max+1 or not 0 <= self.location[0] < glob.WORLD_SIZE[0] or not 0 <= self.location[1] < glob.WORLD_SIZE[1]:
+            if self.travel_current >= self.travel_max+1 or not 0 <= self.location[0] < globe.WORLD_SIZE[0] or not 0 <= self.location[1] < globe.WORLD_SIZE[1]:
                 self.ruler_wizard.spell_list.remove(self)
 
             # check for spell impact
@@ -44,10 +44,10 @@ class SpellDirectional(Spell):
 
     def move(self, move_attempt):
 
-        if glob.time.check(self.time_last, self.time_dur_move):
+        if globe.time.check(self.time_last, self.time_dur_move):
             self.location = (self.location[0] + move_attempt[0], self.location[1] + move_attempt[1])
             self.travel_current += 1
-            self.time_last = glob.time.now()
+            self.time_last = globe.time.now()
 
 
 class SpellConsume(SpellDirectional):

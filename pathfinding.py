@@ -1,4 +1,4 @@
-import glob
+import globe
 
 
 class Node:
@@ -16,7 +16,7 @@ class Node:
         return self.position == other.position
 
 
-def astar(maze, start, end, adjacent=False, max_children=100):
+def astar(map_entities, map_topology, start, end, adjacent=False, max_children=200):
     """Returns a list of tuples as a path from the given start to the given end in the given maze.
     Returns an empty list if no path is found."""
     
@@ -72,11 +72,11 @@ def astar(maze, start, end, adjacent=False, max_children=100):
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # Make sure within range
-            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
+            if node_position[0] > (len(map_entities) - 1) or node_position[0] < 0 or node_position[1] > (len(map_entities[len(map_entities)-1]) -1) or node_position[1] < 0:
                 continue
 
             # Make sure walkable terrain
-            if maze[node_position[1]][node_position[0]] != None:
+            if map_entities[node_position[1]][node_position[0]] != None or map_topology[node_position[1]][node_position[0]] == 0:
                 continue
 
             # Create new node
@@ -124,8 +124,7 @@ def find_targets(map, target_kind):
 
 
 def find_closest(location, target_list):
-    """Returns tile coordinate of the closest target to start. COULD BE BETTER, IDEALLY THIS WOULD BE PROCESSED WITHIN
-    A* PATHFINDING."""
+    """Returns tile coordinate of the closest target to start as the crow flies."""
 
     distances = []
     for target in target_list:
@@ -143,13 +142,13 @@ def find_edges(location):
     return adjacent_list
 
 
-def find_free(locations, map_entities):
+def find_free(locations, map_entities, map_topology):
     """Returns list of coordinates not overlapped by collision and within the bounds of the map."""
 
     free_locations = [] 
     for location in locations:
-        if (0 <= location[0] < glob.WORLD_SIZE[0]) and (0 <= location[1] < glob.WORLD_SIZE[0]):
-            if not map_entities[location[1]][location[0]]:
+        if (0 <= location[0] < globe.WORLD_SIZE[0]) and (0 <= location[1] < globe.WORLD_SIZE[0]):
+            if not map_entities[location[1]][location[0]] and map_topology[location[1]][location[0]] != 0:
                 free_locations.append(location)
 
     return free_locations

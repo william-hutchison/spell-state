@@ -7,11 +7,28 @@ class Time:
 
         self.clock = pg.time.Clock()
         self.time_now = 0
+        self.frame_now = 0
+
+        self.frame_last = 0
 
     def update(self):
+        """Update display frame, global time in milliseconds and global animation frame."""
         
         self.clock.tick(20)
         self.time_now = pg.time.get_ticks()
+
+        if self.check(self.frame_last, TIME_FRAME):
+            if self.frame_now < 2:
+                self.frame_now += 1
+            else:
+                self.frame_now = 0
+
+            self.frame_last = self.now()
+
+    def frame(self):
+        """Returns the current global animation frame."""
+
+        return self.frame_now
 
     def now(self):
         """Returns the current time in milliseconds."""
@@ -33,11 +50,12 @@ WORLD_SIZE = (60, 60)
 TILE_SIZE = 20
 STATE_NUMBER = 1
 
-FOOD = 1
-WOOD = 2
-METAL = 3
+CODE_FOOD = 1
+CODE_WOOD = 2
+CODE_METAL = 3
 
-HOUSE_COST = 5
-SHRINE_COST = 3
+COST_HOUSE = 5
+COST_SHRINE = 3
 
 TIME_CAMERA = 100
+TIME_FRAME = 1200

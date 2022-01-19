@@ -1,5 +1,5 @@
 import spells
-import glob
+import globe
 import pathfinding
 
 
@@ -13,14 +13,14 @@ class Wizard:
         self.stock_list_limit = 2
         self.spell_list = []
 
-        self.time_last = glob.time.now()
+        self.time_last = globe.time.now()
 
         self.stat_dict = {"health max": 100, "health current": 100, "mana max": 100, "mana current": 100}
 
-    def update(self, map_entities, cast_attempt, move_character_attempt, move_spell_attempt):
+    def update(self, map_entities, map_topology, cast_attempt, move_character_attempt, move_spell_attempt):
 
         if move_character_attempt:
-            self.move(move_character_attempt, map_entities)
+            self.move(move_character_attempt, map_entities, map_topology)
 
         if cast_attempt:
             if temp_spell := self.create_spell(cast_attempt):
@@ -37,14 +37,14 @@ class Wizard:
             del self.spell_list
             del self.ruler_state.wizard
 
-    def move(self, move_attempt, map_entities):
+    def move(self, move_attempt, map_entities, map_topology):
 
-        if glob.time.check(self.time_last, self.ruler_state.time_dur_move):
+        if globe.time.check(self.time_last, self.ruler_state.time_dur_move):
             location_attempt = (self.location[0]+move_attempt[0], self.location[1]+move_attempt[1])
             
-            if pathfinding.find_free([location_attempt], map_entities):
+            if pathfinding.find_free([location_attempt], map_entities, map_topology):
                 self.location = location_attempt
-                self.time_last = glob.time.now()
+                self.time_last = globe.time.now()
 
     def create_spell(self, kind):
         

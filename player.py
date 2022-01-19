@@ -1,7 +1,7 @@
 import pygame as pg
 import sys
 
-import glob
+import globe
 
 spell_dict = {"consume": ["down", "down"], "fireball": ["up", "left"]}
 
@@ -16,7 +16,7 @@ class Player:
     def update(self, map_topology, map_resource, map_entities):
         
         key_press, keys = self.event_loop()
-        self.character.update(map_entities, key_press, keys)
+        self.character.update(map_entities, map_topology, key_press, keys)
         self.camera.update(self.character, map_topology, map_resource, map_entities, keys)
 
     def event_loop(self):
@@ -39,8 +39,7 @@ class Camera:
         self.location = (0, 0)
         self.time_last = 0
         self.inspector_location = (0, 0)
-        self.inspector_dict = {"Topology": "", "Resource": "", "Entity type": "", "Location": "", "Action": "", "Stock": "",
-                               "Health": "", "Construction remaining": ""}
+        self.inspector_dict = {"Topology": "", "Resource": "", "Entity type": "", "Location": "", "Action": "", "Stock": "", "Health": "", "Construction remaining": ""}
 
     def update(self, player_character, map_topology, map_resource, map_entities, keys):
 
@@ -57,17 +56,17 @@ class Camera:
         # prevent camera movement immediately after casting
         if spell_list := player_character.wizard.spell_list:
             if spell_list[0].status == "hold":
-                self.time_last = glob.time.now() + 300
+                self.time_last = globe.time.now() + 300
 
         # move the camera independently of the player_character
         if 1 in (keys[pg.K_UP], keys[pg.K_LEFT], keys[pg.K_DOWN], keys[pg.K_RIGHT]):
             if not keys[pg.K_SPACE]:
-                if glob.time.check(self.time_last, glob.TIME_CAMERA):
+                if globe.time.check(self.time_last, globe.TIME_CAMERA):
                     move_x = keys[pg.K_RIGHT] - keys[pg.K_LEFT]
                     move_y = keys[pg.K_DOWN] - keys[pg.K_UP]
                     self.location = (self.location[0]+move_x, self.location[1]+move_y)
                     player_character.camera_follow = False
-                    self.time_last = glob.time.now()
+                    self.time_last = globe.time.now()
 
     def move_inspector(self, location_camera, map_topology, map_resource, map_entities, keys):
         """Set new inspector tile location based on camera location. Check for keyboard input and 
@@ -105,7 +104,7 @@ class Character:
         self.camera_follow = True
         self.casting_string = []
 
-    def update(self, map_entities, key_press, keys):
+    def update(self, map_entities, map_topology, key_press, keys):
 
         move_character_attempt = self.move_character(keys)
         move_spell_attempt = None
@@ -117,10 +116,10 @@ class Character:
         else:
             cast_attempt = self.select_spell(key_press, keys)
 
-        self.wizard.update(map_entities, cast_attempt, move_character_attempt, move_spell_attempt)
+        self.wizard.update(map_entities, map_topology, cast_attempt, move_character_attempt, move_spell_attempt)
 
     def move_character(self, keys):
-        """Detect keyboard input and call wizard.move with appropriate direction tuple."""
+        """Detect keyboard input and return appropriate direction tuple for wizard move."""
 
         if pg.key.get_pressed()[pg.K_f]:
             self.camera_follow = True
@@ -133,6 +132,7 @@ class Character:
         return None
 
     def move_spell(self, keys):
+        """Detect keyboard input and return appropriate direction tuple for spell cast."""
 
         if 1 in (keys[pg.K_UP], keys[pg.K_LEFT], keys[pg.K_DOWN], keys[pg.K_RIGHT]):
             move_x = keys[pg.K_RIGHT] - keys[pg.K_LEFT]
@@ -142,6 +142,8 @@ class Character:
         return None
 
     def select_spell(self, key_press, keys):
+        """Detect keyboard input and build casting string when space is held. Return selected spell if a match to the
+        casting string is found, otherwise return None."""
 
         # create casting string while holding space
         if keys[pg.K_SPACE]:
