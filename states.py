@@ -32,7 +32,7 @@ class State:
         self.pop_limit = 0
         self.pop_current = 0
 
-        # IMPROVE TO ROBUST STARTING LOCATION
+        # TODO Intelligently decide where to place tower / let player choose
         self.wizard = self.create_wizard(map_entities, map_topology, self.location)
         self.building_list.append(self.create_building("tower", map_entities, map_topology, self.location))
         

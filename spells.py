@@ -79,5 +79,5 @@ class SpellFireball(SpellDirectional):
         target.stat_dict["health current"] -= self.health_damage
 
 
-spell_info = {"consume": (SpellConsume, 20), "fireball": (SpellFireball, 40)}
+spell_info = {"consume": (SpellConsume, 20, ["down", "down"]), "fireball": (SpellFireball, 40, ["up", "left"])}
 

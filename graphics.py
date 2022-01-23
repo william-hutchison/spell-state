@@ -4,6 +4,7 @@ import os
 import globe
 import tools
 
+pg.init()
 
 os.chdir(os.path.dirname(__file__))
 
@@ -21,6 +22,8 @@ colour_topology = [(40, 40, 40), (60, 60, 60), (80, 80, 80), (100, 100, 100)]
 colour_states = [(255, 50, 50), (50, 50, 255)]
 window_size = [(1200, 800), (2400, 1600)]
 
+font_0 = pg.font.SysFont("timesnewroman", 24)
+
 
 class Graphics:
 
@@ -30,136 +33,180 @@ class Graphics:
         self.surface_final = pg.Surface((1200, 800))
         self.surface_terrain = pg.Surface((800, 800))
         self.surface_ui_panel = pg.Surface((400, 800))
+        self.surface_ui_wizard = pg.Surface((300, 200))
         self.surface_ui_spellbook = pg.Surface((300, 200))
         self.scale = 0
 
-        self.font = pg.font.SysFont("timesnewroman", 24)
-
-        pg.display.set_caption('NewSpellState')
+        pg.display.set_caption('SpellState')
 
     def update_window(self):
 
         self.surface_final.blit(self.surface_terrain, (0, 0))
         self.surface_final.blit(self.surface_ui_panel, (800, 0))
-        self.surface_final.blit(self.surface_ui_spellbook, (20, 580))
+        #self.surface_final.blit(self.surface_ui_wizard, (0, 400))
+        #self.surface_final.blit(self.surface_ui_spellbook, (0, 600))
         self.window.blit(pg.transform.scale(self.surface_final, window_size[self.scale]), (0, 0))
 
     def update_terrain(self, camera_location, inspector_location, character_location, topology, resources, state_list):
 
         self.surface_terrain.fill((0, 0, 0))
-        self.draw_terrain(camera_location, topology, resources)
-        self.draw_entities(camera_location, state_list)
-        self.draw_overlay(camera_location, inspector_location, character_location, state_list)
+        draw_terrain(self.surface_terrain, camera_location, topology, resources)
+        draw_entities(self.surface_terrain, camera_location, state_list)
+        draw_overlay(self.surface_terrain, camera_location, inspector_location, character_location, state_list)
 
-    def update_ui_panel(self, state, camera, character, inspector_dict):
+    def update_ui_panel(self, state, inspector_dict, interface):
 
-        self.surface_ui_panel.fill((30, 40, 40))
-        self.draw_time()
-        self.draw_state_info(state)
-        self.draw_player_info(camera, character)
-        self.draw_inspector_info(inspector_dict)
+        self.surface_ui_panel.fill((30, 30, 40))
 
-    def update_ui_wizard(self, spell_combo_dict):
+        for i in range(3):
+            text = font_0.render(str(i+1), True, (255, 255, 255))
+            self.surface_ui_panel.blit(text, (10+30*i, 10))
+            self.surface_ui_panel.blit(image_inspector, (10+30*(interface.panel_current-1), 10))
 
-        self.surface_ui_spellbook.fill((30, 40, 40))
-        i = 0
-        for key, value in spell_combo_dict.items():
-            text = self.font.render(key + ": " + str(value), True, (255, 255, 255))
-            self.surface_ui_spellbook.blit(text, (10, 10+i*30))
-            i += 1
+        if interface.panel_current == 1:
+            text = font_0.render("State info", True, (255, 255, 255))
+            self.surface_ui_panel.blit(text, (10, 40))
+            draw_time(self.surface_ui_panel)
+            draw_state_info(self.surface_ui_panel, state)
+            draw_inspector_info(self.surface_ui_panel, inspector_dict)
+
+        elif interface.panel_current == 2:
+            text = font_0.render("Person info", True, (255, 255, 255))
+            self.surface_ui_panel.blit(text, (10, 40))
+
+        elif interface.panel_current == 3:
+            text = font_0.render("Building info", True, (255, 255, 255))
+            self.surface_ui_panel.blit(text, (10, 40))
+
+    def update_ui_wizard(self, camera, character, spell_combo_dict):
+
+        self.surface_ui_wizard.fill((30, 30, 40))
+        self.surface_ui_spellbook.fill((30, 30, 40))
+
+        draw_player_info(self.surface_ui_wizard, camera, character)
+        draw_player_spells(self.surface_ui_spellbook, spell_combo_dict)
 
     def set_window_scale(self, scale):
 
         self.scale = scale
         self.window = pg.display.set_mode(window_size[self.scale])
 
-    def draw_terrain(self, camera_location, topology, resources):
-        
-        for y in range(globe.WORLD_SIZE[1]):
-            for x in range(globe.WORLD_SIZE[0]):
-
-                # draw tiles
-                pg.draw.rect(self.surface_terrain, (0, 12*topology[y][x], 0), ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE, globe.TILE_SIZE, globe.TILE_SIZE), 0)
-                if topology[y][x] == 0:
-                    self.surface_terrain.blit(anim_water[globe.time.frame()], ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
-
-                # draw resources
-                if resources[y][x] == globe.CODE_FOOD:
-                    self.surface_terrain.blit(image_food, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
-                elif resources[y][x] == globe.CODE_WOOD:
-                    self.surface_terrain.blit(image_wood, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
-                elif resources[y][x] == globe.CODE_METAL:
-                    self.surface_terrain.blit(image_metal, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
-
-        # draw contours TODO MOVE TO WITHIN TILE LOOP
-        for y in range(globe.WORLD_SIZE[1]):
-            for x in range(globe.WORLD_SIZE[0]):
-                if x+1 < globe.WORLD_SIZE[0]:
-                    if topology[y][x] != topology[y][x+1]:
-                        colour_index = int(min((topology[y][x], topology[y][x+1])))
-                        pg.draw.rect(self.surface_terrain, colour_topology[colour_index], ((x+1-camera_location[0])*globe.TILE_SIZE-1, (y-camera_location[1])*globe.TILE_SIZE, 2, globe.TILE_SIZE), 0)
-                if y+1 < globe.WORLD_SIZE[0]:  
-                    if topology[y][x] != topology[y+1][x]:
-                        colour_index = int(min((topology[y][x], topology[y+1][x])))
-                        pg.draw.rect(self.surface_terrain, colour_topology[colour_index], ((x-camera_location[0])*globe.TILE_SIZE-1, (y+1-camera_location[1])*globe.TILE_SIZE-1, globe.TILE_SIZE, 2), 0)                    
-
-    def draw_entities(self, camera_location, state_list):
-    
-        for i, state in enumerate(state_list):
-
-            for building in state.building_list:
-                if building.under_construction:
-                    pg.draw.rect(self.surface_terrain, (100, 10, 100), ((building.location[0]-camera_location[0])*globe.TILE_SIZE, (building.location[1]-camera_location[1])*globe.TILE_SIZE, globe.TILE_SIZE, globe.TILE_SIZE), 0)
-                else:
-                    pg.draw.rect(self.surface_terrain, (255, 100, 255), ((building.location[0]-camera_location[0])*globe.TILE_SIZE, (building.location[1]-camera_location[1])*globe.TILE_SIZE, globe.TILE_SIZE, globe.TILE_SIZE), 0)
-            for person in state.person_list:
-                self.surface_terrain.blit(tools.colour_image(image_person, colour_states[i]), ((person.location[0]-camera_location[0])*globe.TILE_SIZE-1, (person.location[1]-camera_location[1])*globe.TILE_SIZE-1))
-
-            self.surface_terrain.blit(tools.colour_image(image_wizard, colour_states[i]), ((state.wizard.location[0]-camera_location[0])*globe.TILE_SIZE, (state.wizard.location[1]-camera_location[1])*globe.TILE_SIZE))
-
-    def draw_overlay(self, camera_location, inspector_location, character_location, state_list):
-
-        for state in state_list:
-            for spell in state.wizard.spell_list:
-                self.surface_terrain.blit(image_spell_hold, ((spell.location[0] - camera_location[0]) * globe.TILE_SIZE, (spell.location[1] - camera_location[1]) * globe.TILE_SIZE))
-
-        if inspector_location != character_location:
-            self.surface_terrain.blit(image_inspector, ((inspector_location[0]-camera_location[0])*globe.TILE_SIZE, (inspector_location[1]-camera_location[1])*globe.TILE_SIZE))
-
-    def draw_time(self):
-
-        text0 = self.font.render("World time: " + str(globe.time.now()), True, (255, 255, 255))
-        self.surface_ui_panel.blit(text0, (10, 10))
-
-    def draw_state_info(self, state):
-
-        text0 = self.font.render("Stock list: " + str(tools.item_summary(state.stock_list)), True, (255, 255, 255))
-        text1 = self.font.render("Building list: " + str([type(i).__name__ for i in state.building_list]), True, (255, 255, 255))
-        text2 = self.font.render("Person list: " + str([type(i).__name__ for i in state.person_list]), True, (255, 255, 255))
-        self.surface_ui_panel.blit(text0, (10, 100))
-        self.surface_ui_panel.blit(text1, (10, 130))
-        self.surface_ui_panel.blit(text2, (10, 160))
-    
-    def draw_player_info(self, camera, character):
-
-        text0 = self.font.render("Inspector location: " + str(camera.inspector_location), True, (255, 255, 255))
-        text1 = self.font.render("Character location: " + str(character.wizard.location), True, (255, 255, 255))
-        text2 = self.font.render("Casting string: " + str(character.casting_string), True, (255, 255, 255))
-        self.surface_ui_panel.blit(text0, (10, 300))
-        self.surface_ui_panel.blit(text1, (10, 330))
-        self.surface_ui_panel.blit(text2, (10, 360))
-
-    def draw_inspector_info(self, inspector_dict):
-
-        i = 0
-        for item in inspector_dict.items():
-            if item[1]:
-                text = self.font.render(str(item[0])+": "+str(item[1]), True, (255, 255, 255))
-                self.surface_ui_panel.blit(text, (10, 500+30*i))
-                i += 1
-
     def draw_start(self):
 
         self.window.fill((0, 0, 0))
-        text0 = self.font.render("Select resolution. (1) 1200x800. (2) 2400x1600.", True, (255, 255, 255))
+        text0 = font_0.render("Select resolution. (1) 1200x800. (2) 2400x1600.", True, (255, 255, 255))
         self.window.blit(text0, (10, 10))
+
+    def draw_pause(self):
+
+        menu_surface = pg.Surface(window_size[self.scale])
+        menu_surface.set_alpha(5)
+        menu_surface.fill((0, 0, 0))
+        text0 = font_0.render("Game paused. (esc) to unpause.", True, (255, 255, 255))
+        self.window.blit(text0, (10, 10))
+        self.window.blit(menu_surface, (0, 0))
+
+
+def draw_terrain(surface_terrain, camera_location, topology, resources):
+
+    for y in range(globe.WORLD_SIZE[1]):
+        for x in range(globe.WORLD_SIZE[0]):
+
+            # draw tiles
+            pg.draw.rect(surface_terrain, (20, 8*topology[y][x], 20), ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE, globe.TILE_SIZE, globe.TILE_SIZE), 0)
+            if topology[y][x] == 0:
+                surface_terrain.blit(anim_water[globe.time.frame()], ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
+
+            # draw resources
+            if resources[y][x] == globe.CODE_FOOD:
+                surface_terrain.blit(image_food, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
+            elif resources[y][x] == globe.CODE_WOOD:
+                surface_terrain.blit(image_wood, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
+            elif resources[y][x] == globe.CODE_METAL:
+                surface_terrain.blit(image_metal, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
+
+    # draw contours TODO Move to within tile loop.
+    for y in range(globe.WORLD_SIZE[1]):
+        for x in range(globe.WORLD_SIZE[0]):
+            if x+1 < globe.WORLD_SIZE[0]:
+                if topology[y][x] != topology[y][x+1]:
+                    colour_index = int(min((topology[y][x], topology[y][x+1])))
+                    pg.draw.rect(surface_terrain, colour_topology[colour_index], ((x+1-camera_location[0])*globe.TILE_SIZE-1, (y-camera_location[1])*globe.TILE_SIZE, 2, globe.TILE_SIZE), 0)
+            if y+1 < globe.WORLD_SIZE[0]:
+                if topology[y][x] != topology[y+1][x]:
+                    colour_index = int(min((topology[y][x], topology[y+1][x])))
+                    pg.draw.rect(surface_terrain, colour_topology[colour_index], ((x-camera_location[0])*globe.TILE_SIZE-1, (y+1-camera_location[1])*globe.TILE_SIZE-1, globe.TILE_SIZE, 2), 0)
+
+
+def draw_entities(surface_terrain, camera_location, state_list):
+
+    for i, state in enumerate(state_list):
+
+        for building in state.building_list:
+            if building.under_construction:
+                pg.draw.rect(surface_terrain, (100, 10, 100), ((building.location[0]-camera_location[0])*globe.TILE_SIZE, (building.location[1]-camera_location[1])*globe.TILE_SIZE, globe.TILE_SIZE, globe.TILE_SIZE), 0)
+            else:
+                pg.draw.rect(surface_terrain, (255, 100, 255), ((building.location[0]-camera_location[0])*globe.TILE_SIZE, (building.location[1]-camera_location[1])*globe.TILE_SIZE, globe.TILE_SIZE, globe.TILE_SIZE), 0)
+        for person in state.person_list:
+            surface_terrain.blit(tools.colour_image(image_person, colour_states[i]), ((person.location[0]-camera_location[0])*globe.TILE_SIZE-1, (person.location[1]-camera_location[1])*globe.TILE_SIZE-1))
+
+        surface_terrain.blit(tools.colour_image(image_wizard, colour_states[i]), ((state.wizard.location[0]-camera_location[0])*globe.TILE_SIZE, (state.wizard.location[1]-camera_location[1])*globe.TILE_SIZE))
+
+
+def draw_overlay(surface_terrain, camera_location, inspector_location, character_location, state_list):
+
+    for state in state_list:
+        for spell in state.wizard.spell_list:
+            surface_terrain.blit(image_spell_hold, ((spell.location[0] - camera_location[0]) * globe.TILE_SIZE, (spell.location[1] - camera_location[1]) * globe.TILE_SIZE))
+
+    if inspector_location != character_location:
+        surface_terrain.blit(image_inspector, ((inspector_location[0]-camera_location[0])*globe.TILE_SIZE, (inspector_location[1]-camera_location[1])*globe.TILE_SIZE))
+
+
+def draw_time(surface_ui_panel):
+
+    text0 = font_0.render("World time: " + str(globe.time.now()), True, (255, 255, 255))
+    surface_ui_panel.blit(text0, (10, 70))
+
+
+def draw_state_info(surface_ui_panel, state):
+
+    text0 = font_0.render("Stock list: " + str(tools.item_summary(state.stock_list)), True, (255, 255, 255))
+    text1 = font_0.render("Building list: " + str([type(i).__name__ for i in state.building_list]), True, (255, 255, 255))
+    text2 = font_0.render("Person list: " + str([type(i).__name__ for i in state.person_list]), True, (255, 255, 255))
+    surface_ui_panel.blit(text0, (10, 100))
+    surface_ui_panel.blit(text1, (10, 130))
+    surface_ui_panel.blit(text2, (10, 160))
+
+
+def draw_inspector_info(surface_ui_panel, inspector_dict):
+
+    i = 0
+    for item in inspector_dict.items():
+        if item[1]:
+            text = font_0.render(str(item[0]) + ": " + str(item[1]), True, (255, 255, 255))
+            surface_ui_panel.blit(text, (10, 500 + 30 * i))
+            i += 1
+
+
+def draw_player_info(surface_ui_wizard, camera, character):
+
+    text0 = font_0.render("Inspector location: " + str(camera.inspector_location), True, (255, 255, 255))
+    text1 = font_0.render("Character location: " + str(character.wizard.location), True, (255, 255, 255))
+    text2 = font_0.render("Casting string: " + str(character.casting_string), True, (255, 255, 255))
+    text3 = font_0.render("Health: " + str(character.wizard.stat_dict['health current']) + "/" + str(character.wizard.stat_dict['health max']), True, (255, 255, 255))
+    text4 = font_0.render("Mana: " + str(character.wizard.stat_dict['mana current']) + "/" + str(character.wizard.stat_dict['mana max']), True, (255, 255, 255))
+    surface_ui_wizard.blit(text0, (10, 10))
+    surface_ui_wizard.blit(text1, (10, 40))
+    surface_ui_wizard.blit(text2, (10, 70))
+    surface_ui_wizard.blit(text3, (10, 100))
+    surface_ui_wizard.blit(text4, (10, 130))
+
+
+def draw_player_spells(surface_ui_spellbook, spell_combo_dict):
+
+    i = 0
+    for key, value in spell_combo_dict.items():
+        text = font_0.render(key + ": " + str(value), True, (255, 255, 255))
+        surface_ui_spellbook.blit(text, (10, 10+i*30))
+        i += 1

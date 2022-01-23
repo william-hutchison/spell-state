@@ -11,11 +11,13 @@ class Time:
 
         self.frame_last = 0
 
-    def update(self):
+    def update(self, game_state):
         """Update display frame, global time in milliseconds and global animation frame."""
         
         self.clock.tick(20)
-        self.time_now = pg.time.get_ticks()
+
+        if game_state == "play":
+            self.time_now += self.clock.get_time()
 
         if self.check(self.frame_last, TIME_FRAME):
             if self.frame_now < 2:

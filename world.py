@@ -91,6 +91,6 @@ def gen_noise(seed, scale=20, octaves=6, persistence=0.5, lacunarity=2.0):
     norm_me = lambda x: (x - min_arr) / (max_arr - min_arr)
     norm_me = np.vectorize(norm_me)
     map_new = norm_me(map_new)
-
+    
     return map_new
 

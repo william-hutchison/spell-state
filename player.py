@@ -1,36 +1,43 @@
 import pygame as pg
-import sys
 
 import globe
+import spells
 
-spell_dict = {"consume": ["down", "down"], "fireball": ["up", "left"]}
 
-
-class Player:
+class Player:  # TODO Should this object even exist? Probably not
 
     def __init__(self, player_wizard):
 
+        self.interface = Interface()
         self.camera = Camera()
         self.character = Character(player_wizard)
 
-    def update(self, map_topology, map_resource, map_entities):
+    def update(self, map_topology, map_resource, map_entities, events):
         
-        key_press, keys = self.event_loop()
-        self.character.update(map_entities, map_topology, key_press, keys)
-        self.camera.update(self.character, map_topology, map_resource, map_entities, keys)
+        self.interface.update(events[0], events[1])
+        self.character.update(map_entities, map_topology, events[0], events[1])
+        self.camera.update(self.character, map_topology, map_resource, map_entities, events[1])
 
-    def event_loop(self):
 
-        key_press = False
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                pg.quit()
-                sys.exit()
-            if event.type == pg.KEYDOWN:
-                key_press = True
+class Interface:
 
-        return key_press, pg.key.get_pressed()
+    def __init__(self):
 
+        self.panel_current = 1
+
+    def update(self, key_press, keys):
+
+        self.change_panel(key_press, keys)
+
+    def change_panel(self, key_press, keys):
+
+        if key_press:
+            if keys[pg.K_1]:
+                self.panel_current = 1
+            elif keys[pg.K_2]:
+                self.panel_current = 2
+            elif keys[pg.K_3]:
+                self.panel_current = 3
 
 class Camera:
     
@@ -91,7 +98,7 @@ class Camera:
                     self.inspector_dict["Action"] = str(inspect_object.action_super)
                     self.inspector_dict["Stock"] = str(inspect_object.stock_list)
 
-                if type(inspect_object).__name__ in ['Tower', 'House']:
+                if type(inspect_object).__name__ in ['Tower', 'House', 'Shrine']:
                     self.inspector_dict["Construction remaining"] = str(inspect_object.under_construction)
 
 
@@ -160,8 +167,8 @@ class Character:
         # attempt to select spell when space is released
         else:
             if self.casting_string:
-                for key, value in spell_dict.items():
-                    if self.casting_string == value:
+                for key, value in spells.spell_info.items():
+                    if self.casting_string == value[2]:
 
                         self.casting_string = []
                         return key
