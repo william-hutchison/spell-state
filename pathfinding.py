@@ -16,7 +16,7 @@ class Node:
         return self.position == other.position
 
 
-def astar(map_entities, map_topology, start, end, adjacent=False, max_children=200):
+def astar(map_entities, map_topology, start, end, adjacent=False, max_children=400):
     """Returns a list of tuples as a path from the given start to the given end in the given maze.
     Returns an empty list if no path is found."""
     

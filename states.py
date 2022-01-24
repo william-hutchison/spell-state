@@ -17,6 +17,7 @@ class State:
         self.building_list = []
         self.person_list = []
         self.stock_list = []
+        self.other_states = []
 
         self.time_last_order = globe.time.now()
         self.time_last_birth = globe.time.now()
@@ -28,6 +29,7 @@ class State:
         self.time_dur_transfer = 100#0
         self.time_dur_construct = 600#0
         self.time_dur_harvest = 400#0
+        self.time_dur_attack = 400
 
         self.pop_limit = 0
         self.pop_current = 0
@@ -121,15 +123,21 @@ class State:
         construct_weight = 10
         work_weight = 5
         harvest_weight = 5
+        attack_weight = 5
+
+        target_state = self.other_states[0]
 
         idle_person_list = [i for i in person_list if i.action_super == "idle"]
         construction_list = [i for i in building_list if i.under_construction]
         shrine_list = ([i for i in building_list if not i.under_construction and type(i).__name__ == "Shrine"])
+        attack_list = ([i.location for i in target_state.person_list])
 
         if not construction_list:
             construct_weight = 0
         if not shrine_list:
             work_weight = 0
+        if not attack_list:
+            attack_weight = 0
 
         if idle_person_list:
             dice = random.randint(0, construct_weight+work_weight+harvest_weight)
@@ -137,6 +145,8 @@ class State:
                 self.assign_build(person_list, idle_person_list, construction_list)
             elif dice < construct_weight+work_weight:
                 self.assign_work(person_list, idle_person_list, shrine_list)
+            elif dice < construct_weight+work_weight+attack_weight:
+                self.assign_attack(idle_person_list, target_state)
             else:
                 # TODO Give harvesting its own assign function to match construct and work
                 dice = random.randint(1, 3)
@@ -182,6 +192,16 @@ class State:
                     person = [i for i in idle_person_list if i.location == person_location].pop()
                     person.action_super_set("construct")
                     person.action_construction = building
+
+    def assign_attack(self, idle_person_list, target_state):
+
+        # check for and assign appropriate person to construction
+        if idle_person_list and target_state.person_list:
+            target_location = pathfinding.find_closest(self.location, [i.location for i in target_state.person_list])
+            person_location = pathfinding.find_closest(target_location, [i.location for i in idle_person_list])
+            person = [i for i in idle_person_list if i.location == person_location].pop()
+            person.action_super_set("attack")
+            person.action_attack = [i for i in target_state.person_list if i.location == target_location].pop()
 
     def increase_pop_limit(self, target_state, amount):
         

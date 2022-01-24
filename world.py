@@ -24,6 +24,8 @@ class World:
 
         for i in range(globe.STATE_NUMBER):
             self.state_list.append(create_state(self.map_entities, self.map_topology))
+        for state in self.state_list:
+            state.other_states = [i for i in self.state_list if i != state]
 
     def update(self):
 

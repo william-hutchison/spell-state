@@ -94,4 +94,7 @@ class Tavern(Building):
         pass
 
 
-building_info = {"tower": (Tower, []), "house": (House, [(globe.CODE_WOOD, 3)]), "shrine": (Shrine, [(globe.CODE_METAL, 3)]), "tavern": (Tavern, [(globe.CODE_METAL, 3)])}
+building_info = {"tower": (Tower, []),
+                 "house": (House, [(globe.CODE_WOOD, 3)]),
+                 "shrine": (Shrine, [(globe.CODE_METAL, 3)]),
+                 "tavern": (Tavern, [(globe.CODE_METAL, 3)])}

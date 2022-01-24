@@ -1,4 +1,5 @@
 import globe
+import pathfinding
 
 
 class Spell:
@@ -10,7 +11,22 @@ class Spell:
         self.status = "hold"
 
 
-class SpellDirectional(Spell):
+class SpellKindSelf(Spell):
+
+    def __init__(self, wizard):
+
+        super().__init__(wizard)
+
+    def update(self, map_entities, move_attempt):
+
+        if self.status == "hold":
+            self.location = self.ruler_wizard.location
+        if move_attempt:
+            self.impact(map_entities)
+            self.ruler_wizard.spell_list.remove(self)
+
+
+class SpellKindDirectional(Spell):
 
     def __init__(self, wizard):
 
@@ -24,7 +40,7 @@ class SpellDirectional(Spell):
 
         if self.status == "hold":
             self.location = self.ruler_wizard.location
-        if move_attempt:
+        if type(move_attempt) == tuple:
             self.status = "moving"
             self.move_direction = move_attempt
 
@@ -50,7 +66,30 @@ class SpellDirectional(Spell):
             self.time_last = globe.time.now()
 
 
-class SpellConsume(SpellDirectional):
+class SpellKindSelect(Spell):
+
+    def __init__(self, wizard):
+
+        super().__init__(wizard)
+        self.location_select = self.ruler_wizard.location
+
+    def update(self, map_entities, move_attempt):
+
+        if self.status == "hold":
+            self.location = self.ruler_wizard.location
+
+            # move spell target location selector
+            if type(move_attempt) == tuple:
+                self.location_select = (self.location_select[0]+move_attempt[0], self.location_select[1]+move_attempt[1])
+
+            # cast spell at target location
+            elif move_attempt == "select":
+                if target := map_entities[self.location_select[1]][self.location_select[0]]:
+                    self.impact(target)
+                self.ruler_wizard.spell_list.remove(self)
+
+
+class SpellConsume(SpellKindDirectional):
 
     def __init__(self, wizard):
 
@@ -66,7 +105,7 @@ class SpellConsume(SpellDirectional):
             self.ruler_wizard.stat_dict["mana current"] += self.mana_gain
 
 
-class SpellFireball(SpellDirectional):
+class SpellFireball(SpellKindDirectional):
 
     def __init__(self, wizard):
 
@@ -79,5 +118,38 @@ class SpellFireball(SpellDirectional):
         target.stat_dict["health current"] -= self.health_damage
 
 
-spell_info = {"consume": (SpellConsume, 20, ["down", "down"]), "fireball": (SpellFireball, 40, ["up", "left"])}
+class SpellStorm(SpellKindSelf):
+
+    def __init__(self, wizard):
+
+        super().__init__(wizard)
+        self.health_damage = 50
+        self.radius = 4
+
+    def impact(self, map_entities):
+
+        radius_list = pathfinding.find_within_radius(self.ruler_wizard.location, self.radius)
+        radius_list.remove(self.ruler_wizard.location)
+
+        for i in radius_list:
+            if map_entities[i[1]][i[0]]:
+                map_entities[i[1]][i[0]].stat_dict["health current"] -= self.health_damage
+
+
+class SpellHeal(SpellKindSelect):
+
+    def __init__(self, wizard):
+
+        super().__init__(wizard)
+        self.health_heal = 50
+
+    def impact(self, target):
+
+        target.stat_dict["health current"] += self.health_heal
+
+
+spell_info = {"consume": (SpellConsume, 20, ["down", "down"]),
+              "fireball": (SpellFireball, 40, ["up", "left"]),
+              "storm": (SpellStorm, 100, ["left", "up", "right", "down"]),
+              "heal": (SpellHeal, 40, ["up", "down", "up"])}
 

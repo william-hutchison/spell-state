@@ -17,8 +17,9 @@ class Person:
         self.action_super = "idle"
         self.action_construction = None
         self.action_work = None
+        self.action_attack = None
 
-        self.stat_dict = {"health max": 100, "health current": 100}
+        self.stat_dict = {"health max": 100, "health current": 100, "attack damage": 20}
 
     def update(self, map_resource, map_entities, map_topology):
 
@@ -36,6 +37,8 @@ class Person:
             self.construct(map_entities, map_topology, self.action_construction)
         elif self.action_super == "work":
             self.work(map_entities, map_topology, self.action_work)
+        elif self.action_super == "attack":
+            self.attack(map_entities, map_topology, self.action_attack)
 
         if self.stat_dict["health current"] <= 0:
             self.ruler_state.person_list.remove(self)
@@ -67,6 +70,22 @@ class Person:
         # move to construct object
         else:
             self.move(map_entities, map_topology, construct_object.location, adjacent=True)
+
+    def attack(self, map_entities, map_topology, attack_object):
+
+        # attack attack_object
+        if self.location in pathfinding.find_edges(attack_object.location):
+            if globe.time.check(self.time_last, self.ruler_state.time_dur_attack):
+
+                attack_object.stat_dict["health current"] -= self.stat_dict["attack damage"]
+                if attack_object.stat_dict["health current"] <= 0:
+                    self.action_attack = None
+                    self.action_super_set("idle")
+                self.time_last = globe.time.now()
+
+        # move to attack object
+        else:
+            self.move(map_entities, map_topology, attack_object.location, adjacent=True)
 
     def harvest(self, map_resource, map_entities, map_topology,  target_resource):
 

@@ -11,6 +11,7 @@ os.chdir(os.path.dirname(__file__))
 image_wizard = pg.image.load('sprites/wizard.png')
 image_person = pg.image.load('sprites/person.png')
 image_inspector = pg.image.load('sprites/inspector.png')
+image_selector = pg.image.load('sprites/selector.png')
 image_food = pg.image.load('sprites/resource_food.png')
 image_wood = pg.image.load('sprites/resource_wood.png')
 image_metal = pg.image.load('sprites/resource_metal.png')
@@ -43,8 +44,8 @@ class Graphics:
 
         self.surface_final.blit(self.surface_terrain, (0, 0))
         self.surface_final.blit(self.surface_ui_panel, (800, 0))
-        #self.surface_final.blit(self.surface_ui_wizard, (0, 400))
-        #self.surface_final.blit(self.surface_ui_spellbook, (0, 600))
+        self.surface_final.blit(self.surface_ui_wizard, (0, 400))
+        self.surface_final.blit(self.surface_ui_spellbook, (0, 600))
         self.window.blit(pg.transform.scale(self.surface_final, window_size[self.scale]), (0, 0))
 
     def update_terrain(self, camera_location, inspector_location, character_location, topology, resources, state_list):
@@ -159,8 +160,12 @@ def draw_overlay(surface_terrain, camera_location, inspector_location, character
         for spell in state.wizard.spell_list:
             surface_terrain.blit(image_spell_hold, ((spell.location[0] - camera_location[0]) * globe.TILE_SIZE, (spell.location[1] - camera_location[1]) * globe.TILE_SIZE))
 
+    if state_list[0].wizard.spell_list:
+        if type(state_list[0].wizard.spell_list[0]).__name__ in ['SpellHeal']:  # TODO This could be done more robustly using issubclass().
+            surface_terrain.blit(image_selector, ((state_list[0].wizard.spell_list[0].location_select[0]-camera_location[0])*globe.TILE_SIZE-1, (state_list[0].wizard.spell_list[0].location_select[1]-camera_location[1])*globe.TILE_SIZE-1))
+
     if inspector_location != character_location:
-        surface_terrain.blit(image_inspector, ((inspector_location[0]-camera_location[0])*globe.TILE_SIZE, (inspector_location[1]-camera_location[1])*globe.TILE_SIZE))
+        surface_terrain.blit(image_inspector, ((inspector_location[0]-camera_location[0])*globe.TILE_SIZE-1, (inspector_location[1]-camera_location[1])*globe.TILE_SIZE-1))
 
 
 def draw_time(surface_ui_panel):
@@ -207,6 +212,6 @@ def draw_player_spells(surface_ui_spellbook, spell_combo_dict):
 
     i = 0
     for key, value in spell_combo_dict.items():
-        text = font_0.render(key + ": " + str(value), True, (255, 255, 255))
+        text = font_0.render(key + ": " + str(value[2]), True, (255, 255, 255))
         surface_ui_spellbook.blit(text, (10, 10+i*30))
         i += 1

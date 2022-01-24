@@ -119,7 +119,7 @@ class Character:
 
         # move spell if holding otherwise cast new spell
         if [i for i in self.wizard.spell_list if i.status == "hold"]:
-            move_spell_attempt = self.move_spell(keys)
+            move_spell_attempt = self.move_spell(key_press, keys)
         else:
             cast_attempt = self.select_spell(key_press, keys)
 
@@ -138,14 +138,18 @@ class Character:
             return move_x, move_y
         return None
 
-    def move_spell(self, keys):
+    def move_spell(self, key_press, keys):
         """Detect keyboard input and return appropriate direction tuple for spell cast."""
 
-        if 1 in (keys[pg.K_UP], keys[pg.K_LEFT], keys[pg.K_DOWN], keys[pg.K_RIGHT]):
-            move_x = keys[pg.K_RIGHT] - keys[pg.K_LEFT]
-            move_y = keys[pg.K_DOWN] - keys[pg.K_UP]
+        if key_press:
+            if 1 in (keys[pg.K_UP], keys[pg.K_LEFT], keys[pg.K_DOWN], keys[pg.K_RIGHT]):
+                move_x = keys[pg.K_RIGHT] - keys[pg.K_LEFT]
+                move_y = keys[pg.K_DOWN] - keys[pg.K_UP]
+                return move_x, move_y
 
-            return move_x, move_y
+            elif keys[pg.K_RETURN]:
+                return "select"
+
         return None
 
     def select_spell(self, key_press, keys):
