@@ -4,7 +4,7 @@ import sys
 import player
 import world
 import graphics
-import menu
+import menus
 import spells  # TODO A bit awkward to import lower file in main.
 import globe
 
@@ -33,20 +33,20 @@ class Game:
 
     def start(self, events):
 
-        self.game_state = menu.start(events, self.graphics.set_window_scale)
+        self.game_state = menus.start(events, self.graphics.set_window_scale)
         self.graphics.draw_start()
 
     def pause(self, events):
 
-        self.game_state = menu.pause(events)
+        self.game_state = menus.pause(events)
         self.graphics.draw_pause()
 
     def play(self, events):
 
-        self.game_state = menu.play(events)
+        self.game_state = menus.play(events)
         self.world.update()
         self.player.update(self.world.map_topology, self.world.map_resource, self.world.map_entities, events)
-        self.graphics.update_terrain(self.player.camera.location, self.player.camera.inspector_location, self.player.character.wizard.location, self.world.map_topology, self.world.map_resource, self.world.state_list)
+        self.graphics.update_terrain(self.player.camera.location, self.player.camera.inspector_location, self.player.camera.inspector_mode, self.player.character.wizard.location, self.world.map_topology, self.world.map_resource, self.world.state_list)
         self.graphics.update_ui_panel(self.world.state_list[0], self.player.camera.inspector_dict, self.player.interface)
         self.graphics.update_ui_wizard(self.player.camera, self.player.character, spells.spell_info)
         self.graphics.update_window()

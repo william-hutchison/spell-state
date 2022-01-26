@@ -72,21 +72,17 @@ class SpellKindSelect(Spell):
 
         super().__init__(wizard)
         self.location_select = self.ruler_wizard.location
+        self.status = "select"
 
     def update(self, map_entities, move_attempt):
 
-        if self.status == "hold":
-            self.location = self.ruler_wizard.location
+        self.location = self.ruler_wizard.location
 
-            # move spell target location selector
-            if type(move_attempt) == tuple:
-                self.location_select = (self.location_select[0]+move_attempt[0], self.location_select[1]+move_attempt[1])
+    def select(self, map_entities):
 
-            # cast spell at target location
-            elif move_attempt == "select":
-                if target := map_entities[self.location_select[1]][self.location_select[0]]:
-                    self.impact(target)
-                self.ruler_wizard.spell_list.remove(self)
+        if target := map_entities[self.location_select[1]][self.location_select[0]]:
+            self.impact(target)
+        self.ruler_wizard.spell_list.remove(self)
 
 
 class SpellConsume(SpellKindDirectional):
@@ -123,7 +119,7 @@ class SpellStorm(SpellKindSelf):
     def __init__(self, wizard):
 
         super().__init__(wizard)
-        self.health_damage = 50
+        self.health_damage = 100
         self.radius = 4
 
     def impact(self, map_entities):

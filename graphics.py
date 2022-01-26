@@ -48,12 +48,12 @@ class Graphics:
         self.surface_final.blit(self.surface_ui_spellbook, (0, 600))
         self.window.blit(pg.transform.scale(self.surface_final, window_size[self.scale]), (0, 0))
 
-    def update_terrain(self, camera_location, inspector_location, character_location, topology, resources, state_list):
+    def update_terrain(self, camera_location, inspector_location, inspector_mode, character_location, topology, resources, state_list):
 
         self.surface_terrain.fill((0, 0, 0))
         draw_terrain(self.surface_terrain, camera_location, topology, resources)
         draw_entities(self.surface_terrain, camera_location, state_list)
-        draw_overlay(self.surface_terrain, camera_location, inspector_location, character_location, state_list)
+        draw_overlay(self.surface_terrain, camera_location, inspector_location, inspector_mode, character_location, state_list)
 
     def update_ui_panel(self, state, inspector_dict, interface):
 
@@ -154,18 +154,17 @@ def draw_entities(surface_terrain, camera_location, state_list):
         surface_terrain.blit(tools.colour_image(image_wizard, colour_states[i]), ((state.wizard.location[0]-camera_location[0])*globe.TILE_SIZE, (state.wizard.location[1]-camera_location[1])*globe.TILE_SIZE))
 
 
-def draw_overlay(surface_terrain, camera_location, inspector_location, character_location, state_list):
+def draw_overlay(surface_terrain, camera_location, inspector_location, inspector_mode, character_location, state_list):
 
     for state in state_list:
         for spell in state.wizard.spell_list:
             surface_terrain.blit(image_spell_hold, ((spell.location[0] - camera_location[0]) * globe.TILE_SIZE, (spell.location[1] - camera_location[1]) * globe.TILE_SIZE))
 
-    if state_list[0].wizard.spell_list:
-        if type(state_list[0].wizard.spell_list[0]).__name__ in ['SpellHeal']:  # TODO This could be done more robustly using issubclass().
-            surface_terrain.blit(image_selector, ((state_list[0].wizard.spell_list[0].location_select[0]-camera_location[0])*globe.TILE_SIZE-1, (state_list[0].wizard.spell_list[0].location_select[1]-camera_location[1])*globe.TILE_SIZE-1))
-
-    if inspector_location != character_location:
-        surface_terrain.blit(image_inspector, ((inspector_location[0]-camera_location[0])*globe.TILE_SIZE-1, (inspector_location[1]-camera_location[1])*globe.TILE_SIZE-1))
+    if inspector_mode == "inspect":
+        if inspector_location != character_location:
+            surface_terrain.blit(image_inspector, ((inspector_location[0]-camera_location[0])*globe.TILE_SIZE-1, (inspector_location[1]-camera_location[1])*globe.TILE_SIZE-1))
+    elif inspector_mode == "select":
+        surface_terrain.blit(image_selector, ((inspector_location[0] - camera_location[0]) * globe.TILE_SIZE - 1, (inspector_location[1] - camera_location[1]) * globe.TILE_SIZE - 1))
 
 
 def draw_time(surface_ui_panel):
