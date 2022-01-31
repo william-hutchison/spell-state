@@ -38,12 +38,12 @@ class World:
 
         map_entities = np.empty(globe.WORLD_SIZE, dtype=object)
         for state in state_list:
-            map_entities[state.wizard.location[1]][state.wizard.location[0]] = state.wizard
             for building in state.building_list:
                 map_entities[building.location[1]][building.location[0]] = building
             for person in state.person_list:
                 map_entities[person.location[1]][person.location[0]] = person
-                
+            map_entities[state.wizard.location[1]][state.wizard.location[0]] = state.wizard
+
         return map_entities
 
 

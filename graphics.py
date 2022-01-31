@@ -92,19 +92,27 @@ class Graphics:
         self.scale = scale
         self.window = pg.display.set_mode(window_size[self.scale])
 
-    def draw_start(self):
+    def draw_start(self, options, current_option):
 
         self.window.fill((0, 0, 0))
-        text0 = font_0.render("Select resolution. (1) 1200x800. (2) 2400x1600.", True, (255, 255, 255))
-        self.window.blit(text0, (10, 10))
+        for i in range(len(options)):
+            text = font_0.render(options[i], True, (255, 255, 255))
+            self.window.blit(text, (10, 10+30*i))
 
-    def draw_pause(self):
+        pg.draw.rect(self.window, (255, 255, 255), (100, 15+30*current_option, 10, 10), 0)
+
+    def draw_pause(self, options, current_option):
 
         menu_surface = pg.Surface(window_size[self.scale])
         menu_surface.set_alpha(5)
         menu_surface.fill((0, 0, 0))
-        text0 = font_0.render("Game paused. (esc) to unpause.", True, (255, 255, 255))
-        self.window.blit(text0, (10, 10))
+
+        for i in range(len(options)):
+            text = font_0.render(options[i], True, (255, 255, 255))
+            self.window.blit(text, (10, 10+30*i))
+
+        pg.draw.rect(self.window, (255, 255, 255), (100, 15+30*current_option, 10, 10), 0)
+
         self.window.blit(menu_surface, (0, 0))
 
 

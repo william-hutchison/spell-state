@@ -1,37 +1,86 @@
 import pygame as pg
+import os
 
 
-def start(event_loop, set_window_scale):
+class Menu:
 
-    keys = event_loop[1]
+    def __init__(self):
 
-    if keys[pg.K_1]:
-        set_window_scale(0)
-        return "play"
-    elif keys[pg.K_2]:
-        set_window_scale(1)
-        return "play"
+        self.options = []        
+        self.current_option = 0
 
-    return "start"
+    def start(self, events):
+        
+        self.options = ["play", "load", "settings", "quit"]
 
+        return self.option_select(events, "start")
 
-def pause(event_loop):
+    def pause(self, events):
 
-    key_press = event_loop[0]
-    keys = event_loop[1]
+        self.options = ["play", "save", "quit"]
 
-    if key_press and keys[pg.K_ESCAPE]:
-        return "play"
+        return self.option_select(events, "pause")
 
-    return "pause"
+    def settings(self, events, set_window_scale):
+        
+        self.options = ["1200 x 800", "2400 x 1600", "back"]
 
+        option_selected = self.option_select(events, "settings")
 
-def play(event_loop):
+        if option_selected == "1200 x 800":
+            set_window_scale(0)
+            return "settings"
+        elif option_selected == "2400 x 1600":
+            set_window_scale(1)
+            return "settings"
+        elif option_selected == "back": 
+            return "start"
 
-    key_press = event_loop[0]
-    keys = event_loop[1]
+        return "settings"
 
-    if key_press and keys[pg.K_ESCAPE]:
-        return "pause"
+    def load(self, events, load_file):
 
-    return "play"
+        file_names = os.listdir("saves")
+        self.options = file_names + ["back"]
+        
+        option_selected = self.option_select(events, "load")
+        if option_selected not in ["back", "load"]:
+            load_file(option_selected)
+            return "play"
+
+        if option_selected == "back":
+            return "start"
+
+        return "load"
+
+    def save(self, events, save_file):
+
+        file_name = "test1"
+        self.options = [file_name] + ["back"]
+        
+        option_selected = self.option_select(events, "save")
+        if option_selected != "back":
+            save_file(option_selected)
+            return "pause"
+
+        if option_selected == "back":
+            return "pause"
+
+        return "save"
+
+    def option_select(self, events, game_state):
+
+        key_press = events[0]
+        keys = events[1]
+
+        if key_press:
+            if keys[pg.K_DOWN]:
+                if self.current_option < len(self.options) - 1:
+                    self.current_option += 1
+            elif keys[pg.K_UP]:
+                if self.current_option > 0:
+                    self.current_option -= 1
+            elif keys[pg.K_RETURN]:
+                return(self.options[self.current_option])
+        
+        return game_state

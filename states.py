@@ -123,7 +123,7 @@ class State:
         construct_weight = 10
         work_weight = 5
         harvest_weight = 5
-        attack_weight = 5
+        attack_weight = 20
 
         target_state = self.other_states[0]
 
