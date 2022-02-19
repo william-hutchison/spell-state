@@ -100,6 +100,10 @@ class SpellConsume(SpellKindDirectional):
             target.stat_dict["health current"] -= self.health_damage
             self.ruler_wizard.stat_dict["mana current"] += self.mana_gain
 
+            if target.ruler_state == self.ruler_wizard.ruler_state:
+                self.ruler_wizard.ruler_state.stat_dict["fear"] += 2
+                self.ruler_wizard.ruler_state.stat_dict["loyalty"] -= 1
+
 
 class SpellFireball(SpellKindDirectional):
 

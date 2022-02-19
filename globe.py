@@ -45,6 +45,10 @@ class Time:
         else:
             return False
 
+    def set_time(self, new_time):
+
+        self.time_now = new_time
+
 
 time = Time()
 

@@ -29,19 +29,19 @@ class Game:
             self.game_state = self.play(events)
         elif self.game_state == "start":
             self.game_state = self.menu.start(events)
-            self.graphics.draw_start(self.menu.options, self.menu.current_option)
+            self.graphics.draw_menu(self.menu.options, self.menu.current_option)
         elif self.game_state == "settings":
             self.game_state = self.menu.settings(events, self.graphics.set_window_scale)
-            self.graphics.draw_start(self.menu.options, self.menu.current_option)
+            self.graphics.draw_menu(self.menu.options, self.menu.current_option)
         elif self.game_state == "pause":
             self.game_state = self.menu.pause(events)
-            self.graphics.draw_pause(self.menu.options, self.menu.current_option)
+            self.graphics.draw_menu(self.menu.options, self.menu.current_option)
         elif self.game_state == "load":
             self.game_state = self.menu.load(events, self.load_file)
-            self.graphics.draw_start(self.menu.options, self.menu.current_option)
+            self.graphics.draw_menu(self.menu.options, self.menu.current_option)
         elif self.game_state == "save":
             self.game_state = self.menu.save(events, self.save_file)
-            self.graphics.draw_pause(self.menu.options, self.menu.current_option)
+            self.graphics.draw_menu(self.menu.options, self.menu.current_option)
         elif self.game_state == "quit":
             self.quit()
 
@@ -49,6 +49,9 @@ class Game:
         pg.display.update()
 
     def save_file(self, file_name):
+
+        self.world.save_time = globe.time.now()
+        self.world.save_player = player.Player(self.world.state_list[0].wizard)
         
         with open('saves/'+file_name, 'wb') as f:
             pickle.dump(self.world, f)
@@ -57,7 +60,9 @@ class Game:
 
         with open('saves/'+file_name, 'rb') as f:
             self.world = pickle.load(f)
-        self.player = player.Player(self.world.state_list[0].wizard)
+
+        globe.time.set_time(self.world.save_time)  
+        self.player = self.world.save_player
 
     def quit(self):
         

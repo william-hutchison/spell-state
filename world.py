@@ -11,6 +11,8 @@ class World:
     def __init__(self):
 
         self.seed = 1 # random.randint(0, 20) # wood=14, mix=1
+        self.save_time = 0
+        self.save_player = None
 
         self.state_list = []
         self.map_topology = np.zeros(globe.WORLD_SIZE)

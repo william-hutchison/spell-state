@@ -18,6 +18,7 @@ class State:
         self.person_list = []
         self.stock_list = []
         self.other_states = []
+        self.stat_dict = {"loyalty": 50, "fear": 50}
 
         self.time_last_order = globe.time.now()
         self.time_last_birth = globe.time.now()

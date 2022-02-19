@@ -92,7 +92,7 @@ class Graphics:
         self.scale = scale
         self.window = pg.display.set_mode(window_size[self.scale])
 
-    def draw_start(self, options, current_option):
+    def draw_menu(self, options, current_option):
 
         self.window.fill((0, 0, 0))
         for i in range(len(options)):
@@ -100,20 +100,6 @@ class Graphics:
             self.window.blit(text, (10, 10+30*i))
 
         pg.draw.rect(self.window, (255, 255, 255), (100, 15+30*current_option, 10, 10), 0)
-
-    def draw_pause(self, options, current_option):
-
-        menu_surface = pg.Surface(window_size[self.scale])
-        menu_surface.set_alpha(5)
-        menu_surface.fill((0, 0, 0))
-
-        for i in range(len(options)):
-            text = font_0.render(options[i], True, (255, 255, 255))
-            self.window.blit(text, (10, 10+30*i))
-
-        pg.draw.rect(self.window, (255, 255, 255), (100, 15+30*current_option, 10, 10), 0)
-
-        self.window.blit(menu_surface, (0, 0))
 
 
 def draw_terrain(surface_terrain, camera_location, topology, resources):
@@ -190,15 +176,18 @@ def draw_state_info(surface_ui_panel, state):
     surface_ui_panel.blit(text1, (10, 130))
     surface_ui_panel.blit(text2, (10, 160))
 
+    for i, item in enumerate(state.stat_dict.items()):
+        if item[1]:
+            text = font_0.render(str(item[0]) + ": " + str(item[1]), True, (255, 255, 255))
+            surface_ui_panel.blit(text, (10, 190 + 30 * i))
+
 
 def draw_inspector_info(surface_ui_panel, inspector_dict):
 
-    i = 0
-    for item in inspector_dict.items():
+    for i, item in enumerate(inspector_dict.items()):
         if item[1]:
             text = font_0.render(str(item[0]) + ": " + str(item[1]), True, (255, 255, 255))
             surface_ui_panel.blit(text, (10, 500 + 30 * i))
-            i += 1
 
 
 def draw_player_info(surface_ui_wizard, camera, character):
