@@ -17,6 +17,7 @@ class World:
         self.state_list = []
         self.map_topology = np.zeros(globe.WORLD_SIZE)
         self.map_resource = np.zeros(globe.WORLD_SIZE)
+        self.map_traffic = np.zeros(globe.WORLD_SIZE)
         self.map_entities = np.empty(globe.WORLD_SIZE, dtype=object)
 
         self.map_topology = gen_topology(self.map_topology, gen_noise(self.seed))
@@ -25,14 +26,14 @@ class World:
         self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+3), [(4, 0.4)], 0.2, globe.CODE_METAL)
 
         for i in range(globe.STATE_NUMBER):
-            self.state_list.append(create_state(self.map_entities, self.map_topology))
+            self.state_list.append(create_state(self.map_entities, self.map_topology, self.map_traffic))
         for state in self.state_list:
             state.other_states = [i for i in self.state_list if i != state]
 
     def update(self):
 
         for state in self.state_list:
-            state.update(self.map_resource, self.map_entities, self.map_topology)
+            state.update(self.map_resource, self.map_entities, self.map_topology, self.map_traffic)
 
         self.map_entities = self.update_entity_map(self.state_list)
 
@@ -78,10 +79,10 @@ def gen_resource(map_resource, map_topology, map_noise, topology_target, chance,
     return map_resource
 
 
-def create_state(map_entities, map_topology):
+def create_state(map_entities, map_topology, map_traffic):
     location = (random.randint(0, globe.WORLD_SIZE[0] - 1), random.randint(0, globe.WORLD_SIZE[1] - 1))
 
-    return states.State(location, map_entities, map_topology)
+    return states.State(location, map_entities, map_topology, map_traffic)
 
 
 def gen_noise(seed, scale=20, octaves=6, persistence=0.5, lacunarity=2.0):

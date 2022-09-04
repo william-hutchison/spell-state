@@ -188,8 +188,8 @@ class Character:
         # attempt to select spell when space is released
         else:
             if self.casting_string:
-                for key, value in spells.spell_info.items():
-                    if self.casting_string == value[2]:
+                for key, value in self.wizard.spell_dict.items():
+                    if self.casting_string == value[2] and value[3]:
 
                         self.casting_string = []
                         return key

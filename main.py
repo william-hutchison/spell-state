@@ -6,7 +6,6 @@ import player
 import world
 import graphics
 import menus
-import spells  # TODO A bit awkward to import lower file in main.
 import globe
 
 
@@ -75,13 +74,14 @@ class Game:
         self.player.update(self.world.map_topology, self.world.map_resource, self.world.map_entities, events)
         self.graphics.update_terrain(self.player.camera.location, self.player.camera.inspector_location, self.player.camera.inspector_mode, self.player.character.wizard.location, self.world.map_topology, self.world.map_resource, self.world.state_list)
         self.graphics.update_ui_panel(self.world.state_list[0], self.player.camera.inspector_dict, self.player.interface)
-        self.graphics.update_ui_wizard(self.player.camera, self.player.character, spells.spell_info)
+        self.graphics.update_ui_wizard(self.player.camera, self.player.character)
         self.graphics.update_window()
 
         if events[0] and events[1][pg.K_ESCAPE]:
             return "pause"
         else:
             return "play"
+
 
 def event_loop():
 

@@ -21,29 +21,29 @@ class Person:
 
         self.stat_dict = {"health max": 100, "health current": 100, "attack damage": 20}
 
-    def update(self, map_resource, map_entities, map_topology):
+    def update(self, map_resource, map_entities, map_topology, map_traffic):
 
         if globe.time.check(self.time_last_eat, self.ruler_state.time_dur_eat):
             self.eat()
             self.time_last_eat = globe.time.now()
 
         if self.action_super == "harvest_food":
-            self.harvest(map_resource, map_entities, map_topology, globe.CODE_FOOD)
+            self.harvest(map_resource, map_entities, map_topology, map_traffic, globe.CODE_FOOD)
         elif self.action_super == "harvest_wood":
-            self.harvest(map_resource, map_entities, map_topology, globe.CODE_WOOD)
+            self.harvest(map_resource, map_entities, map_topology, map_traffic, globe.CODE_WOOD)
         elif self.action_super == "harvest_metal":
-            self.harvest(map_resource, map_entities, map_topology, globe.CODE_METAL)
+            self.harvest(map_resource, map_entities, map_topology, map_traffic, globe.CODE_METAL)
         elif self.action_super == "construct":
-            self.construct(map_entities, map_topology, self.action_construction)
+            self.construct(map_entities, map_topology, map_traffic, self.action_construction)
         elif self.action_super == "work":
-            self.work(map_entities, map_topology, self.action_work)
+            self.work(map_entities, map_topology, map_traffic, self.action_work)
         elif self.action_super == "attack":
-            self.attack(map_entities, map_topology, self.action_attack)
+            self.attack(map_entities, map_topology, map_traffic, self.action_attack)
 
         if self.stat_dict["health current"] <= 0:
             self.ruler_state.person_list.remove(self)
 
-    def work(self,  map_entities, map_topology, work_object):
+    def work(self,  map_entities, map_topology, map_traffic, work_object):
         """Send person to work object location and work when adjacent."""
 
         # construct construct_object in milliseconds until it returns 0
@@ -55,9 +55,9 @@ class Person:
 
         # move to construct object
         else:
-            self.move(map_entities, map_topology, work_object.location, adjacent=True)
+            self.move(map_entities, map_topology, map_traffic, work_object.location, adjacent=True)
 
-    def construct(self, map_entities, map_topology, construct_object):
+    def construct(self, map_entities, map_topology, map_traffic, construct_object):
         """Send person to construct object location and construct construct object when adjacent."""
 
         # construct construct_object in milliseconds until it returns 0
@@ -69,9 +69,9 @@ class Person:
 
         # move to construct object
         else:
-            self.move(map_entities, map_topology, construct_object.location, adjacent=True)
+            self.move(map_entities, map_topology, map_traffic, construct_object.location, adjacent=True)
 
-    def attack(self, map_entities, map_topology, attack_object):
+    def attack(self, map_entities, map_topology, map_traffic, attack_object):
 
         # attack attack_object
         if self.location in pathfinding.find_edges(attack_object.location):
@@ -85,9 +85,9 @@ class Person:
 
         # move to attack object
         else:
-            self.move(map_entities, map_topology, attack_object.location, adjacent=True)
+            self.move(map_entities, map_topology, map_traffic, attack_object.location, adjacent=True)
 
-    def harvest(self, map_resource, map_entities, map_topology,  target_resource):
+    def harvest(self, map_resource, map_entities, map_topology, map_traffic, target_resource):
 
         # deposit stock_list
         if self.location in pathfinding.find_edges(self.ruler_state.location) and target_resource in self.stock_list:
@@ -100,7 +100,7 @@ class Person:
 
         # move to base
         elif len(self.stock_list) == self.stock_list_limit:
-            self.move(map_entities, map_topology, self.ruler_state.location, adjacent=True)
+            self.move(map_entities, map_topology, map_traffic, self.ruler_state.location, adjacent=True)
 
         # harvest target resource
         elif map_resource[self.location[1]][self.location[0]] == target_resource:
@@ -114,11 +114,11 @@ class Person:
             targets_free = pathfinding.find_free(targets_all, map_entities, map_topology)
             if targets_free:
                 target_location = pathfinding.find_closest(self.location, targets_free)
-                self.move(map_entities, map_topology, target_location)
+                self.move(map_entities, map_topology, map_traffic, target_location)
             else:
                 self.action_super_set("idle")
 
-    def move(self, map_entities, map_topology, target, adjacent=False):
+    def move(self, map_entities, map_topology, map_traffic, target, adjacent=False):
         
         if globe.time.check(self.time_last, self.ruler_state.time_dur_move):
             path = pathfinding.astar(map_entities, map_topology, self.location, target, adjacent)
@@ -127,6 +127,10 @@ class Person:
             else:
                 self.action_super_set("idle")
             self.time_last = globe.time.now()
+
+            # add location to traffic map
+            #map_traffic[self.location]
+            map_traffic[self.location[1]][self.location[0]] += 1
 
     def action_super_set(self, action_new):
         
@@ -141,4 +145,10 @@ class Person:
         else:
             pass
 
+    def add_traffic(self):
 
+        pass
+        """relative_location = [self.location[0]-self.ruler_state.location[0], self.location[1]-self.ruler_state.location[1]]
+        print(relative_location)
+        if abs(relative_location[0]) < globe.TRAFFIC_SIZE[0] / 2 and abs(relative_location[1]) < globe.TRAFFIC_SIZE[1] / 2:
+            print("hi")"""

@@ -1,8 +1,10 @@
 import random
+import numpy as np
 
 import wizards
 import buildings
 import persons
+import research
 import pathfinding
 import tools
 import globe
@@ -10,12 +12,14 @@ import globe
 
 class State:
 
-    def __init__(self, location, map_entities, map_topology):
+    def __init__(self, location, map_entities, map_topology, map_traffic
+                 ):
 
         self.location = location
         self.wizard = None
         self.building_list = []
         self.person_list = []
+        self.research_list = []
         self.stock_list = []
         self.other_states = []
         self.stat_dict = {"loyalty": 50, "fear": 50}
@@ -37,9 +41,9 @@ class State:
 
         # TODO Intelligently decide where to place tower / let player choose
         self.wizard = self.create_wizard(map_entities, map_topology, self.location)
-        self.building_list.append(self.create_building("tower", map_entities, map_topology, self.location))
+        self.building_list.append(self.create_building("tower", map_entities, map_topology, map_traffic, self.location))
         
-    def update(self, map_resource, map_entities, map_topology):
+    def update(self, map_resource, map_entities, map_topology, map_traffic):
 
         # assign person actions
         if globe.time.check(self.time_last_order, self.time_dur_order):
@@ -55,7 +59,7 @@ class State:
             build_attempt = None
         
         if build_attempt:
-            if temp_building := self.create_building(build_attempt, map_entities, map_topology, self.location):
+            if temp_building := self.create_building(build_attempt, map_entities, map_topology, map_traffic, self.location):
                 self.building_list.append(temp_building)
                 for item in buildings.building_info[build_attempt][1]:
                     tools.item_remove(self.stock_list, item[0], item[1])
@@ -71,7 +75,7 @@ class State:
         for building in self.building_list:
             building.update()
         for person in self.person_list:
-            person.update(map_resource, map_entities, map_topology)
+            person.update(map_resource, map_entities, map_topology, map_traffic)
 
     def create_wizard(self, map_entities, map_topology, location_tower):
         """Create wizard at the edge of the tower. Returns new wizard object."""
@@ -83,7 +87,7 @@ class State:
 
             return wizards.Wizard(self, location)
 
-    def create_building(self, kind, map_entities, map_topology, location_tower):
+    def create_building(self, kind, map_entities, map_topology, map_traffic, location_tower):
         """Create building site of a given kind at an appropriate location. Returns new building
         object."""
 
@@ -97,11 +101,18 @@ class State:
             return buildings.building_info[kind][0](self, location_tower)
 
         # construct buildings within radius of tower
+        # TODO Ensure building access and grow radius with city
         elif kind in ["house", "shrine", "tavern"]:
             possible_locations = pathfinding.find_within_radius(location_tower, 10)
             possible_locations = pathfinding.find_free(possible_locations, map_entities, map_topology)
+
             if possible_locations:
-                location = random.choice(possible_locations)
+
+                # place buildings in low traffic areas
+                possible_locations_chance = []
+                for i in possible_locations:
+                    possible_locations_chance.append(2 / (map_traffic[i[1]][i[0]]+1))
+                location = random.choices(possible_locations, weights=possible_locations_chance, k=1)[0]
                 return buildings.building_info[kind][0](self, location)
 
         return None

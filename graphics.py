@@ -79,13 +79,13 @@ class Graphics:
             text = font_0.render("Building info", True, (255, 255, 255))
             self.surface_ui_panel.blit(text, (10, 40))
 
-    def update_ui_wizard(self, camera, character, spell_combo_dict):
+    def update_ui_wizard(self, camera, character):
 
         self.surface_ui_wizard.fill((30, 30, 40))
         self.surface_ui_spellbook.fill((30, 30, 40))
 
         draw_player_info(self.surface_ui_wizard, camera, character)
-        draw_player_spells(self.surface_ui_spellbook, spell_combo_dict)
+        draw_player_spells(self.surface_ui_spellbook, character)
 
     def set_window_scale(self, scale):
 
@@ -120,7 +120,8 @@ def draw_terrain(surface_terrain, camera_location, topology, resources):
             elif resources[y][x] == globe.CODE_METAL:
                 surface_terrain.blit(image_metal, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
 
-    # draw contours TODO Move to within tile loop.
+    # draw contours
+    # TODO Move to within tile loop.
     for y in range(globe.WORLD_SIZE[1]):
         for x in range(globe.WORLD_SIZE[0]):
             if x+1 < globe.WORLD_SIZE[0]:
@@ -204,10 +205,11 @@ def draw_player_info(surface_ui_wizard, camera, character):
     surface_ui_wizard.blit(text4, (10, 130))
 
 
-def draw_player_spells(surface_ui_spellbook, spell_combo_dict):
+def draw_player_spells(surface_ui_spellbook, character):
 
     i = 0
-    for key, value in spell_combo_dict.items():
-        text = font_0.render(key + ": " + str(value[2]), True, (255, 255, 255))
-        surface_ui_spellbook.blit(text, (10, 10+i*30))
-        i += 1
+    for key, value in character.wizard.spell_dict.items():
+        if value[3]:
+            text = font_0.render(key + ": " + str(value[2]), True, (255, 255, 255))
+            surface_ui_spellbook.blit(text, (10, 10+i*30))
+            i += 1

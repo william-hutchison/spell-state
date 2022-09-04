@@ -148,8 +148,8 @@ class SpellHeal(SpellKindSelect):
         target.stat_dict["health current"] += self.health_heal
 
 
-spell_info = {"consume": (SpellConsume, 20, ["down", "down"]),
-              "fireball": (SpellFireball, 40, ["up", "left"]),
-              "storm": (SpellStorm, 100, ["left", "up", "right", "down"]),
-              "heal": (SpellHeal, 40, ["up", "down", "up"])}
+spell_info = {"consume": (SpellConsume, 20, ["down", "down"], True),
+              "fireball": (SpellFireball, 40, ["up", "left"], True),
+              "storm": (SpellStorm, 100, ["left", "up", "right", "down"], True),
+              "heal": (SpellHeal, 40, ["up", "down", "up"], True)}
 

@@ -9,6 +9,7 @@ class Wizard:
 
         self.ruler_state = ruler_state
         self.location = location
+        self.spell_dict = spells.spell_info
         self.stock_list = []
         self.stock_list_limit = 2
         self.spell_list = []
@@ -47,9 +48,9 @@ class Wizard:
                 self.time_last = globe.time.now()
 
     def create_spell(self, kind):
-        
-        if self.stat_dict["mana current"] >= spells.spell_info[kind][1]:
-            self.stat_dict["mana current"] -= spells.spell_info[kind][1]
-            return spells.spell_info[kind][0](self)
+
+        if self.stat_dict["mana current"] >= self.spell_dict[kind][1]:
+            self.stat_dict["mana current"] -= self.spell_dict[kind][1]
+            return self.spell_dict[kind][0](self)
 
         return None

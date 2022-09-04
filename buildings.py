@@ -70,7 +70,7 @@ class Shrine(Building):
 
         super().__init__(ruler_state, location)
         self.under_construction = 6000
-        self.max_work = 4000
+        self.max_work = 0
         self.under_work = self.max_work
 
     def constructed(self):
