@@ -7,6 +7,7 @@ In development wizard role playing game / real time strategy. Gently guide your 
 - Camera movement - Arrows
 - Wizard movement - WASD
 - Inspect tile - Enter
+- Return camera to wizard - F
 - Cast spells - Hold space and type arrow combo
 - Access in game menu - Escape
 
