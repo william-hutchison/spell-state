@@ -12,6 +12,8 @@ In development wizard role playing game / real time strategy. Gently guide your 
 
 ## Required libraries
 - numpy
+- sys
 - noise
 - random
 - pygame
+- pickle
