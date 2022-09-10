@@ -1,7 +1,17 @@
-README
+# Spell State
+## About
+In development wizard role playing game / real time strategy. Gently guide your autonomous citizens towards victory.
 
-In development wizard role playing game / fantasy real time strategy. Gently guide your autonomous citizens towards victory.
+## Controls
+- Menu navigation - Arrows
+- Camera movement - Arrows
+- Wizard movement - WASD
+- Inspect tile - Enter
+- Cast spells - Hold space and type arrow combo
+- Access in game menu - Escape
 
-Controls
-W, A, S and D keys to move your wizard.
-Arrow keys to move the inspector and enter get inspector tile information
+## Required libraries
+- numpy
+- noise
+- random
+- pygame
