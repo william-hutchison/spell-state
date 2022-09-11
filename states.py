@@ -101,9 +101,10 @@ class State:
             return buildings.building_info[kind][0](self, location_tower)
 
         # construct buildings within radius of tower
-        # TODO Ensure building access and grow radius with city
+        # TODO Ensure building access (maybe astar check each building with tower)
         elif kind in ["house", "shrine", "tavern"]:
-            possible_locations = pathfinding.find_within_radius(location_tower, 10)
+            build_radius = 4 + round(len(self.building_list) * 0.25)
+            possible_locations = pathfinding.find_within_radius(location_tower, build_radius)
             possible_locations = pathfinding.find_free(possible_locations, map_entities, map_topology)
 
             if possible_locations:

@@ -155,7 +155,7 @@ def find_free(locations, map_entities, map_topology):
 
 
 def find_within_radius(location, radius):
-    """Returns list of coordinates with a given radius of a location."""
+    """Returns list of coordinates within a given radius of a location."""
 
     possible_locations = [] 
     for x in range(-radius, radius):
