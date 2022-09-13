@@ -1,7 +1,6 @@
 import pygame as pg
 
 import globe
-import spells
 
 
 class Player:  # TODO Should this object even exist? Probably not

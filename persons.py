@@ -1,6 +1,7 @@
 import globe
 import pathfinding
 import tools
+import audio
 
 
 class Person:
@@ -129,7 +130,7 @@ class Person:
             self.time_last = globe.time.now()
 
             # add location to traffic map
-            #map_traffic[self.location]
+            audio.audio.play_relative_sound("move", self.location)
             map_traffic[self.location[1]][self.location[0]] += 1
 
     def action_super_set(self, action_new):
@@ -144,11 +145,3 @@ class Person:
             tools.item_remove(self.ruler_state.stock_list, globe.CODE_FOOD, 1)
         else:
             pass
-
-    def add_traffic(self):
-
-        pass
-        """relative_location = [self.location[0]-self.ruler_state.location[0], self.location[1]-self.ruler_state.location[1]]
-        print(relative_location)
-        if abs(relative_location[0]) < globe.TRAFFIC_SIZE[0] / 2 and abs(relative_location[1]) < globe.TRAFFIC_SIZE[1] / 2:
-            print("hi")"""

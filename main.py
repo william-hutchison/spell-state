@@ -7,18 +7,20 @@ import world
 import graphics
 import menus
 import globe
-
+import audio
 
 class Game:
 
     def __init__(self):
 
         pg.init()
+        globe.time = globe.Time()
         self.world = world.World()
         self.menu = menus.Menu()
         self.player = player.Player(self.world.state_list[0].wizard)
         self.graphics = graphics.Graphics()
         self.game_state = "start"
+        audio.audio = audio.Audio(self.world.state_list[0].wizard)
 
     def update(self):
 

@@ -1,3 +1,5 @@
+import math
+
 import globe
 
 
@@ -128,10 +130,16 @@ def find_closest(location, target_list):
 
     distances = []
     for target in target_list:
-        distances.append(abs(location[0] - target[0]) + abs(location[1] - target[1]))
+        distances.append(math.sqrt(abs(target[0] - location[0]) ** 2 + abs(target[1] - location[1]) ** 2)) #abs(location[0] - target[0]) + abs(location[1] - target[1]))
     min_distance = min(distances)
 
     return target_list[distances.index(min_distance)]
+
+
+def find_distance(start, end):
+    """Returns float distance between points as the crow flies."""
+
+    return math.sqrt(abs(start[0] - end[0]) ** 2 + abs(start[1] - end[1]) ** 2)
 
 
 def find_edges(location):

@@ -50,7 +50,7 @@ class Time:
         self.time_now = new_time
 
 
-time = Time()
+time = None
 
 WORLD_SIZE = (60, 60)
 TILE_SIZE = 20

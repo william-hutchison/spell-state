@@ -1,19 +1,17 @@
 import random
-import numpy as np
 
 import wizards
 import buildings
 import persons
-import research
 import pathfinding
 import tools
 import globe
+import audio
 
 
 class State:
 
-    def __init__(self, location, map_entities, map_topology, map_traffic
-                 ):
+    def __init__(self, location, map_entities, map_topology, map_traffic):
 
         self.location = location
         self.wizard = None
@@ -114,6 +112,9 @@ class State:
                 for i in possible_locations:
                     possible_locations_chance.append(2 / (map_traffic[i[1]][i[0]]+1))
                 location = random.choices(possible_locations, weights=possible_locations_chance, k=1)[0]
+
+                # construct building
+                audio.audio.play_relative_sound("construction", location)
                 return buildings.building_info[kind][0](self, location)
 
         return None
@@ -126,6 +127,7 @@ class State:
         if possible_locations:
             location = random.choice(possible_locations)
             self.pop_current += 1
+            audio.audio.play_relative_sound("birth", location)
             return persons.Person(self, location)
 
         return None
