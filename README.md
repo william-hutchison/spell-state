@@ -4,6 +4,7 @@ In development wizard role playing game / real time strategy. Gently guide your 
 
 ## Controls
 - Menu navigation - Arrows
+- Menu selection - Enter
 - Camera movement - Arrows
 - Wizard movement - WASD
 - Inspect tile - Enter
