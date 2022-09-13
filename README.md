@@ -12,9 +12,11 @@ In development wizard role playing game / real time strategy. Gently guide your 
 - Access in game menu - Escape
 
 ## Required libraries
-- numpy
+- os
 - sys
-- noise
+- numpy
+- math
 - random
+- noise
 - pygame
 - pickle
