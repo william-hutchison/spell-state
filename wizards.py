@@ -1,3 +1,5 @@
+import pygame as pg
+
 import spells
 import globe
 import pathfinding
@@ -9,6 +11,7 @@ class Wizard:
 
         self.ruler_state = ruler_state
         self.location = location
+        self.sprite = pg.image.load('sprites/wizard.png')
         self.spell_dict = spells.spell_info
         self.stock_list = []
         self.stock_list_limit = 2

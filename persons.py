@@ -1,3 +1,5 @@
+import pygame as pg
+
 import globe
 import pathfinding
 import tools
@@ -10,6 +12,7 @@ class Person:
 
         self.ruler_state = ruler_state
         self.location = location
+        self.sprite = pg.image.load('sprites/person.png')
         self.stock_list = []
         self.stock_list_limit = 2
 

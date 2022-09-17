@@ -21,6 +21,7 @@ class State:
         self.stock_list = []
         self.other_states = []
         self.stat_dict = {"loyalty": 50, "fear": 50}
+        self.colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
         self.time_last_order = globe.time.now()
         self.time_last_birth = globe.time.now()
