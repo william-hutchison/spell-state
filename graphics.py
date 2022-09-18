@@ -141,6 +141,7 @@ class Graphics:
 
         pg.draw.rect(self.window, (255, 255, 255), (100, 15+30*current_option, 10, 10), 0)
 
+
 def draw_time(surface_ui_panel):
 
     text0 = font_0.render("World time: " + str(globe.time.now()), True, (255, 255, 255))

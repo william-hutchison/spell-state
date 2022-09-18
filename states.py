@@ -49,11 +49,11 @@ class State:
             self.assign(self.person_list, self.building_list)
             self.time_last_order = globe.time.now()
 
-        # decide what to construct TODO Intelligently decide what to construct next
-        if tools.item_count(self.stock_list, globe.CODE_WOOD) > globe.COST_HOUSE:
-            build_attempt = "house"
-        elif tools.item_count(self.stock_list, globe.CODE_METAL) > globe.COST_SHRINE:
-            build_attempt = "shrine"
+        # decide what to construct 
+        # TODO Intelligently decide what to construct next
+
+        if tools.items_compare(self.stock_list, buildings.building_info["lab_offence"][1]):
+            build_attempt = "lab_offence"
         else:
             build_attempt = None
         
@@ -101,7 +101,7 @@ class State:
 
         # construct buildings within radius of tower
         # TODO Ensure building access (maybe astar check each building with tower)
-        elif kind in ["house", "shrine", "tavern"]:
+        elif kind in ["house", "shrine", "tavern", "lab_offence"]:
             build_radius = 4 + round(len(self.building_list) * 0.25)
             possible_locations = pathfinding.find_within_radius(location_tower, build_radius)
             possible_locations = pathfinding.find_free(possible_locations, map_entities, map_topology)
@@ -136,21 +136,21 @@ class State:
     def assign(self, person_list, building_list):
         """Assign person to harvest resource of given kind."""
 
-        construct_weight = 10
-        work_weight = 5
-        harvest_weight = 5
-        attack_weight = 20
+        construct_weight = 100
+        work_weight = 500
+        harvest_weight = 10
+        attack_weight = 0
 
         target_state = self.other_states[0]
 
         idle_person_list = [i for i in person_list if i.action_super == "idle"]
         construction_list = [i for i in building_list if i.under_construction]
-        shrine_list = ([i for i in building_list if not i.under_construction and type(i).__name__ == "Shrine"])
+        work_list = [i for i in building_list if not i.under_construction and i.under_work]
         attack_list = ([i.location for i in target_state.person_list])
 
         if not construction_list:
             construct_weight = 0
-        if not shrine_list:
+        if not work_list:
             work_weight = 0
         if not attack_list:
             attack_weight = 0
@@ -160,12 +160,12 @@ class State:
             if dice < construct_weight:
                 self.assign_build(person_list, idle_person_list, construction_list)
             elif dice < construct_weight+work_weight:
-                self.assign_work(person_list, idle_person_list, shrine_list)
+                self.assign_work(person_list, idle_person_list, work_list)
             elif dice < construct_weight+work_weight+attack_weight:
                 self.assign_attack(idle_person_list, target_state)
             else:
                 # TODO Give harvesting its own assign function to match construct and work
-                dice = random.randint(1, 3)
+                dice = 2#random.randint(1, 3)
                 assignment = "idle"
                 if dice == 1:
                     assignment = "harvest_food"

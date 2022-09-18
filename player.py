@@ -114,8 +114,10 @@ class Camera:
                 self.inspector_dict["Action"] = str(inspect_object.action_super)
                 self.inspector_dict["Stock"] = str(inspect_object.stock_list)
 
-            if type(inspect_object).__name__ in ['Tower', 'House', 'Shrine']:
+            if type(inspect_object).__name__ in ['Tower', 'House', 'Shrine', 'LabOffence']:
                 self.inspector_dict["Construction remaining"] = str(inspect_object.under_construction)
+                self.inspector_dict["Work remaining"] = str(inspect_object.under_work)
+            print(self.inspector_dict)
 
 
 class Character:

@@ -32,7 +32,7 @@ class Building:
         return self.under_construction
 
     def working(self, work_amount):
-        """Subtract build_amount from under_construction until 0 is reached, then return 0."""
+        """Subtract work_amount from under_work until 0 is reached, then return 0."""
 
         self.under_work -= work_amount
         if self.under_work <= 0:
@@ -78,7 +78,26 @@ class Shrine(Building):
         super().__init__(ruler_state, location)
         self.sprite = pg.image.load('sprites/construction.png')
         self.under_construction = 6000
-        self.max_work = 0
+        self.max_work = 3000
+        self.under_work = self.max_work
+
+    def constructed(self):
+
+        self.sprite = pg.image.load('sprites/house.png')
+        pass
+
+    def work(self):
+
+        print("work complete")
+
+class LabOffence(Building):
+
+    def __init__(self, ruler_state, location):
+
+        super().__init__(ruler_state, location)
+        self.sprite = pg.image.load('sprites/construction.png')
+        self.under_construction = 6000
+        self.max_work = 2000
         self.under_work = self.max_work
 
     def constructed(self):
@@ -107,5 +126,6 @@ class Tavern(Building):
 
 building_info = {"tower": (Tower, []),
                  "house": (House, [(globe.CODE_WOOD, 3)]),
-                 "shrine": (Shrine, [(globe.CODE_METAL, 3)]),
-                 "tavern": (Tavern, [(globe.CODE_METAL, 3)])}
+                 "shrine": (Shrine, [(globe.CODE_WOOD, 1)]),
+                 "tavern": (Tavern, [(globe.CODE_METAL, 3)]),
+                 "lab_offence": (LabOffence, [(globe.CODE_WOOD, 1)])}
