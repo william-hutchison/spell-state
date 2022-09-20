@@ -108,7 +108,13 @@ class LabOffence(Building):
 
     def work(self):
 
-        print("work complete")
+        temp_list = []
+        for i in ["storm", "fireball"]:
+            if not self.ruler_state.wizard.spell_dict[i]["unlocked"]:
+                temp_list.append(i)
+        if temp_list:
+            choice = random.choice(temp_list)
+            self.ruler_state.wizard.spell_dict[choice]["unlocked"] = True
 
 
 class Tavern(Building):
@@ -124,7 +130,7 @@ class Tavern(Building):
         self.sprite = pg.image.load('sprites/house.png')
         pass
 
-
+# TODO change list of tuples to list of n items needed
 building_info = {"tower": {"obj": Tower, "cost": []},
                  "house": {"obj": House, "cost": [("i_wood", 3)]},
                  "shrine": {"obj": Shrine, "cost": [("i_wood", 1)]},

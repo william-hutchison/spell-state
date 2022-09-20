@@ -17,7 +17,6 @@ class State:
         self.wizard = None
         self.building_list = []
         self.person_list = []
-        self.research_list = []
         self.stock_list = []
         self.other_states = []
         self.stat_dict = {"loyalty": 50, "fear": 50}
