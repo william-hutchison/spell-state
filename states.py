@@ -52,7 +52,7 @@ class State:
         # decide what to construct 
         # TODO Intelligently decide what to construct next
 
-        if tools.items_compare(self.stock_list, buildings.building_info["lab_offence"][1]):
+        if tools.items_compare(self.stock_list, buildings.building_info["lab_offence"]["cost"]):
             build_attempt = "lab_offence"
         else:
             build_attempt = None
@@ -60,7 +60,7 @@ class State:
         if build_attempt:
             if temp_building := self.create_building(build_attempt, map_entities, map_topology, map_traffic, self.location):
                 self.building_list.append(temp_building)
-                for item in buildings.building_info[build_attempt][1]:
+                for item in buildings.building_info[build_attempt]["cost"]:
                     tools.item_remove(self.stock_list, item[0], item[1])
         
         # increase population
@@ -91,13 +91,13 @@ class State:
         object."""
 
         # check for adequate resources
-        for item in buildings.building_info[kind][1]:
-            if not tools.item_count(self.stock_list, item[0]) > item[1]:
+        for item in buildings.building_info[kind]["cost"]:
+            if not tools.item_count(self.stock_list, item[0]) > item[0]:
                 return None
 
         # construct tower
         if kind == "tower":
-            return buildings.building_info[kind][0](self, location_tower)
+            return buildings.building_info[kind]["obj"](self, location_tower)
 
         # construct buildings within radius of tower
         # TODO Ensure building access (maybe astar check each building with tower)
@@ -116,7 +116,7 @@ class State:
 
                 # construct building
                 audio.audio.play_relative_sound("construction", location)
-                return buildings.building_info[kind][0](self, location)
+                return buildings.building_info[kind]["obj"](self, location)
 
         return None
 

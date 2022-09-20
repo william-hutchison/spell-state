@@ -1,4 +1,5 @@
 import pygame as pg
+import random
 
 import globe
 
@@ -124,8 +125,8 @@ class Tavern(Building):
         pass
 
 
-building_info = {"tower": (Tower, []),
-                 "house": (House, [(globe.CODE_WOOD, 3)]),
-                 "shrine": (Shrine, [(globe.CODE_WOOD, 1)]),
-                 "tavern": (Tavern, [(globe.CODE_METAL, 3)]),
-                 "lab_offence": (LabOffence, [(globe.CODE_WOOD, 1)])}
+building_info = {"tower": {"obj": Tower, "cost": []},
+                 "house": {"obj": House, "cost": [(globe.CODE_WOOD, 3)]},
+                 "shrine": {"obj": Shrine, "cost": [(globe.CODE_WOOD, 1)]},
+                 "tavern": {"obj": Tavern, "cost": [(globe.CODE_METAL, 3)]},
+                 "lab_offence": {"obj": LabOffence, "cost": [(globe.CODE_WOOD, 1)]}}

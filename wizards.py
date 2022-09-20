@@ -52,8 +52,8 @@ class Wizard:
 
     def create_spell(self, kind):
 
-        if self.stat_dict["mana current"] >= self.spell_dict[kind][1]:
-            self.stat_dict["mana current"] -= self.spell_dict[kind][1]
-            return self.spell_dict[kind][0](self)
+        if self.stat_dict["mana current"] >= self.spell_dict[kind]["cost"]:
+            self.stat_dict["mana current"] -= self.spell_dict[kind]["cost"]
+            return self.spell_dict[kind]["obj"](self)
 
         return None

@@ -190,7 +190,7 @@ class Character:
         else:
             if self.casting_string:
                 for key, value in self.wizard.spell_dict.items():
-                    if self.casting_string == value[2] and value[3]:
+                    if self.casting_string == value["combo"] and value["unlocked"]:
 
                         self.casting_string = []
                         return key

@@ -18,5 +18,5 @@ class Research:
 class ResearchSpellHeal(Research):
 
     def researched(self):
-
-        self.ruler_state.wizard.spell_dict["heal"][3] = True
+        pass
+        #self.ruler_state.wizard.spell_dict["heal"][3] = True

@@ -189,7 +189,7 @@ def draw_player_spells(surface_ui_spellbook, character):
 
     i = 0
     for key, value in character.wizard.spell_dict.items():
-        if value[3]:
-            text = font_0.render(key + ": " + str(value[2]), True, (255, 255, 255))
+        if value["unlocked"]:
+            text = font_0.render(key + ": " + str(value["combo"]), True, (255, 255, 255))
             surface_ui_spellbook.blit(text, (10, 10+i*30))
             i += 1
