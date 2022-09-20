@@ -16,14 +16,14 @@ class World:
 
         self.state_list = []
         self.map_topology = np.zeros(globe.WORLD_SIZE)
-        self.map_resource = np.zeros(globe.WORLD_SIZE)
+        self.map_resource = np.empty(globe.WORLD_SIZE, dtype="<U10")
         self.map_traffic = np.zeros(globe.WORLD_SIZE)
         self.map_entities = np.empty(globe.WORLD_SIZE, dtype=object)
 
         self.map_topology = gen_topology(self.map_topology, gen_noise(self.seed))
-        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+1), [(1, 0.2), (2, 0.1)],  0.4, globe.CODE_FOOD)
-        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+2), [(1, 0.2), (2, 0.4), (3, 0.2)],  0.5, globe.CODE_WOOD)
-        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+3), [(4, 0.4)], 0.2, globe.CODE_METAL)
+        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+1), [(1, 0.2), (2, 0.1)],  0.4, "i_food")
+        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+2), [(1, 0.2), (2, 0.4), (3, 0.2)],  0.5, "i_wood")
+        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+3), [(4, 0.4)], 0.2, "i_metal")
 
         for i in range(globe.STATE_NUMBER):
             self.state_list.append(create_state(self.map_entities, self.map_topology, self.map_traffic))

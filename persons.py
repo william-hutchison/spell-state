@@ -32,11 +32,11 @@ class Person:
             self.time_last_eat = globe.time.now()
 
         if self.action_super == "harvest_food":
-            self.harvest(map_resource, map_entities, map_topology, map_traffic, globe.CODE_FOOD)
+            self.harvest(map_resource, map_entities, map_topology, map_traffic, "i_food")
         elif self.action_super == "harvest_wood":
-            self.harvest(map_resource, map_entities, map_topology, map_traffic, globe.CODE_WOOD)
+            self.harvest(map_resource, map_entities, map_topology, map_traffic, "i_wood")
         elif self.action_super == "harvest_metal":
-            self.harvest(map_resource, map_entities, map_topology, map_traffic, globe.CODE_METAL)
+            self.harvest(map_resource, map_entities, map_topology, map_traffic, "i_metal")
         elif self.action_super == "construct":
             self.construct(map_entities, map_topology, map_traffic, self.action_construction)
         elif self.action_super == "work":
@@ -142,9 +142,9 @@ class Person:
 
     def eat(self):
 
-        if globe.CODE_FOOD in self.stock_list:
-            tools.item_remove(self.stock_list, globe.CODE_FOOD, 1)
-        elif globe.CODE_FOOD in self.ruler_state.stock_list:
-            tools.item_remove(self.ruler_state.stock_list, globe.CODE_FOOD, 1)
+        if "i_food" in self.stock_list:
+            tools.item_remove(self.stock_list, "i_food", 1)
+        elif "i_food" in self.ruler_state.stock_list:
+            tools.item_remove(self.ruler_state.stock_list, "i_food", 1)
         else:
             pass

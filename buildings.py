@@ -126,7 +126,7 @@ class Tavern(Building):
 
 
 building_info = {"tower": {"obj": Tower, "cost": []},
-                 "house": {"obj": House, "cost": [(globe.CODE_WOOD, 3)]},
-                 "shrine": {"obj": Shrine, "cost": [(globe.CODE_WOOD, 1)]},
-                 "tavern": {"obj": Tavern, "cost": [(globe.CODE_METAL, 3)]},
-                 "lab_offence": {"obj": LabOffence, "cost": [(globe.CODE_WOOD, 1)]}}
+                 "house": {"obj": House, "cost": [("i_wood", 3)]},
+                 "shrine": {"obj": Shrine, "cost": [("i_wood", 1)]},
+                 "tavern": {"obj": Tavern, "cost": [("i_metal", 3)]},
+                 "lab_offence": {"obj": LabOffence, "cost": [("i_wood", 1)]}}

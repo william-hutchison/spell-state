@@ -59,11 +59,11 @@ class Graphics:
                     self.surface_terrain.blit(anim_water[globe.time.frame()], ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
 
                 # draw resources
-                if resources[y][x] == globe.CODE_FOOD:
+                if resources[y][x] == "i_food":
                     self.surface_terrain.blit(image_food, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
-                elif resources[y][x] == globe.CODE_WOOD:
+                elif resources[y][x] == "i_wood":
                     self.surface_terrain.blit(image_wood, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
-                elif resources[y][x] == globe.CODE_METAL:
+                elif resources[y][x] == "i_metal":
                     self.surface_terrain.blit(image_metal, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
 
                 # draw entities

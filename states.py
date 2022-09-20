@@ -92,7 +92,7 @@ class State:
 
         # check for adequate resources
         for item in buildings.building_info[kind]["cost"]:
-            if not tools.item_count(self.stock_list, item[0]) > item[0]:
+            if not tools.item_count(self.stock_list, item[0]) > item[1]:
                 return None
 
         # construct tower
