@@ -23,9 +23,7 @@ class Person:
         self.action_work = None
         self.action_attack = None
 
-        self.stat_dict = {"health max": 100,
-                          "health current": 100,
-                          "attack damage": 20}
+        self.stat_dict = {"health max": 100, "health current": 100, "attack damage": 20}
 
     def update(self, map_resource, map_entities, map_topology, map_traffic):
 

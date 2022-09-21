@@ -20,13 +20,15 @@ class State:
         self.stock_list = []
         self.other_states = []
         self.colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        self.stat_dict = {"loyalty": 50, "fear": 50}
+        self.stat_dict = {"loyalty": 50,
+                          "fear": 50}
         self.action_dict = {"a_idle": {"chance": 10},
                             "a_harvest_food": {"chance": 10},
                             "a_harvest_wood": {"chance": 10},
-                            "a_metal": {"chance": 10},
+                            "a_harvest_metal": {"chance": 10},
                             "a_construct": {"chance": 10},
-                            "a_work": {"chance": 10}}
+                            "a_work": {"chance": 10},
+                            "a_attack": {"chance": 10}}
         self.time_last_order = globe.time.now()
         self.time_last_birth = globe.time.now()
         self.time_dur_order = 200
@@ -55,7 +57,6 @@ class State:
 
         # decide what to construct 
         # TODO Intelligently decide what to construct next
-
         if tools.items_compare(self.stock_list, buildings.building_info["b_lab_offence"]["cost"]):
             build_attempt = "b_lab_offence"
         else:
@@ -138,46 +139,35 @@ class State:
         return None
 
     def assign(self, person_list, building_list):
-        """Assign person to harvest resource of given kind."""
-
-        construct_weight = 100
-        work_weight = 500
-        harvest_weight = 10
-        attack_weight = 0
+        """Assign an idle person to a random action, based on action dictionary weights and available tasks."""
 
         target_state = self.other_states[0]
 
+        possible_actions = ["a_idle", "a_harvest_food", "a_harvest_wood", "a_harvest_metal"]
         idle_person_list = [i for i in person_list if i.action_super == "a_idle"]
         construction_list = [i for i in building_list if i.under_construction]
         work_list = [i for i in building_list if not i.under_construction and i.under_work]
         attack_list = ([i.location for i in target_state.person_list])
 
-        if not construction_list:
-            construct_weight = 0
-        if not work_list:
-            work_weight = 0
-        if not attack_list:
-            attack_weight = 0
+        if construction_list:
+            possible_actions.append("a_construct")
+        elif work_list:
+            possible_actions.append("a_work")
+        elif attack_list:
+            possible_actions.append("a_attack")
 
         if idle_person_list:
-            dice = random.randint(0, construct_weight+work_weight+harvest_weight)
-            if dice < construct_weight:
+            chosen_action = random.choices([i for i in possible_actions], weights=[self.action_dict[i]["chance"] for i in possible_actions])[0]
+            if chosen_action == "a_construct":
                 self.assign_build(person_list, idle_person_list, construction_list)
-            elif dice < construct_weight+work_weight:
+            elif chosen_action == "a_work":
                 self.assign_work(person_list, idle_person_list, work_list)
-            elif dice < construct_weight+work_weight+attack_weight:
+            elif chosen_action == "a_attack":
                 self.assign_attack(idle_person_list, target_state)
-            else:
-                # TODO Give harvesting its own assign function to match construct and work
-                dice = 2#random.randint(1, 3)
-                assignment = "a_idle"
-                if dice == 1:
-                    assignment = "a_harvest_food"
-                elif dice == 2:
-                    assignment = "a_harvest_wood"
-                elif dice == 3:
-                    assignment = "a_harvest_metal"
-                idle_person_list[0].action_super_set(assignment)
+
+            # TODO Give assigning harvest its own function to match assign work
+            elif chosen_action in ["a_harvest_food", "a_harvest_wood", "a_harvest_metal"]:
+                idle_person_list[0].action_super_set(chosen_action)
 
     def assign_work(self, person_list, idle_person_list, building_list):
         """Assign the closest person in the provided idle person list and assign them to construct
