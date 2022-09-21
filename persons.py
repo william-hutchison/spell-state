@@ -23,7 +23,9 @@ class Person:
         self.action_work = None
         self.action_attack = None
 
-        self.stat_dict = {"health max": 100, "health current": 100, "attack damage": 20}
+        self.stat_dict = {"u_health_max": 100,
+                          "u_health_current": 100,
+                          "u_attack_damage": 20}
 
     def update(self, map_resource, map_entities, map_topology, map_traffic):
 
@@ -44,7 +46,7 @@ class Person:
         elif self.action_super == "a_attack":
             self.attack(map_entities, map_topology, map_traffic, self.action_attack)
 
-        if self.stat_dict["health current"] <= 0:
+        if self.stat_dict["u_health_current"] <= 0:
             self.ruler_state.person_list.remove(self)
 
     def work(self, map_entities, map_topology, map_traffic, work_object):
@@ -81,8 +83,8 @@ class Person:
         if self.location in pathfinding.find_edges(attack_object.location):
             if globe.time.check(self.time_last, self.ruler_state.time_dur_attack):
 
-                attack_object.stat_dict["health current"] -= self.stat_dict["attack damage"]
-                if attack_object.stat_dict["health current"] <= 0:
+                attack_object.stat_dict["u_health_current"] -= self.stat_dict["u_attack_damage"]
+                if attack_object.stat_dict["u_health_current"] <= 0:
                     self.action_attack = None
                     self.action_super_set("a_idle")
                 self.time_last = globe.time.now()

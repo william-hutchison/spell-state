@@ -19,7 +19,10 @@ class Wizard:
 
         self.time_last = globe.time.now()
 
-        self.stat_dict = {"health max": 100, "health current": 100, "mana max": 100, "mana current": 100}
+        self.stat_dict = {"u_health_max": 100,
+                          "u_health_current": 100,
+                          "u_mana_max": 100,
+                          "u_mana_current": 100}
 
     def update(self, map_entities, map_topology, cast_attempt, move_character_attempt, move_spell_attempt):
 
@@ -33,11 +36,11 @@ class Wizard:
         for spell in self.spell_list:
             spell.update(map_entities, move_spell_attempt)
 
-        if self.stat_dict["mana current"] < self.stat_dict["mana max"]:
-            self.stat_dict["mana current"] += 1
+        if self.stat_dict["u_mana_current"] < self.stat_dict["u_mana_max"]:
+            self.stat_dict["u_mana_current"] += 1
 
         # ASSUMING THIS WORKS, CURRENTLY UNABLE TO TEST
-        if self.stat_dict["health current"] <= 0:
+        if self.stat_dict["u_health_current"] <= 0:
             del self.spell_list
             del self.ruler_state.wizard
 
@@ -52,8 +55,8 @@ class Wizard:
 
     def create_spell(self, kind):
 
-        if self.stat_dict["mana current"] >= self.spell_dict[kind]["cost"]:
-            self.stat_dict["mana current"] -= self.spell_dict[kind]["cost"]
+        if self.stat_dict["u_mana_current"] >= self.spell_dict[kind]["cost"]:
+            self.stat_dict["u_mana_current"] -= self.spell_dict[kind]["cost"]
             return self.spell_dict[kind]["obj"](self)
 
         return None

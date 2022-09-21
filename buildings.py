@@ -15,11 +15,11 @@ class Building:
         self.under_construction = 0
         self.under_work = 0
 
-        self.stat_dict = {"health max": 100, "health current": 100}
+        self.stat_dict = {"u_health_max": 100, "u_health_current": 100}
 
     def update(self):
 
-        if self.stat_dict["health current"] <= 0:
+        if self.stat_dict["u_health_current"] <= 0:
             self.ruler_state.building_list.remove(self)
 
     def constructing(self, build_amount):
