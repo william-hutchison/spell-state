@@ -19,9 +19,14 @@ class State:
         self.person_list = []
         self.stock_list = []
         self.other_states = []
-        self.stat_dict = {"loyalty": 50, "fear": 50}
         self.colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-
+        self.stat_dict = {"loyalty": 50, "fear": 50}
+        self.action_dict = {"a_idle": {"chance": 10},
+                            "a_harvest_food": {"chance": 10},
+                            "a_harvest_wood": {"chance": 10},
+                            "a_metal": {"chance": 10},
+                            "a_construct": {"chance": 10},
+                            "a_work": {"chance": 10}}
         self.time_last_order = globe.time.now()
         self.time_last_birth = globe.time.now()
         self.time_dur_order = 200
@@ -39,7 +44,7 @@ class State:
 
         # TODO Intelligently decide where to place tower / let player choose
         self.wizard = self.create_wizard(map_entities, map_topology, self.location)
-        self.building_list.append(self.create_building("tower", map_entities, map_topology, map_traffic, self.location))
+        self.building_list.append(self.create_building("b_tower", map_entities, map_topology, map_traffic, self.location))
         
     def update(self, map_resource, map_entities, map_topology, map_traffic):
 
@@ -51,8 +56,8 @@ class State:
         # decide what to construct 
         # TODO Intelligently decide what to construct next
 
-        if tools.items_compare(self.stock_list, buildings.building_info["lab_offence"]["cost"]):
-            build_attempt = "lab_offence"
+        if tools.items_compare(self.stock_list, buildings.building_info["b_lab_offence"]["cost"]):
+            build_attempt = "b_lab_offence"
         else:
             build_attempt = None
         
@@ -95,12 +100,12 @@ class State:
                 return None
 
         # construct tower
-        if kind == "tower":
+        if kind == "b_tower":
             return buildings.building_info[kind]["obj"](self, location_tower)
 
         # construct buildings within radius of tower
         # TODO Ensure building access (maybe astar check each building with tower)
-        elif kind in ["house", "shrine", "tavern", "lab_offence"]:
+        elif kind in ["b_house", "b_shrine", "b_tavern", "b_lab_offence"]:
             build_radius = 4 + round(len(self.building_list) * 0.25)
             possible_locations = pathfinding.find_within_radius(location_tower, build_radius)
             possible_locations = pathfinding.find_free(possible_locations, map_entities, map_topology)
@@ -114,7 +119,7 @@ class State:
                 location = random.choices(possible_locations, weights=possible_locations_chance, k=1)[0]
 
                 # construct building
-                audio.audio.play_relative_sound("construction", location)
+                audio.audio.play_relative_sound("n_construction", location)
                 return buildings.building_info[kind]["obj"](self, location)
 
         return None
@@ -127,7 +132,7 @@ class State:
         if possible_locations:
             location = random.choice(possible_locations)
             self.pop_current += 1
-            audio.audio.play_relative_sound("birth", location)
+            audio.audio.play_relative_sound("n_birth", location)
             return persons.Person(self, location)
 
         return None
@@ -142,7 +147,7 @@ class State:
 
         target_state = self.other_states[0]
 
-        idle_person_list = [i for i in person_list if i.action_super == "idle"]
+        idle_person_list = [i for i in person_list if i.action_super == "a_idle"]
         construction_list = [i for i in building_list if i.under_construction]
         work_list = [i for i in building_list if not i.under_construction and i.under_work]
         attack_list = ([i.location for i in target_state.person_list])
@@ -165,13 +170,13 @@ class State:
             else:
                 # TODO Give harvesting its own assign function to match construct and work
                 dice = 2#random.randint(1, 3)
-                assignment = "idle"
+                assignment = "a_idle"
                 if dice == 1:
-                    assignment = "harvest_food"
+                    assignment = "a_harvest_food"
                 elif dice == 2:
-                    assignment = "harvest_wood"
+                    assignment = "a_harvest_wood"
                 elif dice == 3:
-                    assignment = "harvest_metal"
+                    assignment = "a_harvest_metal"
                 idle_person_list[0].action_super_set(assignment)
 
     def assign_work(self, person_list, idle_person_list, building_list):
@@ -188,7 +193,7 @@ class State:
                 if idle_person_list:
                     person_location = pathfinding.find_closest(building.location, [i.location for i in idle_person_list])
                     person = [i for i in idle_person_list if i.location == person_location].pop()
-                    person.action_super_set("work")
+                    person.action_super_set("a_work")
                     person.action_work = building
 
     def assign_build(self, person_list, idle_person_list, building_list):
@@ -205,7 +210,7 @@ class State:
                 if idle_person_list:
                     person_location = pathfinding.find_closest(building.location, [i.location for i in idle_person_list])
                     person = [i for i in idle_person_list if i.location == person_location].pop()
-                    person.action_super_set("construct")
+                    person.action_super_set("a_construct")
                     person.action_construction = building
 
     def assign_attack(self, idle_person_list, target_state):
@@ -215,7 +220,7 @@ class State:
             target_location = pathfinding.find_closest(self.location, [i.location for i in target_state.person_list])
             person_location = pathfinding.find_closest(target_location, [i.location for i in idle_person_list])
             person = [i for i in idle_person_list if i.location == person_location].pop()
-            person.action_super_set("attack")
+            person.action_super_set("a_attack")
             person.action_attack = [i for i in target_state.person_list if i.location == target_location].pop()
 
     def increase_pop_limit(self, target_state, amount):

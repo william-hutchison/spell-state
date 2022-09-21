@@ -9,8 +9,10 @@ class Audio:
     def __init__(self, receiver_entity):
 
         pg.mixer.init()
-        self.sound_dict = {"birth": (pg.mixer.Sound("sounds/pure_c.wav"), 0.6), "construction": (pg.mixer.Sound("sounds/pure_c.wav"), 0.6), "move": (pg.mixer.Sound("sounds/pure_d.wav"), 0.2)}
         self.receiver_entity = receiver_entity
+        self.sound_dict = {"n_birth": (pg.mixer.Sound("sounds/pure_c.wav"), 0.6),
+                           "n_construction": (pg.mixer.Sound("sounds/pure_c.wav"), 0.6),
+                           "n_move": (pg.mixer.Sound("sounds/pure_d.wav"), 0.2)}
 
     def play_relative_sound(self, sound, location):
         """Play a sound from the sound dictionary base on input sound key, each with its own base volume and audio file.
@@ -20,6 +22,5 @@ class Audio:
         if self.sound_dict[sound][1] * distance_modifier >= 0.05:
             self.sound_dict[sound][0].set_volume(self.sound_dict[sound][1] * distance_modifier)
             self.sound_dict[sound][0].play()
-
 
 audio = None

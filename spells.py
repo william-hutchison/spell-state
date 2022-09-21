@@ -148,8 +148,8 @@ class SpellHeal(SpellKindSelect):
         target.stat_dict["health current"] += self.health_heal
 
 
-spell_info = {"consume": {"obj": SpellConsume, "cost": 20, "combo": ["down", "down"], "unlocked": True},
-              "fireball": {"obj": SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": False},
-              "storm": {"obj": SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
-              "heal": {"obj": SpellHeal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": True}}
+spell_info = {"s_consume": {"obj": SpellConsume, "cost": 20, "combo": ["down", "down"], "unlocked": True},
+              "s_fireball": {"obj": SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": False},
+              "s_storm": {"obj": SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
+              "s_heal": {"obj": SpellHeal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": True}}
 

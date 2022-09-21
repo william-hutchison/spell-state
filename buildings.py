@@ -109,7 +109,7 @@ class LabOffence(Building):
     def work(self):
 
         temp_list = []
-        for i in ["storm", "fireball"]:
+        for i in ["s_storm", "s_fireball"]:
             if not self.ruler_state.wizard.spell_dict[i]["unlocked"]:
                 temp_list.append(i)
         if temp_list:
@@ -130,9 +130,10 @@ class Tavern(Building):
         self.sprite = pg.image.load('sprites/house.png')
         pass
 
+
 # TODO change list of tuples to list of n items needed
-building_info = {"tower": {"obj": Tower, "cost": []},
-                 "house": {"obj": House, "cost": [("i_wood", 3)]},
-                 "shrine": {"obj": Shrine, "cost": [("i_wood", 1)]},
-                 "tavern": {"obj": Tavern, "cost": [("i_metal", 3)]},
-                 "lab_offence": {"obj": LabOffence, "cost": [("i_wood", 1)]}}
+building_info = {"b_tower": {"obj": Tower, "cost": []},
+                 "b_house": {"obj": House, "cost": [("i_wood", 3)]},
+                 "b_shrine": {"obj": Shrine, "cost": [("i_wood", 1)]},
+                 "b_tavern": {"obj": Tavern, "cost": [("i_metal", 3)]},
+                 "b_lab_offence": {"obj": LabOffence, "cost": [("i_wood", 1)]}}
