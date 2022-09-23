@@ -93,16 +93,16 @@ class SpellConsume(SpellKindDirectional):
         self.travel_max = 1
         self.health_damage = 1000
         self.mana_gain = 60
+        self.action_weight_change = -5
 
     def impact(self, target):
 
         if type(target).__name__ == "Person":
-            target.stat_dict["health current"] -= self.health_damage
-            self.ruler_wizard.stat_dict["mana current"] += self.mana_gain
+            target.stat_dict["u_health_current"] -= self.health_damage
+            self.ruler_wizard.stat_dict["u_mana_current"] += self.mana_gain
 
             if target.ruler_state == self.ruler_wizard.ruler_state:
-                self.ruler_wizard.ruler_state.stat_dict["fear"] += 2
-                self.ruler_wizard.ruler_state.stat_dict["loyalty"] -= 1
+                target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
 
 
 class SpellFireball(SpellKindDirectional):
@@ -112,10 +112,15 @@ class SpellFireball(SpellKindDirectional):
         super().__init__(wizard)
         self.travel_max = 10
         self.health_damage = 50
+        self.action_weight_change = -5
 
     def impact(self, target):
 
-        target.stat_dict["health current"] -= self.health_damage
+        target.stat_dict["u_health_current"] -= self.health_damage
+
+        if type(target).__name__ == "Person":
+            if target.ruler_state == self.ruler_wizard.ruler_state:
+                target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
 
 
 class SpellStorm(SpellKindSelf):
@@ -125,6 +130,7 @@ class SpellStorm(SpellKindSelf):
         super().__init__(wizard)
         self.health_damage = 100
         self.radius = 4
+        self.action_weight_change = -5
 
     def impact(self, map_entities):
 
@@ -132,8 +138,12 @@ class SpellStorm(SpellKindSelf):
         radius_list.remove(self.ruler_wizard.location)
 
         for i in radius_list:
-            if map_entities[i[1]][i[0]]:
-                map_entities[i[1]][i[0]].stat_dict["health current"] -= self.health_damage
+            target = map_entities[i[1]][i[0]]
+            if target:
+                map_entities[i[1]][i[0]].stat_dict["u_health_current"] -= self.health_damage
+
+                if type(target).__name__ == "Person":
+                    target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
 
 
 class SpellHeal(SpellKindSelect):
@@ -142,14 +152,20 @@ class SpellHeal(SpellKindSelect):
 
         super().__init__(wizard)
         self.health_heal = 50
+        self.action_weight_change = 10
 
     def impact(self, target):
 
-        target.stat_dict["health current"] += self.health_heal
+        target.stat_dict["u_health_current"] += self.health_heal
+
+        if type(target).__name__ == "Person":
+            if target.ruler_state == self.ruler_wizard.ruler_state:
+                target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
+
 
 
 spell_info = {"s_consume": {"obj": SpellConsume, "cost": 20, "combo": ["down", "down"], "unlocked": True},
-              "s_fireball": {"obj": SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": False},
-              "s_storm": {"obj": SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
+              "s_fireball": {"obj": SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": True},
+              "s_storm": {"obj": SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": True},
               "s_heal": {"obj": SpellHeal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": True}}
 

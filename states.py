@@ -22,13 +22,13 @@ class State:
         self.colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         self.stat_dict = {"loyalty": 50,
                           "fear": 50}
-        self.action_dict = {"a_idle": {"chance": 10},
-                            "a_harvest_food": {"chance": 10},
-                            "a_harvest_wood": {"chance": 10},
-                            "a_harvest_metal": {"chance": 10},
-                            "a_construct": {"chance": 10},
-                            "a_work": {"chance": 10},
-                            "a_attack": {"chance": 10}}
+        self.action_dict = {"a_idle": {"weight": 10},
+                            "a_harvest_food": {"weight": 10},
+                            "a_harvest_wood": {"weight": 10},
+                            "a_harvest_metal": {"weight": 10},
+                            "a_construct": {"weight": 100},
+                            "a_work": {"weight": 10},
+                            "a_attack": {"weight": 10}}
         self.time_last_order = globe.time.now()
         self.time_last_birth = globe.time.now()
         self.time_dur_order = 200
@@ -49,6 +49,8 @@ class State:
         self.building_list.append(self.create_building("b_tower", map_entities, map_topology, map_traffic, self.location))
         
     def update(self, map_resource, map_entities, map_topology, map_traffic):
+
+        self.tune_action_wight()
 
         # assign person actions
         if globe.time.check(self.time_last_order, self.time_dur_order):
@@ -157,7 +159,7 @@ class State:
             possible_actions.append("a_attack")
 
         if idle_person_list:
-            chosen_action = random.choices([i for i in possible_actions], weights=[self.action_dict[i]["chance"] for i in possible_actions])[0]
+            chosen_action = random.choices([i for i in possible_actions], weights=[self.action_dict[i]["weight"] for i in possible_actions])[0]
             if chosen_action == "a_construct":
                 self.assign_build(person_list, idle_person_list, construction_list)
             elif chosen_action == "a_work":
@@ -216,3 +218,11 @@ class State:
     def increase_pop_limit(self, target_state, amount):
         
         target_state.pop_limit += amount
+
+    def tune_action_wight(self):
+        """Restrict action weight to between 0 and 100, slowly move value towards 50."""
+
+        #TODO Do not call every step, should have global update every half second or so for this type of thing
+        for action in self.action_dict.keys():
+            self.action_dict[action]["weight"] = max(min(100, self.action_dict[action]["weight"]), 0)
+            self.action_dict[action]["weight"] += (self.action_dict[action]["weight"] - 50) * -0.01
