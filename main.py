@@ -29,21 +29,27 @@ class Game:
 
         if self.game_state == "play":
             self.game_state = self.play(events)
+            audio.audio.stop_music()
         elif self.game_state == "start":
             self.game_state = self.menu.start(events)
             self.graphics.draw_menu(self.menu.options, self.menu.current_option)
+            audio.audio.play_music("n_theme")
         elif self.game_state == "settings":
             self.game_state = self.menu.settings(events, self.graphics.set_window_scale)
+            audio.audio.play_music("n_theme")
             self.graphics.draw_menu(self.menu.options, self.menu.current_option)
         elif self.game_state == "pause":
             self.game_state = self.menu.pause(events)
             self.graphics.draw_menu(self.menu.options, self.menu.current_option)
+            audio.audio.play_music("n_theme")
         elif self.game_state == "load":
             self.game_state = self.menu.load(events, self.load_file)
             self.graphics.draw_menu(self.menu.options, self.menu.current_option)
+            audio.audio.play_music("n_theme")
         elif self.game_state == "save":
             self.game_state = self.menu.save(events, self.save_file)
             self.graphics.draw_menu(self.menu.options, self.menu.current_option)
+            audio.audio.play_music("n_theme")
         elif self.game_state == "quit":
             self.quit()
 
