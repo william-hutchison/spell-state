@@ -14,7 +14,6 @@ class State:
     def __init__(self, location, map_entities, map_topology, map_traffic):
 
         self.location = location
-        self.wizard = None
         self.building_list = []
         self.person_list = []
         self.stock_list = []
@@ -45,6 +44,7 @@ class State:
         self.pop_current = 0
 
         # TODO Intelligently decide where to place tower / let player choose
+        # TODO Prevent placement in water
         self.wizard = self.create_wizard(map_entities, map_topology, self.location)
         self.building_list.append(self.create_building("b_tower", map_entities, map_topology, map_traffic, self.location))
         
@@ -142,7 +142,7 @@ class State:
 
     def assign(self, person_list, building_list):
         """Assign an idle person to a random action, based on action dictionary weights and available tasks."""
-
+        #TODO Replace with diplomacy system
         target_state = self.other_states[0]
 
         possible_actions = ["a_idle", "a_harvest_food", "a_harvest_wood", "a_harvest_metal"]

@@ -111,6 +111,7 @@ class Graphics:
             draw_state_info(self.surface_ui_panel, state)
             draw_inspector_info(self.surface_ui_panel, inspector_dict)
 
+        # TODO Remove multi panel support?
         elif interface.panel_current == 2:
             text = font_0.render("Person info", True, (255, 255, 255))
             self.surface_ui_panel.blit(text, (10, 40))
@@ -153,15 +154,19 @@ def draw_state_info(surface_ui_panel, state):
     text0 = font_0.render("Stock list: " + str(tools.item_summary(state.stock_list)), True, (255, 255, 255))
     text1 = font_0.render("Building list: " + str([type(i).__name__ for i in state.building_list]), True, (255, 255, 255))
     text2 = font_0.render("Person list: " + str([type(i).__name__ for i in state.person_list]), True, (255, 255, 255))
+    text3 = font_0.render("Action dict: " + str(state.action_dict), True, (255, 255, 255))
     surface_ui_panel.blit(text0, (10, 100))
     surface_ui_panel.blit(text1, (10, 130))
     surface_ui_panel.blit(text2, (10, 160))
+    surface_ui_panel.blit(text3, (10, 190))
 
+    # TODO Remove state stat system?
+    """
     for i, item in enumerate(state.stat_dict.items()):
         if item[1]:
             text = font_0.render(str(item[0]) + ": " + str(item[1]), True, (255, 255, 255))
             surface_ui_panel.blit(text, (10, 190 + 30 * i))
-
+    """
 
 def draw_inspector_info(surface_ui_panel, inspector_dict):
     for i, item in enumerate(inspector_dict.items()):
@@ -177,12 +182,13 @@ def draw_player_info(surface_ui_wizard, camera, character):
     text2 = font_0.render("Casting string: " + str(character.casting_string), True, (255, 255, 255))
     text3 = font_0.render("Health: " + str(character.wizard.stat_dict['u_health_current']) + "/" + str(character.wizard.stat_dict['u_health_max']), True, (255, 255, 255))
     text4 = font_0.render("Mana: " + str(character.wizard.stat_dict['u_mana_current']) + "/" + str(character.wizard.stat_dict['u_mana_max']), True, (255, 255, 255))
+    text5 = font_0.render("Items: " + str(character.wizard.stock_list), True, (255, 255, 255))
     surface_ui_wizard.blit(text0, (10, 10))
     surface_ui_wizard.blit(text1, (10, 40))
     surface_ui_wizard.blit(text2, (10, 70))
     surface_ui_wizard.blit(text3, (10, 100))
     surface_ui_wizard.blit(text4, (10, 130))
-
+    surface_ui_wizard.blit(text5, (10, 160))
 
 def draw_player_spells(surface_ui_spellbook, character):
 

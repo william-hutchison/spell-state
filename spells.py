@@ -36,7 +36,8 @@ class SpellKindDirectional(Spell):
         self.time_dur_move = 100
         self.time_last = 0  # to allow immediate cast IS THIS DESIRABLE?
 
-    def update(self, map_entities, move_attempt):
+    def update(self, map_entities, map_resource, move_attempt):
+
 
         if self.status == "hold":
             self.location = self.ruler_wizard.location
@@ -54,9 +55,15 @@ class SpellKindDirectional(Spell):
 
             # check for spell impact
             else:
-                if target := map_entities[self.location[1]][self.location[0]]:
-                    self.impact(target)
-                    self.ruler_wizard.spell_list.remove(self)
+                if type(self).__name__ == "SpellHarvest":
+                    if target := map_resource[self.location[1]][self.location[0]]:
+                        self.impact(target)
+                        self.ruler_wizard.spell_list.remove(self)
+
+                else:
+                    if target := map_entities[self.location[1]][self.location[0]]:
+                        self.impact(target)
+                        self.ruler_wizard.spell_list.remove(self)
 
     def move(self, move_attempt):
 
@@ -83,6 +90,20 @@ class SpellKindSelect(Spell):
         if target := map_entities[self.location_select[1]][self.location_select[0]]:
             self.impact(target)
         self.ruler_wizard.spell_list.remove(self)
+
+
+class SpellHarvest(SpellKindDirectional):
+
+    def __init__(self, wizard):
+
+        super().__init__(wizard)
+        self.travel_max = 1
+
+    def impact(self, target):
+
+        if target:
+            if len(self.ruler_wizard.stock_list) < self.ruler_wizard.stock_list_limit:
+                self.ruler_wizard.stock_list.append(target)
 
 
 class SpellConsume(SpellKindDirectional):
@@ -137,6 +158,7 @@ class SpellStorm(SpellKindSelf):
         radius_list = pathfinding.find_within_radius(self.ruler_wizard.location, self.radius)
         radius_list.remove(self.ruler_wizard.location)
 
+        # TODO Move logic to within area of effect class and inherit
         for i in radius_list:
             target = map_entities[i[1]][i[0]]
             if target:
@@ -163,9 +185,9 @@ class SpellHeal(SpellKindSelect):
                 target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
 
 
-
-spell_info = {"s_consume": {"obj": SpellConsume, "cost": 20, "combo": ["down", "down"], "unlocked": True},
+spell_info = {"s_harvest": {"obj": SpellHarvest, "cost": 20, "combo": ["up", "up"], "unlocked": True},
+              "s_consume": {"obj": SpellConsume, "cost": 20, "combo": ["down", "down"], "unlocked": True},
               "s_fireball": {"obj": SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": True},
-              "s_storm": {"obj": SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": True},
+              "s_storm": {"obj": SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
               "s_heal": {"obj": SpellHeal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": True}}
 

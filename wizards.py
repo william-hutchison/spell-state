@@ -14,7 +14,7 @@ class Wizard:
         self.sprite = pg.image.load('sprites/wizard.png')
         self.spell_dict = spells.spell_info
         self.stock_list = []
-        self.stock_list_limit = 2
+        self.stock_list_limit = 4
         self.spell_list = []
 
         self.time_last = globe.time.now()
@@ -24,7 +24,7 @@ class Wizard:
                           "u_mana_max": 100,
                           "u_mana_current": 100}
 
-    def update(self, map_entities, map_topology, cast_attempt, move_character_attempt, move_spell_attempt):
+    def update(self, map_entities, map_topology, map_resource, cast_attempt, move_character_attempt, move_spell_attempt):
 
         if move_character_attempt:
             self.move(move_character_attempt, map_entities, map_topology)
@@ -34,7 +34,7 @@ class Wizard:
                 self.spell_list.append(temp_spell)
 
         for spell in self.spell_list:
-            spell.update(map_entities, move_spell_attempt)
+            spell.update(map_entities, map_resource, move_spell_attempt)
 
         if self.stat_dict["u_mana_current"] < self.stat_dict["u_mana_max"]:
             self.stat_dict["u_mana_current"] += 1

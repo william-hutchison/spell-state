@@ -81,7 +81,6 @@ def gen_resource(map_resource, map_topology, map_noise, topology_target, chance,
 
 def create_state(map_entities, map_topology, map_traffic):
     location = (random.randint(0, globe.WORLD_SIZE[0] - 1), random.randint(0, globe.WORLD_SIZE[1] - 1))
-
     return states.State(location, map_entities, map_topology, map_traffic)
 
 

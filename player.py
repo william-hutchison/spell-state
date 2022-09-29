@@ -14,7 +14,7 @@ class Player:  # TODO Should this object even exist? Probably not
     def update(self, map_topology, map_resource, map_entities, events):
         
         self.interface.update(events[0], events[1])
-        self.character.update(map_entities, map_topology, events[0], events[1])
+        self.character.update(map_entities, map_topology, map_resource, events[0], events[1])
         self.camera.update(self.character, map_topology, map_resource, map_entities, events[0], events[1])
 
 
@@ -128,7 +128,7 @@ class Character:
         self.camera_follow = True
         self.casting_string = []
 
-    def update(self, map_entities, map_topology, key_press, keys):
+    def update(self, map_entities, map_topology, map_resource, key_press, keys):
 
         move_character_attempt = self.move_character(keys)
         move_spell_attempt = None
@@ -140,7 +140,7 @@ class Character:
         else:
             cast_attempt = self.select_spell(key_press, keys)
 
-        self.wizard.update(map_entities, map_topology, cast_attempt, move_character_attempt, move_spell_attempt)
+        self.wizard.update(map_entities, map_topology, map_resource, cast_attempt, move_character_attempt, move_spell_attempt)
 
     def move_character(self, keys):
         """Detect keyboard input and return appropriate direction tuple for wizard move."""
