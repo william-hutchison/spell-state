@@ -39,7 +39,7 @@ class Wizard:
         if self.stat_dict["u_mana_current"] < self.stat_dict["u_mana_max"]:
             self.stat_dict["u_mana_current"] += 1
 
-        # ASSUMING THIS WORKS, CURRENTLY UNABLE TO TEST
+        # TODO Assuming this works, unable to test
         if self.stat_dict["u_health_current"] <= 0:
             del self.spell_list
             del self.ruler_state.wizard

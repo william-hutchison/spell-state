@@ -91,7 +91,6 @@ class SpellKindSelect(Spell):
             self.impact(target)
         self.ruler_wizard.spell_list.remove(self)
 
-
 class SpellHarvest(SpellKindDirectional):
 
     def __init__(self, wizard):
@@ -104,6 +103,21 @@ class SpellHarvest(SpellKindDirectional):
         if target:
             if len(self.ruler_wizard.stock_list) < self.ruler_wizard.stock_list_limit:
                 self.ruler_wizard.stock_list.append(target)
+
+
+class SpellGiveItem(SpellKindDirectional):
+
+    def __init__(self, wizard):
+
+        super().__init__(wizard)
+        self.travel_max = 1
+
+    def impact(self, target):
+
+        # TODO Select item from item list with arrow keys and enter (matching location selection spells)
+        if type(target).__name__ in ["Wizard", "Person"]:
+            if len(target.stock_list) < target.stock_list_limit:
+                target.stock_list.append(self.ruler_wizard.stock_list.pop(0))
 
 
 class SpellConsume(SpellKindDirectional):
@@ -186,6 +200,7 @@ class SpellHeal(SpellKindSelect):
 
 
 spell_info = {"s_harvest": {"obj": SpellHarvest, "cost": 20, "combo": ["up", "up"], "unlocked": True},
+              "s_give_item": {"obj": SpellGiveItem, "cost": 10, "combo": ["up"], "unlocked": True},
               "s_consume": {"obj": SpellConsume, "cost": 20, "combo": ["down", "down"], "unlocked": True},
               "s_fireball": {"obj": SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": True},
               "s_storm": {"obj": SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
