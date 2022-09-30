@@ -19,6 +19,7 @@ class State:
         self.stock_list = []
         self.other_states = []
         self.colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        # TODO Remove stat system?
         self.stat_dict = {"loyalty": 50,
                           "fear": 50}
         self.action_dict = {"a_idle": {"weight": 10},

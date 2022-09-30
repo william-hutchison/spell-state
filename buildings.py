@@ -11,6 +11,8 @@ class Building:
         self.ruler_state = ruler_state
         self.location = location
         self.sprite = pg.image.load('sprites/house.png')
+        self.stock_list = []
+        self.stock_list_limit = 0
         self.time_last = globe.time.now()
         self.under_construction = 0
         self.under_work = 0
@@ -21,6 +23,7 @@ class Building:
 
         if self.stat_dict["u_health_current"] <= 0:
             self.ruler_state.building_list.remove(self)
+            # TODO Drop items upon destruction
 
     def constructing(self, build_amount):
         """Subtract build_amount from under_construction until 0 is reached, then return 0."""
@@ -55,6 +58,7 @@ class Tower(Building):
     def constructed(self):
 
         self.ruler_state.increase_pop_limit(self.ruler_state, 1)
+        self.stock_list_limit = 100
         self.sprite = pg.image.load('sprites/tower.png')
 
 

@@ -128,9 +128,8 @@ class SpellGiveItem(SpellKindDirectional):
 
         # TODO Select item from item list with arrow keys and enter (matching location selection spells)
         if self.ruler_wizard.stock_list:
-            if type(target).__name__ in ["Wizard", "Person"]:
-                if len(target.stock_list) < target.stock_list_limit:
-                    target.stock_list.append(self.ruler_wizard.stock_list.pop(0))
+            if len(target.stock_list) < target.stock_list_limit:
+                target.stock_list.append(self.ruler_wizard.stock_list.pop(0))
 
     def map_item_impact(self, map_item):
 
@@ -149,9 +148,8 @@ class SpellPickupItem(SpellKindDirectional):
 
         # TODO Select item from item list with arrow keys and enter (matching location selection spells)
         if len(self.ruler_wizard.stock_list) < self.ruler_wizard.stock_list_limit:
-            if type(target).__name__ in ["Wizard", "Person"]:
-                if target.stock_list:
-                    self.ruler_wizard.stock_list.append(target.stock_list.pop(0))
+            if target.stock_list:
+                self.ruler_wizard.stock_list.append(target.stock_list.pop(0))
 
     def map_item_impact(self, map_item):
 

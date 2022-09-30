@@ -109,11 +109,11 @@ class Camera:
         if inspect_object:
             self.inspector_dict["Entity type"] = str(type(inspect_object).__name__)
             self.inspector_dict["Location"] = str(inspect_object.location)
+            self.inspector_dict["Stock"] = str(inspect_object.stock_list)
             self.inspector_dict.update(inspect_object.stat_dict)
 
             if type(inspect_object).__name__ == 'Person':
                 self.inspector_dict["Action"] = str(inspect_object.action_super)
-                self.inspector_dict["Stock"] = str(inspect_object.stock_list)
 
             if type(inspect_object).__name__ in ['Tower', 'House', 'Shrine', 'LabOffence']:
                 self.inspector_dict["Construction remaining"] = str(inspect_object.under_construction)

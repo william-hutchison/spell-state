@@ -48,6 +48,7 @@ class Person:
 
         if self.stat_dict["u_health_current"] <= 0:
             self.ruler_state.person_list.remove(self)
+            # TODO Drop items upon destruction
 
     def work(self, map_entities, map_topology, map_traffic, work_object):
         """Send person to work object location and work when adjacent."""
@@ -95,10 +96,11 @@ class Person:
 
     def harvest(self, map_resource, map_entities, map_topology, map_traffic, target_resource):
 
+        # TODO Replace with generic deposit item function
         # deposit stock_list
-        if self.location in pathfinding.find_edges(self.ruler_state.location) and target_resource in self.stock_list:
+        if self.location in pathfinding.find_edges(self.ruler_state.building_list[0].location) and target_resource in self.stock_list:
             if globe.time.check(self.time_last, self.ruler_state.time_dur_transfer):
-                tools.item_transfer(self.stock_list, self.ruler_state.stock_list, target_resource, 1)
+                tools.item_transfer(self.stock_list, self.ruler_state.building_list[0].stock_list, target_resource, 1)
                 self.time_last = globe.time.now()
 
                 if target_resource not in self.stock_list:
