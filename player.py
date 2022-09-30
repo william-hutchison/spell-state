@@ -11,11 +11,11 @@ class Player:  # TODO Should this object even exist? Probably not
         self.camera = Camera()
         self.character = Character(player_wizard)
 
-    def update(self, map_topology, map_resource, map_entities, events):
+    def update(self, map_topology, map_resource, map_item, map_entities, events):
         
         self.interface.update(events[0], events[1])
-        self.character.update(map_entities, map_topology, map_resource, events[0], events[1])
-        self.camera.update(self.character, map_topology, map_resource, map_entities, events[0], events[1])
+        self.character.update(map_entities, map_topology, map_resource, map_item, events[0], events[1])
+        self.camera.update(self.character, map_topology, map_resource, map_item, map_entities, events[0], events[1])
 
 
 class Interface:
@@ -48,7 +48,7 @@ class Camera:
         self.inspector_mode = "inspect"
         self.inspector_dict = {"Topology": "", "Resource": "", "Entity type": "", "Location": "", "Action": "", "Stock": "", "Health": "", "Construction remaining": ""}
 
-    def update(self, player_character, map_topology, map_resource, map_entities, key_press, keys):
+    def update(self, player_character, map_topology, map_resource, map_item, map_entities, key_press, keys):
 
         # check for a spell requiring target selection
         if spell_list := player_character.wizard.spell_list:
@@ -59,7 +59,7 @@ class Camera:
 
         if self.inspector_mode == "inspect":
             if key_press and keys[pg.K_RETURN]:
-                self.inspect(map_topology, map_resource, map_entities, keys)
+                self.inspect(map_topology, map_resource, map_item, map_entities, keys)
 
         elif self.inspector_mode == "select":
             player_character.wizard.spell_list[0].location_select = self.inspector_location
@@ -95,13 +95,14 @@ class Camera:
 
         return camera_location, inspector_location
 
-    def inspect(self, map_topology, map_resource, map_entities, keys):
+    def inspect(self, map_topology, map_resource, map_item, map_entities, keys):
         """Set new inspector tile location based on camera location. Check for keyboard input and 
         activate inspector if request detected."""
 
         self.inspector_dict = dict.fromkeys(self.inspector_dict, "")
         self.inspector_dict["Topology"] = str(map_topology[self.inspector_location[1]][self.inspector_location[0]])
         self.inspector_dict["Resource"] = str(map_resource[self.inspector_location[1]][self.inspector_location[0]])
+        self.inspector_dict["Item"] = str(map_item[self.inspector_location[1]][self.inspector_location[0]])
 
         inspect_object = map_entities[self.inspector_location[1]][self.inspector_location[0]]
 
@@ -128,7 +129,7 @@ class Character:
         self.camera_follow = True
         self.casting_string = []
 
-    def update(self, map_entities, map_topology, map_resource, key_press, keys):
+    def update(self, map_entities, map_topology, map_resource, map_item, key_press, keys):
 
         move_character_attempt = self.move_character(keys)
         move_spell_attempt = None
@@ -140,7 +141,7 @@ class Character:
         else:
             cast_attempt = self.select_spell(key_press, keys)
 
-        self.wizard.update(map_entities, map_topology, map_resource, cast_attempt, move_character_attempt, move_spell_attempt)
+        self.wizard.update(map_entities, map_topology, map_resource, map_item, cast_attempt, move_character_attempt, move_spell_attempt)
 
     def move_character(self, keys):
         """Detect keyboard input and return appropriate direction tuple for wizard move."""

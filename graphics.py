@@ -45,7 +45,7 @@ class Graphics:
         self.surface_final.blit(self.surface_ui_spellbook, (0, 600))
         self.window.blit(pg.transform.scale(self.surface_final, window_size[self.scale]), (0, 0))
 
-    def update_world(self, camera_location, topology, resources, entities):
+    def update_world(self, camera_location, topology, resources, items, entities):
 
         self.surface_terrain.fill((0, 0, 0))
 
@@ -64,6 +64,10 @@ class Graphics:
                 elif resources[y][x] == "i_wood":
                     self.surface_terrain.blit(image_wood, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
                 elif resources[y][x] == "i_metal":
+                    self.surface_terrain.blit(image_metal, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
+
+                # draw items
+                if items[y][x]:
                     self.surface_terrain.blit(image_metal, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
 
                 # draw entities

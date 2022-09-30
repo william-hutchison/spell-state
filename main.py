@@ -79,9 +79,9 @@ class Game:
 
     def play(self, events):
 
-        self.player.update(self.world.map_topology, self.world.map_resource, self.world.map_entities, events)
+        self.player.update(self.world.map_topology, self.world.map_resource, self.world.map_item, self.world.map_entities, events)
         self.world.update()
-        self.graphics.update_world(self.player.camera.location, self.world.map_topology, self.world.map_resource, self.world.map_entities)
+        self.graphics.update_world(self.player.camera.location, self.world.map_topology, self.world.map_resource, self.world.map_item, self.world.map_entities)
         self.graphics.update_overlay(self.player.camera.location, self.player.camera.inspector_location, self.player.camera.inspector_mode, self.player.character.wizard.location, self.world.state_list)
         self.graphics.update_ui_panel(self.world.state_list[0], self.player.camera.inspector_dict, self.player.interface)
         self.graphics.update_ui_wizard(self.player.camera, self.player.character)

@@ -17,6 +17,7 @@ class World:
         self.state_list = []
         self.map_topology = np.zeros(globe.WORLD_SIZE)
         self.map_resource = np.empty(globe.WORLD_SIZE, dtype="<U10")
+        self.map_item = np.empty(globe.WORLD_SIZE, dtype="<U10")
         self.map_traffic = np.zeros(globe.WORLD_SIZE)
         self.map_entities = np.empty(globe.WORLD_SIZE, dtype=object)
 

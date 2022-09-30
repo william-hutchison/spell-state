@@ -17,7 +17,7 @@ class SpellKindSelf(Spell):
 
         super().__init__(wizard)
 
-    def update(self, map_entities, move_attempt):
+    def update(self, map_entities, map_resource, map_item, move_attempt):
 
         if self.status == "hold":
             self.location = self.ruler_wizard.location
@@ -36,8 +36,7 @@ class SpellKindDirectional(Spell):
         self.time_dur_move = 100
         self.time_last = 0  # to allow immediate cast IS THIS DESIRABLE?
 
-    def update(self, map_entities, map_resource, move_attempt):
-
+    def update(self, map_entities, map_resource, map_item, move_attempt):
 
         if self.status == "hold":
             self.location = self.ruler_wizard.location
@@ -55,11 +54,23 @@ class SpellKindDirectional(Spell):
 
             # check for spell impact
             else:
+
+                # special case for harvesting
                 if type(self).__name__ == "SpellHarvest":
                     if target := map_resource[self.location[1]][self.location[0]]:
                         self.impact(target)
                         self.ruler_wizard.spell_list.remove(self)
 
+                # special case for accessing items
+                if type(self).__name__ in ["SpellGiveItem", "SpellPickupItem"]:
+                    if target := map_entities[self.location[1]][self.location[0]]:
+                        self.impact(target)
+                        self.ruler_wizard.spell_list.remove(self)
+                    else:
+                        self.map_item_impact(map_item)
+                        self.ruler_wizard.spell_list.remove(self)
+
+                # all other spells
                 else:
                     if target := map_entities[self.location[1]][self.location[0]]:
                         self.impact(target)
@@ -81,7 +92,7 @@ class SpellKindSelect(Spell):
         self.location_select = self.ruler_wizard.location
         self.status = "select"
 
-    def update(self, map_entities, move_attempt):
+    def update(self, map_entities, map_resource, map_item, map_move_attempt):
 
         self.location = self.ruler_wizard.location
 
@@ -90,6 +101,7 @@ class SpellKindSelect(Spell):
         if target := map_entities[self.location_select[1]][self.location_select[0]]:
             self.impact(target)
         self.ruler_wizard.spell_list.remove(self)
+
 
 class SpellHarvest(SpellKindDirectional):
 
@@ -115,9 +127,38 @@ class SpellGiveItem(SpellKindDirectional):
     def impact(self, target):
 
         # TODO Select item from item list with arrow keys and enter (matching location selection spells)
-        if type(target).__name__ in ["Wizard", "Person"]:
-            if len(target.stock_list) < target.stock_list_limit:
-                target.stock_list.append(self.ruler_wizard.stock_list.pop(0))
+        if self.ruler_wizard.stock_list:
+            if type(target).__name__ in ["Wizard", "Person"]:
+                if len(target.stock_list) < target.stock_list_limit:
+                    target.stock_list.append(self.ruler_wizard.stock_list.pop(0))
+
+    def map_item_impact(self, map_item):
+
+        if self.ruler_wizard.stock_list:
+            if map_item[self.location[1]][self.location[0]] == "":
+                map_item[self.location[1]][self.location[0]] = self.ruler_wizard.stock_list.pop(0)
+
+class SpellPickupItem(SpellKindDirectional):
+
+    def __init__(self, wizard):
+
+        super().__init__(wizard)
+        self.travel_max = 1
+
+    def impact(self, target):
+
+        # TODO Select item from item list with arrow keys and enter (matching location selection spells)
+        if len(self.ruler_wizard.stock_list) < self.ruler_wizard.stock_list_limit:
+            if type(target).__name__ in ["Wizard", "Person"]:
+                if target.stock_list:
+                    self.ruler_wizard.stock_list.append(target.stock_list.pop(0))
+
+    def map_item_impact(self, map_item):
+
+        if len(self.ruler_wizard.stock_list) < self.ruler_wizard.stock_list_limit:
+            if map_item[self.location[1]][self.location[0]]:
+                self.ruler_wizard.stock_list.append(map_item[self.location[1]][self.location[0]])
+                map_item[self.location[1]][self.location[0]] = ""
 
 
 class SpellConsume(SpellKindDirectional):
@@ -199,10 +240,11 @@ class SpellHeal(SpellKindSelect):
                 target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
 
 
-spell_info = {"s_harvest": {"obj": SpellHarvest, "cost": 20, "combo": ["up", "up"], "unlocked": True},
-              "s_give_item": {"obj": SpellGiveItem, "cost": 10, "combo": ["up"], "unlocked": True},
-              "s_consume": {"obj": SpellConsume, "cost": 20, "combo": ["down", "down"], "unlocked": True},
-              "s_fireball": {"obj": SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": True},
-              "s_storm": {"obj": SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
-              "s_heal": {"obj": SpellHeal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": True}}
+spell_info = {"s_harvest": {"obj": SpellHarvest, "cost": 20, "combo": ["down", "down"], "unlocked": True},
+          "s_give_item": {"obj": SpellGiveItem, "cost": 10, "combo": ["up"], "unlocked": True},
+          "s_pickup_item": {"obj": SpellPickupItem, "cost": 10, "combo": ["down"], "unlocked": True},
+          "s_consume": {"obj": SpellConsume, "cost": 20, "combo": ["down", "down"], "unlocked": True},
+          "s_fireball": {"obj": SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": True},
+          "s_storm": {"obj": SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
+          "s_heal": {"obj": SpellHeal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": True}}
 
