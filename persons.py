@@ -27,7 +27,7 @@ class Person:
                           "u_health_current": 100,
                           "u_attack_damage": 20}
 
-    def update(self, map_resource, map_entities, map_topology, map_traffic):
+    def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 
         if globe.time.check(self.time_last_eat, self.ruler_state.time_dur_eat):
             self.eat()
@@ -47,8 +47,8 @@ class Person:
             self.attack(map_entities, map_topology, map_traffic, self.action_attack)
 
         if self.stat_dict["u_health_current"] <= 0:
+            pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
             self.ruler_state.person_list.remove(self)
-            # TODO Drop items upon destruction
 
     def work(self, map_entities, map_topology, map_traffic, work_object):
         """Send person to work object location and work when adjacent."""

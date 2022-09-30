@@ -1,6 +1,7 @@
 import pygame as pg
 import random
 
+import pathfinding
 import globe
 
 
@@ -19,11 +20,11 @@ class Building:
 
         self.stat_dict = {"u_health_max": 100, "u_health_current": 100}
 
-    def update(self):
+    def update(self, map_topology, map_item):
 
         if self.stat_dict["u_health_current"] <= 0:
+            pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
             self.ruler_state.building_list.remove(self)
-            # TODO Drop items upon destruction
 
     def constructing(self, build_amount):
         """Subtract build_amount from under_construction until 0 is reached, then return 0."""

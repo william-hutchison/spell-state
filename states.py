@@ -49,7 +49,7 @@ class State:
         self.wizard = self.create_wizard(map_entities, map_topology, self.location)
         self.building_list.append(self.create_building("b_tower", map_entities, map_topology, map_traffic, self.location))
         
-    def update(self, map_resource, map_entities, map_topology, map_traffic):
+    def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 
         self.tune_action_wight()
 
@@ -80,9 +80,9 @@ class State:
 
         # update entities
         for building in self.building_list:
-            building.update()
+            building.update(map_topology, map_item)
         for person in self.person_list:
-            person.update(map_resource, map_entities, map_topology, map_traffic)
+            person.update(map_resource, map_entities, map_topology, map_item, map_traffic)
 
     def create_wizard(self, map_entities, map_topology, location_tower):
         """Create wizard at the edge of the tower. Returns new wizard object."""

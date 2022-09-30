@@ -1,3 +1,4 @@
+import random
 import math
 
 import globe
@@ -171,3 +172,21 @@ def find_within_radius(location, radius):
             possible_locations.append((location[0]+x, location[1]+y))
 
     return possible_locations
+
+
+def drop_items(location, items, map_topology, map_item):
+    possible_locations = find_within_radius(location, round(2+len(items)/4))
+    for item in items:
+
+        # Check if location is empty on item map and not water on topology map
+        searching_locations = True
+        while searching_locations:
+            try_location = random.choice(possible_locations)
+            if not map_item[try_location[1]][try_location[0]] and map_topology[try_location[1]][try_location[0]]:
+                map_item[try_location[1]][try_location[0]] = item
+                possible_locations.remove(try_location)
+                searching_locations = False
+
+            # TODO Do something to avoid infinite loop in case of no locations found
+
+

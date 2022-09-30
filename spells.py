@@ -62,7 +62,7 @@ class SpellKindDirectional(Spell):
                         self.ruler_wizard.spell_list.remove(self)
 
                 # special case for accessing items
-                if type(self).__name__ in ["SpellGiveItem", "SpellPickupItem"]:
+                elif type(self).__name__ in ["SpellGiveItem", "SpellPickupItem"]:
                     if target := map_entities[self.location[1]][self.location[0]]:
                         self.impact(target)
                         self.ruler_wizard.spell_list.remove(self)
@@ -241,7 +241,7 @@ class SpellHeal(SpellKindSelect):
 spell_info = {"s_harvest": {"obj": SpellHarvest, "cost": 20, "combo": ["down", "down"], "unlocked": True},
           "s_give_item": {"obj": SpellGiveItem, "cost": 10, "combo": ["up"], "unlocked": True},
           "s_pickup_item": {"obj": SpellPickupItem, "cost": 10, "combo": ["down"], "unlocked": True},
-          "s_consume": {"obj": SpellConsume, "cost": 20, "combo": ["down", "down"], "unlocked": True},
+          "s_consume": {"obj": SpellConsume, "cost": 20, "combo": ["right", "down", "left"], "unlocked": True},
           "s_fireball": {"obj": SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": True},
           "s_storm": {"obj": SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
           "s_heal": {"obj": SpellHeal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": True}}

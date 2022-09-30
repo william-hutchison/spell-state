@@ -34,7 +34,7 @@ class World:
     def update(self):
 
         for state in self.state_list:
-            state.update(self.map_resource, self.map_entities, self.map_topology, self.map_traffic)
+            state.update(self.map_resource, self.map_entities, self.map_topology, self.map_item, self.map_traffic)
 
         self.map_entities = self.update_entity_map(self.state_list)
 

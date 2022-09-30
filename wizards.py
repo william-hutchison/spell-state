@@ -41,6 +41,7 @@ class Wizard:
 
         # TODO Assuming this works, unable to test
         if self.stat_dict["u_health_current"] <= 0:
+            pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
             del self.spell_list
             del self.ruler_state.wizard
 
