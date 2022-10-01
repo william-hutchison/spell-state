@@ -176,7 +176,7 @@ def draw_inspector_info(surface_ui_panel, inspector_dict):
     for i, item in enumerate(inspector_dict.items()):
         if item[1]:
             text = font_0.render(str(item[0]) + ": " + str(item[1]), True, (255, 255, 255))
-            surface_ui_panel.blit(text, (10, 470 + 30 * i))
+            surface_ui_panel.blit(text, (10, 300 + 30 * i))
 
 
 def draw_player_info(surface_ui_wizard, camera, character):

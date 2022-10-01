@@ -13,6 +13,7 @@ class Building:
         self.location = location
         self.sprite = pg.image.load('sprites/house.png')
         self.stock_list = []
+        self.stock_list_needed = []
         self.stock_list_limit = 0
         self.time_last = globe.time.now()
         self.under_construction = 0
@@ -25,6 +26,11 @@ class Building:
         if self.stat_dict["u_health_current"] <= 0:
             pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
             self.ruler_state.building_list.remove(self)
+
+        for item in self.stock_list_needed:
+            if item in self.stock_list:
+                self.stock_list_needed.remove(item)
+                self.stock_list.remove(item)
 
     def constructing(self, build_amount):
         """Subtract build_amount from under_construction until 0 is reached, then return 0."""
@@ -69,12 +75,16 @@ class House(Building):
 
         super().__init__(ruler_state, location)
         self.sprite = pg.image.load('sprites/construction.png')
+        self.stock_list_needed = building_info["b_house"]["cost"]
+        self.stock_list_limit = len(self.stock_list_needed)
         self.under_construction = 4000
 
     def constructed(self):
 
         self.ruler_state.increase_pop_limit(self.ruler_state, 1)
         self.sprite = pg.image.load('sprites/house.png')
+        self.stock_list_needed = []
+        self.stock_list_limit = 0
 
 
 class Shrine(Building):
@@ -102,6 +112,8 @@ class LabOffence(Building):
 
         super().__init__(ruler_state, location)
         self.sprite = pg.image.load('sprites/construction.png')
+        self.stock_list_needed = building_info["b_lab_offence"]["cost"]
+        self.stock_list_limit = len(self.stock_list_needed)
         self.under_construction = 6000
         self.max_work = 2000
         self.under_work = self.max_work
@@ -109,7 +121,8 @@ class LabOffence(Building):
     def constructed(self):
 
         self.sprite = pg.image.load('sprites/house.png')
-        pass
+        self.stock_list_needed = []
+        self.stock_list_limit = 0
 
     def work(self):
 
@@ -136,9 +149,8 @@ class Tavern(Building):
         pass
 
 
-# TODO change list of tuples to list of n items needed
 building_info = {"b_tower": {"obj": Tower, "cost": []},
-                 "b_house": {"obj": House, "cost": [("i_wood", 3)]},
-                 "b_shrine": {"obj": Shrine, "cost": [("i_wood", 1)]},
-                 "b_tavern": {"obj": Tavern, "cost": [("i_metal", 3)]},
-                 "b_lab_offence": {"obj": LabOffence, "cost": [("i_wood", 1)]}}
+                 "b_house": {"obj": House, "cost": ["i_wood", "i_wood"]},
+                 "b_shrine": {"obj": Shrine, "cost": ["i_metal"]},
+                 "b_tavern": {"obj": Tavern, "cost": ["i_wood", "i_food"]},
+                 "b_lab_offence": {"obj": LabOffence, "cost": ["i_wood", "i_metal"]}}

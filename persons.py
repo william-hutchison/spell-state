@@ -19,8 +19,10 @@ class Person:
         self.time_last = globe.time.now()
         self.time_last_eat = globe.time.now()
         self.action_super = "a_idle"
+        # TODO Remove excess variables
         self.action_construction = None
         self.action_work = None
+        self.action_haul = None
         self.action_attack = None
 
         self.stat_dict = {"u_health_max": 100,
@@ -33,34 +35,66 @@ class Person:
             self.eat()
             self.time_last_eat = globe.time.now()
 
-        if self.action_super == "a_harvest_food":
-            self.harvest(map_resource, map_entities, map_topology, map_traffic, "i_food")
-        elif self.action_super == "a_harvest_wood":
-            self.harvest(map_resource, map_entities, map_topology, map_traffic, "i_wood")
-        elif self.action_super == "a_harvest_metal":
-            self.harvest(map_resource, map_entities, map_topology, map_traffic, "i_metal")
+        if self.action_super == "a_haul":
+            self.haul(map_entities, map_topology, map_traffic, self.action_haul)
         elif self.action_super == "a_construct":
             self.construct(map_entities, map_topology, map_traffic, self.action_construction)
         elif self.action_super == "a_work":
             self.work(map_entities, map_topology, map_traffic, self.action_work)
         elif self.action_super == "a_attack":
             self.attack(map_entities, map_topology, map_traffic, self.action_attack)
+        elif self.action_super == "a_harvest_food":
+            self.harvest(map_resource, map_entities, map_topology, map_traffic, "i_food")
+        elif self.action_super == "a_harvest_wood":
+            self.harvest(map_resource, map_entities, map_topology, map_traffic, "i_wood")
+        elif self.action_super == "a_harvest_metal":
+            self.harvest(map_resource, map_entities, map_topology, map_traffic, "i_metal")
 
         if self.stat_dict["u_health_current"] <= 0:
             pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
             self.ruler_state.person_list.remove(self)
 
+    def haul(self, map_entities, map_topology, map_traffic, haul_link):
+
+        if haul_link[2] in self.stock_list:
+
+            # Deposit item
+            if self.location in pathfinding.find_edges(haul_link[0].location):
+                if haul_link[2] in haul_link[0].stock_list_needed:
+                    if globe.time.check(self.time_last, self.ruler_state.time_dur_transfer):
+                        tools.item_transfer(self.stock_list, haul_link[0].stock_list, haul_link[2], 1)
+                        self.time_last = globe.time.now()
+                        self.action_super_set("a_idle")
+                else:
+                    self.action_super_set("a_idle")
+            # Move to haul to location
+            else:
+                self.move(map_entities, map_topology, map_traffic, haul_link[0].location, adjacent=True)
+
+        else:
+            # Collect item
+            if self.location in pathfinding.find_edges(haul_link[1].location):
+                if globe.time.check(self.time_last, self.ruler_state.time_dur_transfer):
+                    if haul_link[2] in haul_link[1].stock_list:
+                        tools.item_transfer(haul_link[1].stock_list, self.stock_list, haul_link[2], 1)
+                    else:
+                        self.action_super_set("a_idle")
+                    self.time_last = globe.time.now()
+            # Move to haul from location
+            else:
+                self.move(map_entities, map_topology, map_traffic, haul_link[1].location, adjacent=True)
+
     def work(self, map_entities, map_topology, map_traffic, work_object):
         """Send person to work object location and work when adjacent."""
 
-        # construct construct_object in milliseconds until it returns 0
+        # work at work_object in milliseconds until it returns 0
         if self.location in pathfinding.find_edges(work_object.location):
             if not work_object.working(globe.time.now() - self.time_last):
                 self.action_super_set("a_idle")
                 self.action_work = None
             self.time_last = globe.time.now()
 
-        # move to construct object
+        # move to work object
         else:
             self.move(map_entities, map_topology, map_traffic, work_object.location, adjacent=True)
 

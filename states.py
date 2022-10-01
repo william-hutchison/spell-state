@@ -26,6 +26,7 @@ class State:
                             "a_harvest_food": {"weight": 10},
                             "a_harvest_wood": {"weight": 10},
                             "a_harvest_metal": {"weight": 10},
+                            "a_haul": {"weight": 100},
                             "a_construct": {"weight": 100},
                             "a_work": {"weight": 10},
                             "a_attack": {"weight": 10}}
@@ -48,7 +49,8 @@ class State:
         # TODO Prevent placement in water
         self.wizard = self.create_wizard(map_entities, map_topology, self.location)
         self.building_list.append(self.create_building("b_tower", map_entities, map_topology, map_traffic, self.location))
-        
+        self.temp = True
+
     def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 
         self.tune_action_wight()
@@ -60,17 +62,11 @@ class State:
 
         # decide what to construct 
         # TODO Intelligently decide what to construct next
-        if tools.items_compare(self.stock_list, buildings.building_info["b_lab_offence"]["cost"]):
-            build_attempt = "b_lab_offence"
-        else:
-            build_attempt = None
-        
-        if build_attempt:
-            if temp_building := self.create_building(build_attempt, map_entities, map_topology, map_traffic, self.location):
-                self.building_list.append(temp_building)
-                for item in buildings.building_info[build_attempt]["cost"]:
-                    tools.item_remove(self.stock_list, item[0], item[1])
-        
+        if self.temp:
+            build_attempt = random.choice(["b_house", "b_lab_offence"])
+            self.building_list.append(self.create_building(build_attempt, map_entities, map_topology, map_traffic, self.location))
+            self.temp = False
+
         # increase population
         if self.pop_current < self.pop_limit:
             if globe.time.check(self.time_last_birth, self.time_dur_birth):
@@ -98,18 +94,13 @@ class State:
         """Create building site of a given kind at an appropriate location. Returns new building
         object."""
 
-        # check for adequate resources
-        for item in buildings.building_info[kind]["cost"]:
-            if not tools.item_count(self.stock_list, item[0]) > item[1]:
-                return None
-
         # construct tower
         if kind == "b_tower":
             return buildings.building_info[kind]["obj"](self, location_tower)
 
         # construct buildings within radius of tower
         # TODO Ensure building access (maybe astar check each building with tower)
-        elif kind in ["b_house", "b_shrine", "b_tavern", "b_lab_offence"]:
+        else:
             build_radius = 4 + round(len(self.building_list) * 0.25)
             possible_locations = pathfinding.find_within_radius(location_tower, build_radius)
             possible_locations = pathfinding.find_free(possible_locations, map_entities, map_topology)
@@ -146,22 +137,39 @@ class State:
         #TODO Replace with diplomacy system
         target_state = self.other_states[0]
 
+        # Prepare lists of possible actions
         possible_actions = ["a_idle", "a_harvest_food", "a_harvest_wood", "a_harvest_metal"]
         idle_person_list = [i for i in person_list if i.action_super == "a_idle"]
-        construction_list = [i for i in building_list if i.under_construction]
+        construction_list = [i for i in building_list if i.under_construction and not i.stock_list_needed]
         work_list = [i for i in building_list if not i.under_construction and i.under_work]
         attack_list = ([i.location for i in target_state.person_list])
 
+        # Create list of tuples where 0 - entity to haul to, 1 - entity to haul from, 2 - item to haul
+        haul_to_list = [i for i in building_list if i.stock_list_needed]
+        haul_from_list = [i for i in building_list if i.stock_list]
+        haul_links = []
+        for building_to in haul_to_list:
+            for item in building_to.stock_list_needed:
+                for building_from in haul_from_list:
+                    # TODO Improve logic to account for multiple of the same item
+                    if item in building_from.stock_list:
+                        haul_links.append((building_to, building_from, item))
+
+        if haul_links:
+            possible_actions.append("a_haul")
         if construction_list:
             possible_actions.append("a_construct")
-        elif work_list:
+        if work_list:
             possible_actions.append("a_work")
-        elif attack_list:
+        if attack_list:
             possible_actions.append("a_attack")
 
+        # TODO Intelligently decide which building to construct next ect somewhere. Currently assign_build ect attempts to build everything until no idle workers / unbuilt buildings remain
         if idle_person_list:
             chosen_action = random.choices([i for i in possible_actions], weights=[self.action_dict[i]["weight"] for i in possible_actions])[0]
-            if chosen_action == "a_construct":
+            if chosen_action == "a_haul":
+                self.assign_haul(person_list, idle_person_list, haul_links)
+            elif chosen_action == "a_construct":
                 self.assign_build(person_list, idle_person_list, construction_list)
             elif chosen_action == "a_work":
                 self.assign_work(person_list, idle_person_list, work_list)
@@ -172,12 +180,30 @@ class State:
             elif chosen_action in ["a_harvest_food", "a_harvest_wood", "a_harvest_metal"]:
                 idle_person_list[0].action_super_set(chosen_action)
 
-    def assign_work(self, person_list, idle_person_list, building_list):
+    def assign_haul(self, person_list, idle_person_list, haul_links):
+
+        for haul_link in haul_links:
+
+            # check if entity already has haul assigned
+            haul_assigned = [i for i in person_list if i.action_haul == haul_link[0]]
+            if not haul_assigned:
+
+                # Find closest idle person with inventory space and assign to haul
+                if possible_person_list := [i for i in idle_person_list if len(i.stock_list) < i.stock_list_limit]:
+                    person_location = pathfinding.find_closest(haul_link[1].location, [i.location for i in possible_person_list])
+                    person = [i for i in possible_person_list if i.location == person_location].pop()
+                    person.action_super_set("a_haul")
+
+                    # TODO Add support for hauling multiple items
+                    person.action_haul = haul_link
+
+    def assign_work(self, person_list, idle_person_list, work_list):
         """Assign the closest person in the provided idle person list and assign them to construct
         given building."""
 
-        for building in building_list:
+        for building in work_list:
 
+            # TODO Remove useless variables work_assigned ect when able to test again
             # check if building already has construction assigned
             work_assigned = [i for i in person_list if i.action_work == building]
             if not work_assigned:
@@ -189,11 +215,11 @@ class State:
                     person.action_super_set("a_work")
                     person.action_work = building
 
-    def assign_build(self, person_list, idle_person_list, building_list):
+    def assign_build(self, person_list, idle_person_list, construction_list):
         """Assign the closest person in the provided idle person list and assign them to construct
         given building."""
 
-        for building in building_list:
+        for building in construction_list:
 
             # check if building already has construction assigned
             construction_assigned = [i for i in person_list if i.action_construction == building]
