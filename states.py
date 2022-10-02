@@ -18,15 +18,6 @@ class State:
         self.other_states = []
         self.colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
-        self.action_dict = {None: {"weight": 10, "function": None},
-                            "a_harvest_food": {"weight": 10, "function": persons.Person.harvest},
-                            "a_harvest_wood": {"weight": 10, "function": persons.Person.harvest},
-                            "a_harvest_metal": {"weight": 10, "function": persons.Person.harvest},
-                            "a_haul": {"weight": 100, "function": persons.Person.haul},
-                            "a_construct": {"weight": 100, "function": persons.Person.construct},
-                            "a_work": {"weight": 10, "function": persons.Person.work},
-                            "a_attack": {"weight": 10, "function": persons.Person.attack}}
-
         self.time_last_order = globe.time.now()
         self.time_last_birth = globe.time.now()
         self.time_dur_order = 200
@@ -44,7 +35,23 @@ class State:
         # TODO Prevent placement in water
         self.wizard = self.create_wizard(map_entities, map_topology, self.location)
         self.building_list.append(self.create_building("b_tower", map_entities, map_topology, map_traffic, self.location))
-        self.temp = True
+
+        self.temp = True # Auto build for testing
+
+        self.action_dict = {None: {"weight": 10, "function": None},
+                            "a_harvest_food": {"weight": 10, "function": persons.Person.harvest},
+                            "a_harvest_wood": {"weight": 10, "function": persons.Person.harvest},
+                            "a_harvest_metal": {"weight": 10, "function": persons.Person.harvest},
+                            "a_haul": {"weight": 100, "function": persons.Person.haul},
+                            "a_construct": {"weight": 100, "function": persons.Person.construct},
+                            "a_work": {"weight": 10, "function": persons.Person.work},
+                            "a_attack": {"weight": 10, "function": persons.Person.attack}}
+
+        self.building_dict = {"b_tower": {"class": buildings.Tower, "cost": []},
+                              "b_house": {"class": buildings.House, "cost": ["i_wood", "i_wood"]},
+                              "b_shrine": {"class": buildings.Shrine, "cost": ["i_metal"]},
+                              "b_tavern": {"class": buildings.Tavern, "cost": ["i_wood", "i_food"]},
+                              "b_lab_offence": {"class": buildings.LabOffence, "cost": ["i_wood", "i_metal"]}}
 
     def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 
@@ -91,7 +98,7 @@ class State:
 
         # construct tower
         if kind == "b_tower":
-            return buildings.building_info[kind]["obj"](self, location_tower)
+            return self.building_dict[kind]["class"](self, location_tower)
 
         # construct buildings within radius of tower
         # TODO Ensure building access (maybe astar check each building with tower)
@@ -110,7 +117,7 @@ class State:
 
                 # construct building
                 audio.audio.play_relative_sound("n_construction", location)
-                return buildings.building_info[kind]["obj"](self, location)
+                return self.building_dict[kind]["class"](self, location)
 
         return None
 

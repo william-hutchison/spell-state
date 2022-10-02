@@ -236,13 +236,3 @@ class SpellHeal(SpellKindSelect):
         if type(target).__name__ == "Person":
             if target.ruler_state == self.ruler_wizard.ruler_state:
                 target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
-
-# TODO Move to within wizard
-spell_info = {"s_harvest": {"obj": SpellHarvest, "cost": 20, "combo": ["down", "down"], "unlocked": True},
-          "s_give_item": {"obj": SpellGiveItem, "cost": 10, "combo": ["up"], "unlocked": True},
-          "s_pickup_item": {"obj": SpellPickupItem, "cost": 10, "combo": ["down"], "unlocked": True},
-          "s_consume": {"obj": SpellConsume, "cost": 20, "combo": ["right", "down", "left"], "unlocked": True},
-          "s_fireball": {"obj": SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": True},
-          "s_storm": {"obj": SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
-          "s_heal": {"obj": SpellHeal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": True}}
-

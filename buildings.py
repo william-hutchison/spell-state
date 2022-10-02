@@ -75,7 +75,7 @@ class House(Building):
 
         super().__init__(ruler_state, location)
         self.sprite = pg.image.load('sprites/construction.png')
-        self.stock_list_needed = building_info["b_house"]["cost"]
+        self.stock_list_needed = ruler_state.building_dict["b_house"]["cost"]
         self.stock_list_limit = len(self.stock_list_needed)
         self.under_construction = 4000
 
@@ -112,7 +112,7 @@ class LabOffence(Building):
 
         super().__init__(ruler_state, location)
         self.sprite = pg.image.load('sprites/construction.png')
-        self.stock_list_needed = building_info["b_lab_offence"]["cost"]
+        self.stock_list_needed = ruler_state.building_dict["b_lab_offence"]["cost"]
         self.stock_list_limit = len(self.stock_list_needed)
         self.under_construction = 6000
         self.max_work = 2000
@@ -147,10 +147,3 @@ class Tavern(Building):
 
         self.sprite = pg.image.load('sprites/house.png')
         pass
-
-# TODO Move to within state
-building_info = {"b_tower": {"obj": Tower, "cost": []},
-                 "b_house": {"obj": House, "cost": ["i_wood", "i_wood"]},
-                 "b_shrine": {"obj": Shrine, "cost": ["i_metal"]},
-                 "b_tavern": {"obj": Tavern, "cost": ["i_wood", "i_food"]},
-                 "b_lab_offence": {"obj": LabOffence, "cost": ["i_wood", "i_metal"]}}

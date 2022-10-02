@@ -12,7 +12,6 @@ class Wizard:
         self.ruler_state = ruler_state
         self.location = location
         self.sprite = pg.image.load('sprites/wizard.png')
-        self.spell_dict = spells.spell_info
         self.stock_list = []
         self.stock_list_limit = 4
         self.spell_list = []
@@ -23,6 +22,14 @@ class Wizard:
                           "u_health_current": 100,
                           "u_mana_max": 100,
                           "u_mana_current": 100}
+
+        self.spell_dict = {"s_harvest": {"class": spells.SpellHarvest, "cost": 20, "combo": ["down", "down"], "unlocked": True},
+                           "s_give_item": {"class": spells.SpellGiveItem, "cost": 10, "combo": ["up"], "unlocked": True},
+                           "s_pickup_item": {"class": spells.SpellPickupItem, "cost": 10, "combo": ["down"], "unlocked": True},
+                           "s_consume": {"class": spells.SpellConsume, "cost": 20, "combo": ["right", "down", "left"], "unlocked": True},
+                           "s_fireball": {"class": spells.SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": True},
+                           "s_storm": {"class": spells.SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
+                           "s_heal": {"class": spells.SpellHeal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": True}}
 
     def update(self, map_entities, map_topology, map_resource, map_item, cast_attempt, move_character_attempt, move_spell_attempt):
 
@@ -58,6 +65,6 @@ class Wizard:
 
         if self.stat_dict["u_mana_current"] >= self.spell_dict[kind]["cost"]:
             self.stat_dict["u_mana_current"] -= self.spell_dict[kind]["cost"]
-            return self.spell_dict[kind]["obj"](self)
+            return self.spell_dict[kind]["class"](self)
 
         return None
