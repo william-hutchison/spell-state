@@ -237,7 +237,7 @@ class SpellHeal(SpellKindSelect):
             if target.ruler_state == self.ruler_wizard.ruler_state:
                 target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
 
-
+# TODO Move to within wizard
 spell_info = {"s_harvest": {"obj": SpellHarvest, "cost": 20, "combo": ["down", "down"], "unlocked": True},
           "s_give_item": {"obj": SpellGiveItem, "cost": 10, "combo": ["up"], "unlocked": True},
           "s_pickup_item": {"obj": SpellPickupItem, "cost": 10, "combo": ["down"], "unlocked": True},

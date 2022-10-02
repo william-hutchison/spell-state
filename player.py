@@ -7,36 +7,13 @@ class Player:  # TODO Should this object even exist? Probably not
 
     def __init__(self, player_wizard):
 
-        self.interface = Interface()
         self.camera = Camera()
         self.character = Character(player_wizard)
 
     def update(self, map_topology, map_resource, map_item, map_entities, events):
         
-        self.interface.update(events[0], events[1])
         self.character.update(map_entities, map_topology, map_resource, map_item, events[0], events[1])
         self.camera.update(self.character, map_topology, map_resource, map_item, map_entities, events[0], events[1])
-
-
-class Interface:
-
-    def __init__(self):
-
-        self.panel_current = 1
-
-    def update(self, key_press, keys):
-
-        self.change_panel(key_press, keys)
-
-    def change_panel(self, key_press, keys):
-
-        if key_press:
-            if keys[pg.K_1]:
-                self.panel_current = 1
-            elif keys[pg.K_2]:
-                self.panel_current = 2
-            elif keys[pg.K_3]:
-                self.panel_current = 3
 
 class Camera:
     

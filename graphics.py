@@ -99,30 +99,12 @@ class Graphics:
         elif inspector_mode == "select":
             self.surface_terrain.blit(image_selector, ((inspector_location[0]-camera_location[0])*globe.TILE_SIZE-1, (inspector_location[1]-camera_location[1])*globe.TILE_SIZE-1))
 
-    def update_ui_panel(self, state, inspector_dict, interface):
+    def update_ui_panel(self, state, inspector_dict):
 
         self.surface_ui_panel.fill((30, 30, 40))
-
-        for i in range(3):
-            text = font_0.render(str(i+1), True, (255, 255, 255))
-            self.surface_ui_panel.blit(text, (10+30*i, 10))
-            self.surface_ui_panel.blit(image_inspector, (10+30*(interface.panel_current-1), 10))
-
-        if interface.panel_current == 1:
-            text = font_0.render("State info", True, (255, 255, 255))
-            self.surface_ui_panel.blit(text, (10, 40))
-            draw_time(self.surface_ui_panel)
-            draw_state_info(self.surface_ui_panel, state)
-            draw_inspector_info(self.surface_ui_panel, inspector_dict)
-
-        # TODO Remove multi panel support?
-        elif interface.panel_current == 2:
-            text = font_0.render("Person info", True, (255, 255, 255))
-            self.surface_ui_panel.blit(text, (10, 40))
-
-        elif interface.panel_current == 3:
-            text = font_0.render("Building info", True, (255, 255, 255))
-            self.surface_ui_panel.blit(text, (10, 40))
+        draw_time(self.surface_ui_panel)
+        draw_state_info(self.surface_ui_panel, state)
+        draw_inspector_info(self.surface_ui_panel, inspector_dict)
 
     def update_ui_wizard(self, camera, character):
 
@@ -155,22 +137,12 @@ def draw_time(surface_ui_panel):
 
 def draw_state_info(surface_ui_panel, state):
 
-    text0 = font_0.render("Stock list: " + str(tools.item_summary(state.stock_list)), True, (255, 255, 255))
-    text1 = font_0.render("Building list: " + str([type(i).__name__ for i in state.building_list]), True, (255, 255, 255))
-    text2 = font_0.render("Person list: " + str([type(i).__name__ for i in state.person_list]), True, (255, 255, 255))
-    text3 = font_0.render("Action dict: " + str(state.action_dict), True, (255, 255, 255))
+    text0 = font_0.render("Building list: " + str([type(i).__name__ for i in state.building_list]), True, (255, 255, 255))
+    text1 = font_0.render("Person list: " + str([type(i).__name__ for i in state.person_list]), True, (255, 255, 255))
+    text2 = font_0.render("Action dict: " + str(state.action_dict), True, (255, 255, 255))
     surface_ui_panel.blit(text0, (10, 100))
     surface_ui_panel.blit(text1, (10, 130))
     surface_ui_panel.blit(text2, (10, 160))
-    surface_ui_panel.blit(text3, (10, 190))
-
-    # TODO Remove state stat system?
-    """
-    for i, item in enumerate(state.stat_dict.items()):
-        if item[1]:
-            text = font_0.render(str(item[0]) + ": " + str(item[1]), True, (255, 255, 255))
-            surface_ui_panel.blit(text, (10, 190 + 30 * i))
-    """
 
 def draw_inspector_info(surface_ui_panel, inspector_dict):
     for i, item in enumerate(inspector_dict.items()):

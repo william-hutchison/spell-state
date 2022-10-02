@@ -37,27 +37,6 @@ def item_count(list, item):
             count += 1
     return count
 
-def items_compare(list_stock, list_check):
-    """Compares stock list to a list of tuples. Returns True if stock exceeds all costs."""
-    #TODO Change list_cost to dictionary
-
-    for item in list_check:
-        if not list_stock.count(item[0]) >= item[1]:
-            return False
-    return True
-
-
-
-def item_summary(list):
-
-    dict = {}
-    for item in list:
-        if item in dict:
-            dict[item] += 1
-        else:
-            dict[item] = 1
-    return dict
-
 
 def colour_image(image, colour):
     """Replace the file colour values with the given input colour."""

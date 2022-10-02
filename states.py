@@ -4,7 +4,6 @@ import wizards
 import buildings
 import persons
 import pathfinding
-import tools
 import globe
 import audio
 
@@ -16,25 +15,22 @@ class State:
         self.location = location
         self.building_list = []
         self.person_list = []
-        self.stock_list = []
         self.other_states = []
         self.colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        # TODO Remove stat system?
-        self.stat_dict = {"loyalty": 50,
-                          "fear": 50}
-        self.action_dict = {"a_idle": {"weight": 10},
-                            "a_harvest_food": {"weight": 10},
-                            "a_harvest_wood": {"weight": 10},
-                            "a_harvest_metal": {"weight": 10},
-                            "a_haul": {"weight": 100},
-                            "a_construct": {"weight": 100},
-                            "a_work": {"weight": 10},
-                            "a_attack": {"weight": 10}}
+
+        self.action_dict = {None: {"weight": 10, "function": None},
+                            "a_harvest_food": {"weight": 10, "function": persons.Person.harvest},
+                            "a_harvest_wood": {"weight": 10, "function": persons.Person.harvest},
+                            "a_harvest_metal": {"weight": 10, "function": persons.Person.harvest},
+                            "a_haul": {"weight": 100, "function": persons.Person.haul},
+                            "a_construct": {"weight": 100, "function": persons.Person.construct},
+                            "a_work": {"weight": 10, "function": persons.Person.work},
+                            "a_attack": {"weight": 10, "function": persons.Person.attack}}
+
         self.time_last_order = globe.time.now()
         self.time_last_birth = globe.time.now()
         self.time_dur_order = 200
         self.time_dur_birth = 4000
-
         self.time_dur_move = 200
         self.time_dur_eat = 20000
         self.time_dur_transfer = 100#0
@@ -42,8 +38,7 @@ class State:
         self.time_dur_harvest = 400#0
         self.time_dur_attack = 400
 
-        self.pop_limit = 0
-        self.pop_current = 0
+        self.person_list_limit = 0
 
         # TODO Intelligently decide where to place tower / let player choose
         # TODO Prevent placement in water
@@ -68,7 +63,7 @@ class State:
             self.temp = False
 
         # increase population
-        if self.pop_current < self.pop_limit:
+        if len(self.person_list) < self.person_list_limit:
             if globe.time.check(self.time_last_birth, self.time_dur_birth):
                 if temp_person := self.create_person(map_entities, map_topology, self.location):
                     self.person_list.append(temp_person)
@@ -126,7 +121,6 @@ class State:
         possible_locations = pathfinding.find_free(possible_locations, map_entities, map_topology)
         if possible_locations:
             location = random.choice(possible_locations)
-            self.pop_current += 1
             audio.audio.play_relative_sound("n_birth", location)
             return persons.Person(self, location)
 
@@ -134,35 +128,37 @@ class State:
 
     def assign(self, person_list, building_list):
         """Assign an idle person to a random action, based on action dictionary weights and available tasks."""
+        
         #TODO Replace with diplomacy system
         target_state = self.other_states[0]
 
         # Prepare lists of possible actions
-        possible_actions = ["a_idle", "a_harvest_food", "a_harvest_wood", "a_harvest_metal"]
-        idle_person_list = [i for i in person_list if i.action_super == "a_idle"]
-        construction_list = [i for i in building_list if i.under_construction and not i.stock_list_needed]
-        work_list = [i for i in building_list if not i.under_construction and i.under_work]
-        attack_list = ([i.location for i in target_state.person_list])
+        possible_actions = [None, "a_harvest_food", "a_harvest_wood", "a_harvest_metal"]
+        idle_person_list = [i for i in person_list if not i.action_super]
+
+        if construction_list := [i for i in building_list if i.under_construction and not i.stock_list_needed]:
+            possible_actions.append("a_construct")
+
+        if work_list := [i for i in building_list if not i.under_construction and i.under_work]:
+            possible_actions.append("a_work")
+
+        if attack_list := ([i.location for i in target_state.person_list]):
+            possible_actions.append("a_attack")
 
         # Create list of tuples where 0 - entity to haul to, 1 - entity to haul from, 2 - item to haul
-        haul_to_list = [i for i in building_list if i.stock_list_needed]
-        haul_from_list = [i for i in building_list if i.stock_list]
         haul_links = []
-        for building_to in haul_to_list:
+
+        # Find buildings in need of items
+        for building_to in [i for i in building_list if i.stock_list_needed]:
             for item in building_to.stock_list_needed:
-                for building_from in haul_from_list:
+
+                # Find buildings with needed items
+                for building_from in [i for i in building_list if i.stock_list]:
                     # TODO Improve logic to account for multiple of the same item
                     if item in building_from.stock_list:
                         haul_links.append((building_to, building_from, item))
-
         if haul_links:
             possible_actions.append("a_haul")
-        if construction_list:
-            possible_actions.append("a_construct")
-        if work_list:
-            possible_actions.append("a_work")
-        if attack_list:
-            possible_actions.append("a_attack")
 
         # TODO Intelligently decide which building to construct next ect somewhere. Currently assign_build ect attempts to build everything until no idle workers / unbuilt buildings remain
         if idle_person_list:
@@ -176,26 +172,33 @@ class State:
             elif chosen_action == "a_attack":
                 self.assign_attack(idle_person_list, target_state)
 
-            # TODO Give assigning harvest its own function to match assign work
+            # TODO Give assigning harvest its own function to match assign work, chose target resource within and set as action_target, then use generic harvest function
             elif chosen_action in ["a_harvest_food", "a_harvest_wood", "a_harvest_metal"]:
-                idle_person_list[0].action_super_set(chosen_action)
+                idle_person_list[0].action_super = chosen_action
+
+                # PLACEHOLDER CODE UNTIL ABOVE IS IMPLEMENTED
+                if chosen_action == "a_harvest_food":
+                    idle_person_list[0].action_set("a_harvest_food", "i_food")
+                if chosen_action == "a_harvest_wood":
+                    idle_person_list[0].action_set("a_harvest_wood", "i_wood")
+                if chosen_action == "a_harvest_metal":
+                    idle_person_list[0].action_set("a_harvest_metal", "i_metal")
 
     def assign_haul(self, person_list, idle_person_list, haul_links):
 
         for haul_link in haul_links:
 
             # check if entity already has haul assigned
-            haul_assigned = [i for i in person_list if i.action_haul == haul_link[0]]
+            haul_assigned = [i for i in person_list if i.action_target == haul_link[0]]
             if not haul_assigned:
 
-                # Find closest idle person with inventory space and assign to haul
+                # Find the closest idle person with inventory space and assign to haul
                 if possible_person_list := [i for i in idle_person_list if len(i.stock_list) < i.stock_list_limit]:
                     person_location = pathfinding.find_closest(haul_link[1].location, [i.location for i in possible_person_list])
                     person = [i for i in possible_person_list if i.location == person_location].pop()
-                    person.action_super_set("a_haul")
-
                     # TODO Add support for hauling multiple items
-                    person.action_haul = haul_link
+                    person.action_set("a_haul", haul_link)
+
 
     def assign_work(self, person_list, idle_person_list, work_list):
         """Assign the closest person in the provided idle person list and assign them to construct
@@ -205,15 +208,14 @@ class State:
 
             # TODO Remove useless variables work_assigned ect when able to test again
             # check if building already has construction assigned
-            work_assigned = [i for i in person_list if i.action_work == building]
+            work_assigned = [i for i in person_list if i.action_target == building]
             if not work_assigned:
 
                 # check for and assign appropriate person to construction
                 if idle_person_list:
                     person_location = pathfinding.find_closest(building.location, [i.location for i in idle_person_list])
                     person = [i for i in idle_person_list if i.location == person_location].pop()
-                    person.action_super_set("a_work")
-                    person.action_work = building
+                    person.action_set("a_work", building)
 
     def assign_build(self, person_list, idle_person_list, construction_list):
         """Assign the closest person in the provided idle person list and assign them to construct
@@ -222,15 +224,14 @@ class State:
         for building in construction_list:
 
             # check if building already has construction assigned
-            construction_assigned = [i for i in person_list if i.action_construction == building]
+            construction_assigned = [i for i in person_list if i.action_target == building]
             if not construction_assigned:
 
                 # check for and assign appropriate person to construction
                 if idle_person_list:
                     person_location = pathfinding.find_closest(building.location, [i.location for i in idle_person_list])
                     person = [i for i in idle_person_list if i.location == person_location].pop()
-                    person.action_super_set("a_construct")
-                    person.action_construction = building
+                    person.action_set("a_construct", building)
 
     def assign_attack(self, idle_person_list, target_state):
 
@@ -239,12 +240,7 @@ class State:
             target_location = pathfinding.find_closest(self.location, [i.location for i in target_state.person_list])
             person_location = pathfinding.find_closest(target_location, [i.location for i in idle_person_list])
             person = [i for i in idle_person_list if i.location == person_location].pop()
-            person.action_super_set("a_attack")
-            person.action_attack = [i for i in target_state.person_list if i.location == target_location].pop()
-
-    def increase_pop_limit(self, target_state, amount):
-        
-        target_state.pop_limit += amount
+            person.action_set("a_attack", [i for i in target_state.person_list if i.location == target_location].pop())
 
     def tune_action_wight(self):
         """Restrict action weight to between 0 and 100, slowly move value towards 50."""

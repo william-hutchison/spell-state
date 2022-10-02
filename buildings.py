@@ -63,10 +63,10 @@ class Tower(Building):
         self.constructing(0)
 
     def constructed(self):
-
-        self.ruler_state.increase_pop_limit(self.ruler_state, 1)
-        self.stock_list_limit = 100
+        
         self.sprite = pg.image.load('sprites/tower.png')
+        self.stock_list_limit = 100
+        self.ruler_state.person_list_limit += 1
 
 
 class House(Building):
@@ -81,10 +81,10 @@ class House(Building):
 
     def constructed(self):
 
-        self.ruler_state.increase_pop_limit(self.ruler_state, 1)
         self.sprite = pg.image.load('sprites/house.png')
         self.stock_list_needed = []
         self.stock_list_limit = 0
+        self.ruler_state.person_list_limit += 1
 
 
 class Shrine(Building):
@@ -148,7 +148,7 @@ class Tavern(Building):
         self.sprite = pg.image.load('sprites/house.png')
         pass
 
-
+# TODO Move to within state
 building_info = {"b_tower": {"obj": Tower, "cost": []},
                  "b_house": {"obj": House, "cost": ["i_wood", "i_wood"]},
                  "b_shrine": {"obj": Shrine, "cost": ["i_metal"]},
