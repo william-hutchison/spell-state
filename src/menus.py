@@ -3,6 +3,7 @@ import os
 import random
 
 
+# TODO Replace menu functions with objects
 class Menu:
 
     def __init__(self):
@@ -38,7 +39,7 @@ class Menu:
 
     def load(self, events, load_file):
 
-        file_names = os.listdir("saves")
+        file_names = os.listdir("../saves")
         self.options = file_names + ["back"]
         option_selected = self.option_select(events, "load")
 

@@ -12,6 +12,21 @@ class State:
 
     def __init__(self, location, map_entities, map_topology, map_traffic):
 
+        self.action_dict = {None: {"weight": 10, "function": None},
+                            "a_harvest_food": {"weight": 10, "function": persons.Person.harvest},
+                            "a_harvest_wood": {"weight": 10, "function": persons.Person.harvest},
+                            "a_harvest_metal": {"weight": 10, "function": persons.Person.harvest},
+                            "a_haul": {"weight": 100, "function": persons.Person.haul},
+                            "a_construct": {"weight": 100, "function": persons.Person.construct},
+                            "a_work": {"weight": 10, "function": persons.Person.work},
+                            "a_attack": {"weight": 10, "function": persons.Person.attack}}
+
+        self.building_dict = {"b_tower": {"class": buildings.Tower, "cost": []},
+                              "b_house": {"class": buildings.House, "cost": ["i_wood", "i_wood"]},
+                              "b_shrine": {"class": buildings.Shrine, "cost": ["i_metal"]},
+                              "b_tavern": {"class": buildings.Tavern, "cost": ["i_wood", "i_food"]},
+                              "b_lab_offence": {"class": buildings.LabOffence, "cost": ["i_wood", "i_metal"]}}
+
         self.location = location
         self.building_list = []
         self.person_list = []
@@ -37,21 +52,6 @@ class State:
         self.building_list.append(self.create_building("b_tower", map_entities, map_topology, map_traffic, self.location))
 
         self.temp = True # Auto build for testing
-
-        self.action_dict = {None: {"weight": 10, "function": None},
-                            "a_harvest_food": {"weight": 10, "function": persons.Person.harvest},
-                            "a_harvest_wood": {"weight": 10, "function": persons.Person.harvest},
-                            "a_harvest_metal": {"weight": 10, "function": persons.Person.harvest},
-                            "a_haul": {"weight": 100, "function": persons.Person.haul},
-                            "a_construct": {"weight": 100, "function": persons.Person.construct},
-                            "a_work": {"weight": 10, "function": persons.Person.work},
-                            "a_attack": {"weight": 10, "function": persons.Person.attack}}
-
-        self.building_dict = {"b_tower": {"class": buildings.Tower, "cost": []},
-                              "b_house": {"class": buildings.House, "cost": ["i_wood", "i_wood"]},
-                              "b_shrine": {"class": buildings.Shrine, "cost": ["i_metal"]},
-                              "b_tavern": {"class": buildings.Tavern, "cost": ["i_wood", "i_food"]},
-                              "b_lab_offence": {"class": buildings.LabOffence, "cost": ["i_wood", "i_metal"]}}
 
     def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 

@@ -11,7 +11,7 @@ class Building:
 
         self.ruler_state = ruler_state
         self.location = location
-        self.sprite = pg.image.load('sprites/house.png')
+        self.sprite = pg.image.load('../sprites/house.png')
         self.stock_list = []
         self.stock_list_needed = []
         self.stock_list_limit = 0
@@ -59,12 +59,12 @@ class Tower(Building):
     def __init__(self, ruler_state, location):
 
         super().__init__(ruler_state, location)
-        self.sprite = pg.image.load('sprites/construction.png')
+        self.sprite = pg.image.load('../sprites/construction.png')
         self.constructing(0)
 
     def constructed(self):
         
-        self.sprite = pg.image.load('sprites/tower.png')
+        self.sprite = pg.image.load('../sprites/tower.png')
         self.stock_list_limit = 100
         self.ruler_state.person_list_limit += 1
 
@@ -74,14 +74,14 @@ class House(Building):
     def __init__(self, ruler_state, location):
 
         super().__init__(ruler_state, location)
-        self.sprite = pg.image.load('sprites/construction.png')
+        self.sprite = pg.image.load('../sprites/construction.png')
         self.stock_list_needed = ruler_state.building_dict["b_house"]["cost"]
         self.stock_list_limit = len(self.stock_list_needed)
         self.under_construction = 4000
 
     def constructed(self):
 
-        self.sprite = pg.image.load('sprites/house.png')
+        self.sprite = pg.image.load('../sprites/house.png')
         self.stock_list_needed = []
         self.stock_list_limit = 0
         self.ruler_state.person_list_limit += 1
@@ -92,14 +92,14 @@ class Shrine(Building):
     def __init__(self, ruler_state, location):
 
         super().__init__(ruler_state, location)
-        self.sprite = pg.image.load('sprites/construction.png')
+        self.sprite = pg.image.load('../sprites/construction.png')
         self.under_construction = 6000
         self.max_work = 3000
         self.under_work = self.max_work
 
     def constructed(self):
 
-        self.sprite = pg.image.load('sprites/house.png')
+        self.sprite = pg.image.load('../sprites/house.png')
         pass
 
     def work(self):
@@ -111,7 +111,7 @@ class LabOffence(Building):
     def __init__(self, ruler_state, location):
 
         super().__init__(ruler_state, location)
-        self.sprite = pg.image.load('sprites/construction.png')
+        self.sprite = pg.image.load('../sprites/construction.png')
         self.stock_list_needed = ruler_state.building_dict["b_lab_offence"]["cost"]
         self.stock_list_limit = len(self.stock_list_needed)
         self.under_construction = 6000
@@ -120,7 +120,7 @@ class LabOffence(Building):
 
     def constructed(self):
 
-        self.sprite = pg.image.load('sprites/house.png')
+        self.sprite = pg.image.load('../sprites/house.png')
         self.stock_list_needed = []
         self.stock_list_limit = 0
 
@@ -140,10 +140,10 @@ class Tavern(Building):
     def __init__(self, ruler_state, location):
 
         super().__init__(ruler_state, location)
-        self.sprite = pg.image.load('sprites/construction.png')
+        self.sprite = pg.image.load('../sprites/construction.png')
         self.under_construction = 6000
 
     def constructed(self):
 
-        self.sprite = pg.image.load('sprites/house.png')
+        self.sprite = pg.image.load('../sprites/house.png')
         pass

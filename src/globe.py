@@ -52,12 +52,11 @@ class Time:
 
 time = None
 
+# TODO This can probably all go somewhere else, turn globe into a file for time only
+
 WORLD_SIZE = (60, 60)
 TILE_SIZE = 20
 STATE_NUMBER = 2
-
-COST_HOUSE = 5
-COST_SHRINE = 3
 
 TIME_CAMERA = 100
 TIME_FRAME = 1200

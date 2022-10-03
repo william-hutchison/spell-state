@@ -8,14 +8,15 @@ pg.init()
 
 os.chdir(os.path.dirname(__file__))
 
-image_inspector = pg.image.load('sprites/inspector.png')
-image_selector = pg.image.load('sprites/selector.png')
-image_food = pg.image.load('sprites/resource_food.png')
-image_wood = pg.image.load('sprites/resource_wood.png')
-image_metal = pg.image.load('sprites/resource_metal.png')
-image_spell_hold = pg.image.load('sprites/spell_hold.png')
+image_inspector = pg.image.load('../sprites/inspector.png')
+image_selector = pg.image.load('../sprites/selector.png')
+image_food = pg.image.load('../sprites/resource_food.png')
+image_wood = pg.image.load('../sprites/resource_wood.png')
+image_metal = pg.image.load('../sprites/resource_metal.png')
+image_spell_hold = pg.image.load('../sprites/spell_hold.png')
 
-anim_water = [pg.image.load('sprites/water_0.png'), pg.image.load('sprites/water_1.png'), pg.image.load('sprites/water_2.png')]
+anim_water = [pg.image.load('../sprites/water_0.png'), pg.image.load('../sprites/water_1.png'), pg.image.load(
+    '../sprites/water_2.png')]
 
 colour_topology = [(40, 40, 40), (60, 60, 60), (80, 80, 80), (100, 100, 100)]
 window_size = [(1200, 800), (2400, 1600)]
@@ -54,25 +55,26 @@ class Graphics:
             for x in range(globe.WORLD_SIZE[0]):
 
                 # draw tiles
-                pg.draw.rect(self.surface_terrain, (20, 8*topology[y][x], 20), ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE, globe.TILE_SIZE, globe.TILE_SIZE), 0)
+                pg.draw.rect(self.surface_terrain, (20, 8*topology[y][x], 20), ((x-camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE, globe.TILE_SIZE, globe.TILE_SIZE), 0)
                 if topology[y][x] == 0:
-                    self.surface_terrain.blit(anim_water[globe.time.frame()], ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
+                    self.surface_terrain.blit(anim_water[globe.time.frame()], ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
                 # draw resources
                 if resources[y][x] == "i_food":
-                    self.surface_terrain.blit(image_food, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
+                    self.surface_terrain.blit(image_food, ((x-camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
                 elif resources[y][x] == "i_wood":
-                    self.surface_terrain.blit(image_wood, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
+                    self.surface_terrain.blit(image_wood, ((x-camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
                 elif resources[y][x] == "i_metal":
-                    self.surface_terrain.blit(image_metal, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
+                    self.surface_terrain.blit(image_metal, ((x-camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
                 # draw items
                 if items[y][x]:
-                    self.surface_terrain.blit(image_metal, ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
+                    self.surface_terrain.blit(image_metal, ((x-camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
                 # draw entities
                 if entities[y][x]:
-                    self.surface_terrain.blit(tools.colour_image(entities[y][x].sprite, entities[y][x].ruler_state.colour), ((x-camera_location[0])*globe.TILE_SIZE, (y-camera_location[1])*globe.TILE_SIZE))
+                    self.surface_terrain.blit(
+                        tools.colour_image(entities[y][x].sprite, entities[y][x].ruler_state.colour), ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
         # draw contours
         # TODO Move to within tile loop.
@@ -81,23 +83,23 @@ class Graphics:
                 if x + 1 < globe.WORLD_SIZE[0]:
                     if topology[y][x] != topology[y][x + 1]:
                         colour_index = int(min((topology[y][x], topology[y][x + 1])))
-                        pg.draw.rect(self.surface_terrain, colour_topology[colour_index], ((x+1-camera_location[0])*globe.TILE_SIZE-1, (y-camera_location[1])*globe.TILE_SIZE, 2, globe.TILE_SIZE), 0)
+                        pg.draw.rect(self.surface_terrain, colour_topology[colour_index], ((x+1-camera_location[0]) * globe.TILE_SIZE - 1, (y - camera_location[1]) * globe.TILE_SIZE, 2, globe.TILE_SIZE), 0)
                 if y + 1 < globe.WORLD_SIZE[0]:
                     if topology[y][x] != topology[y + 1][x]:
                         colour_index = int(min((topology[y][x], topology[y + 1][x])))
-                        pg.draw.rect(self.surface_terrain, colour_topology[colour_index], ((x-camera_location[0])*globe.TILE_SIZE-1, (y+1-camera_location[1])*globe.TILE_SIZE-1, globe.TILE_SIZE, 2), 0)
+                        pg.draw.rect(self.surface_terrain, colour_topology[colour_index], ((x-camera_location[0]) * globe.TILE_SIZE - 1, (y + 1 - camera_location[1]) * globe.TILE_SIZE - 1, globe.TILE_SIZE, 2), 0)
 
     def update_overlay(self, camera_location, inspector_location, inspector_mode, character_location, state_list):
 
         for state in state_list:
             for spell in state.wizard.spell_list:
-                self.surface_terrain.blit(image_spell_hold, ((spell.location[0]-camera_location[0])*globe.TILE_SIZE, (spell.location[1]-camera_location[1])*globe.TILE_SIZE))
+                self.surface_terrain.blit(image_spell_hold, ((spell.location[0]-camera_location[0]) * globe.TILE_SIZE, (spell.location[1] - camera_location[1]) * globe.TILE_SIZE))
 
         if inspector_mode == "inspect":
             if inspector_location != character_location:
-                self.surface_terrain.blit(image_inspector, ((inspector_location[0]-camera_location[0])*globe.TILE_SIZE-1, (inspector_location[1]-camera_location[1])*globe.TILE_SIZE-1))
+                self.surface_terrain.blit(image_inspector, ((inspector_location[0]-camera_location[0]) * globe.TILE_SIZE - 1, (inspector_location[1] - camera_location[1]) * globe.TILE_SIZE - 1))
         elif inspector_mode == "select":
-            self.surface_terrain.blit(image_selector, ((inspector_location[0]-camera_location[0])*globe.TILE_SIZE-1, (inspector_location[1]-camera_location[1])*globe.TILE_SIZE-1))
+            self.surface_terrain.blit(image_selector, ((inspector_location[0]-camera_location[0]) * globe.TILE_SIZE - 1, (inspector_location[1] - camera_location[1]) * globe.TILE_SIZE - 1))
 
     def update_ui_panel(self, state, inspector_dict):
 

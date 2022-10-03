@@ -15,6 +15,7 @@ class Player:  # TODO Should this object even exist? Probably not
         self.character.update(map_entities, map_topology, map_resource, map_item, events[0], events[1])
         self.camera.update(self.character, map_topology, map_resource, map_item, map_entities, events[0], events[1])
 
+
 class Camera:
     
     def __init__(self):
