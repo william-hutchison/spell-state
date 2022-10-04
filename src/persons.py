@@ -79,7 +79,7 @@ class Person:
 
         # move to work object
         else:
-            self.move(map_entities, map_topology, map_resource, map_traffic, work_object.location, adjacent=True)
+            self.move(map_entities, map_topology, map_traffic, work_object.location, adjacent=True)
 
     def construct(self, map_entities, map_topology, map_resource, map_traffic, construct_object):
         """Send person to construct object location and construct construct object when adjacent."""
