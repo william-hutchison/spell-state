@@ -11,8 +11,8 @@ class Audio:
         pg.mixer.init()
         self.receiver_entity = receiver_entity
         self.music_current = None
-        self.sound_volume = 0
-        self.music_volume = 0
+        self.sound_volume = 1
+        self.music_volume = 1
         self.sound_dict = {"n_birth": (pg.mixer.Sound("../sounds/pure_c.wav"), 0.8),
                            "n_construction": (pg.mixer.Sound("../sounds/pure_c.wav"), 0.8),
                            "n_move": (pg.mixer.Sound("../sounds/pure_d.wav"), 0.4)}
