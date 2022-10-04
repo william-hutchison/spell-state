@@ -12,14 +12,14 @@ class State:
 
     def __init__(self, location, map_entities, map_topology, map_traffic):
 
-        self.action_dict = {None: {"weight": 10, "function": None},
-                            "a_harvest_food": {"weight": 10, "function": persons.Person.harvest},
-                            "a_harvest_wood": {"weight": 10, "function": persons.Person.harvest},
-                            "a_harvest_metal": {"weight": 10, "function": persons.Person.harvest},
-                            "a_haul": {"weight": 100, "function": persons.Person.haul},
-                            "a_construct": {"weight": 100, "function": persons.Person.construct},
+        self.action_dict = {None: {"weight": 5, "function": None},
+                            "a_harvest_food": {"weight": 30, "function": persons.Person.harvest},
+                            "a_harvest_wood": {"weight": 30, "function": persons.Person.harvest},
+                            "a_harvest_metal": {"weight": 30, "function": persons.Person.harvest},
+                            "a_haul": {"weight": 90, "function": persons.Person.haul},
+                            "a_construct": {"weight": 90, "function": persons.Person.construct},
                             "a_work": {"weight": 10, "function": persons.Person.work},
-                            "a_attack": {"weight": 10, "function": persons.Person.attack}}
+                            "a_attack": {"weight": 0, "function": persons.Person.attack}}
 
         self.building_dict = {"b_tower": {"class": buildings.Tower, "cost": []},
                               "b_house": {"class": buildings.House, "cost": ["i_wood", "i_wood"]},
@@ -242,4 +242,4 @@ class State:
         #TODO Do not call every step, should have global update every half second or so for this type of thing
         for action in self.action_dict.keys():
             self.action_dict[action]["weight"] = max(min(100, self.action_dict[action]["weight"]), 0)
-            self.action_dict[action]["weight"] += (self.action_dict[action]["weight"] - 50) * -0.001
+            self.action_dict[action]["weight"] += (self.action_dict[action]["weight"] - 50) * -0.0005
