@@ -81,8 +81,14 @@ def gen_resource(map_resource, map_topology, map_noise, topology_target, chance,
 
 
 def create_state(map_entities, map_topology, map_traffic):
-    location = (random.randint(0, globe.WORLD_SIZE[0] - 1), random.randint(0, globe.WORLD_SIZE[1] - 1))
-    return states.State(location, map_entities, map_topology, map_traffic)
+
+    possible_locations = []
+    for y in range(len(map_topology[0])):
+        for x in range(len(map_topology[1])):
+            if map_topology[y][x] in [1, 2, 3]:
+                possible_locations.append((x, y))
+
+    return states.State(random.choice(possible_locations), map_entities, map_topology, map_traffic)
 
 
 def gen_noise(seed, scale=20, octaves=6, persistence=0.5, lacunarity=2.0):

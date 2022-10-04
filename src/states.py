@@ -27,54 +27,51 @@ class State:
                               "b_tavern": {"class": buildings.Tavern, "cost": ["i_wood", "i_food"]},
                               "b_lab_offence": {"class": buildings.LabOffence, "cost": ["i_wood", "i_metal"]}}
 
+        self.colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         self.location = location
         self.building_list = []
         self.person_list = []
         self.other_states = []
-        self.colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        self.person_list_limit = 0
 
         self.time_last_order = globe.time.now()
         self.time_last_birth = globe.time.now()
+        self.time_last_construct = globe.time.now()
         self.time_dur_order = 200
         self.time_dur_birth = 4000
+        self.time_dur_construct = 8000
+
         self.time_dur_move = 200
         self.time_dur_eat = 20000
-        self.time_dur_transfer = 100#0
-        self.time_dur_construct = 600#0
-        self.time_dur_harvest = 400#0
+        self.time_dur_transfer = 400
+        self.time_dur_harvest = 400
         self.time_dur_attack = 400
 
-        self.person_list_limit = 0
-
-        # TODO Intelligently decide where to place tower / let player choose
-        # TODO Prevent placement in water
         self.wizard = self.create_wizard(map_entities, map_topology, self.location)
         self.building_list.append(self.create_building("b_tower", map_entities, map_topology, map_traffic, self.location))
 
-        self.temp = True # Auto build for testing
-
     def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 
-        self.tune_action_wight()
-
         # assign person actions
+        self.tune_action_wight()
         if globe.time.check(self.time_last_order, self.time_dur_order):
             self.assign(self.person_list, self.building_list)
             self.time_last_order = globe.time.now()
 
-        # decide what to construct 
-        # TODO Intelligently decide what to construct next
-        if self.temp:
-            build_attempt = random.choice(["b_house", "b_lab_offence"])
-            self.building_list.append(self.create_building(build_attempt, map_entities, map_topology, map_traffic, self.location))
-            self.temp = False
+        # TODO Add decide_building and decide_person functions to decide if action can / should be taken
+        # create building
+        if globe.time.check(self.time_last_construct, self.time_dur_construct):
+            if len([i for i in self.building_list if i.under_construction]) < 2:
+                if build_attempt := self.create_building(random.choice(["b_house", "b_lab_offence"]), map_entities, map_topology, map_traffic, self.location):
+                    self.building_list.append(build_attempt)
+            self.time_last_construct = globe.time.now()
 
-        # increase population
-        if len(self.person_list) < self.person_list_limit:
-            if globe.time.check(self.time_last_birth, self.time_dur_birth):
-                if temp_person := self.create_person(map_entities, map_topology, self.location):
-                    self.person_list.append(temp_person)
-                self.time_last_birth = globe.time.now()
+        # create person
+        if globe.time.check(self.time_last_birth, self.time_dur_birth):
+            if len(self.person_list) < self.person_list_limit:
+                if person_attempt := self.create_person(map_entities, map_topology, self.location):
+                    self.person_list.append(person_attempt)
+            self.time_last_birth = globe.time.now()
 
         # update entities
         for building in self.building_list:
@@ -85,9 +82,7 @@ class State:
     def create_wizard(self, map_entities, map_topology, location_tower):
         """Create wizard at the edge of the tower. Returns new wizard object."""
 
-        possible_locations = pathfinding.find_edges(location_tower)
-        possible_locations = pathfinding.find_free(possible_locations, map_entities, map_topology)
-        if possible_locations:
+        if possible_locations := pathfinding.find_free(pathfinding.find_edges(location_tower), map_entities, map_topology):
             location = random.choice(possible_locations)
 
             return wizards.Wizard(self, location)
@@ -104,10 +99,7 @@ class State:
         # TODO Ensure building access (maybe astar check each building with tower)
         else:
             build_radius = 4 + round(len(self.building_list) * 0.25)
-            possible_locations = pathfinding.find_within_radius(location_tower, build_radius)
-            possible_locations = pathfinding.find_free(possible_locations, map_entities, map_topology)
-
-            if possible_locations:
+            if possible_locations := pathfinding.find_free(pathfinding.find_within_radius(location_tower, build_radius), map_entities, map_topology):
 
                 # place buildings in low traffic areas
                 possible_locations_chance = []
@@ -124,9 +116,7 @@ class State:
     def create_person(self, map_entities, map_topology, location_tower):
         """Create person at the edge of the tower. Returns new person object."""
 
-        possible_locations = pathfinding.find_edges(location_tower)
-        possible_locations = pathfinding.find_free(possible_locations, map_entities, map_topology)
-        if possible_locations:
+        if possible_locations := pathfinding.find_free(pathfinding.find_edges(location_tower), map_entities, map_topology):
             location = random.choice(possible_locations)
             audio.audio.play_relative_sound("n_birth", location)
             return persons.Person(self, location)
@@ -213,10 +203,8 @@ class State:
 
         for building in work_list:
 
-            # TODO Remove useless variables work_assigned ect when able to test again
             # check if building already has construction assigned
-            work_assigned = [i for i in person_list if i.action_target == building]
-            if not work_assigned:
+            if not [i for i in person_list if i.action_target == building]:
 
                 # check for and assign appropriate person to construction
                 if idle_person_list:
@@ -231,8 +219,7 @@ class State:
         for building in construction_list:
 
             # check if building already has construction assigned
-            construction_assigned = [i for i in person_list if i.action_target == building]
-            if not construction_assigned:
+            if not [i for i in person_list if i.action_target == building]:
 
                 # check for and assign appropriate person to construction
                 if idle_person_list:
@@ -255,4 +242,4 @@ class State:
         #TODO Do not call every step, should have global update every half second or so for this type of thing
         for action in self.action_dict.keys():
             self.action_dict[action]["weight"] = max(min(100, self.action_dict[action]["weight"]), 0)
-            self.action_dict[action]["weight"] += (self.action_dict[action]["weight"] - 50) * -0.01
+            self.action_dict[action]["weight"] += (self.action_dict[action]["weight"] - 50) * -0.001

@@ -66,7 +66,7 @@ class Tower(Building):
         
         self.sprite = pg.image.load('../sprites/tower.png')
         self.stock_list_limit = 100
-        self.ruler_state.person_list_limit += 1
+        self.ruler_state.person_list_limit += 3
 
 
 class House(Building):
