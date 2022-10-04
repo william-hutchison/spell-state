@@ -14,6 +14,7 @@ image_food = pg.image.load('../sprites/resource_food.png')
 image_wood = pg.image.load('../sprites/resource_wood.png')
 image_metal = pg.image.load('../sprites/resource_metal.png')
 image_spell_hold = pg.image.load('../sprites/spell_hold.png')
+image_item = pg.image.load('../sprites/item.png')
 
 anim_water = [pg.image.load('../sprites/water_0.png'), pg.image.load('../sprites/water_1.png'), pg.image.load(
     '../sprites/water_2.png')]
@@ -69,7 +70,7 @@ class Graphics:
 
                 # draw items
                 if items[y][x]:
-                    self.surface_terrain.blit(image_metal, ((x-camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
+                    self.surface_terrain.blit(image_item, ((x-camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
                 # draw entities
                 if entities[y][x]:
@@ -77,7 +78,7 @@ class Graphics:
                         tools.colour_image(entities[y][x].sprite, entities[y][x].ruler_state.colour), ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
         # draw contours
-        # TODO Move to within tile loop.
+        # TODO Move to within tile loop and eliminate glitch at contour corners.
         for y in range(globe.WORLD_SIZE[1]):
             for x in range(globe.WORLD_SIZE[0]):
                 if x + 1 < globe.WORLD_SIZE[0]:

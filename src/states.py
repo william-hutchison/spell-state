@@ -10,7 +10,7 @@ import audio
 
 class State:
 
-    def __init__(self, location, map_entities, map_topology, map_traffic):
+    def __init__(self, location, map_entities, map_topology, map_traffic, colour):
 
         self.action_dict = {None: {"weight": 5, "function": None},
                             "a_harvest_food": {"weight": 30, "function": persons.Person.harvest},
@@ -27,7 +27,7 @@ class State:
                               "b_tavern": {"class": buildings.Tavern, "cost": ["i_wood", "i_food"]},
                               "b_lab_offence": {"class": buildings.LabOffence, "cost": ["i_wood", "i_metal"]}}
 
-        self.colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        self.colour = colour #(random.randint(100, 255), random.randint(0, 50), random.randint(100, 255))
         self.location = location
         self.building_list = []
         self.person_list = []

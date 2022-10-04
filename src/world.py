@@ -10,7 +10,9 @@ class World:
     
     def __init__(self):
 
-        self.seed = 1 # random.randint(0, 20) # wood=14, mix=1
+        self.state_colours = [(85, 220, 121), (174, 84, 220)]
+
+        self.seed = random.randint(0, 20)
         self.save_time = 0
         self.save_player = None
 
@@ -27,7 +29,7 @@ class World:
         self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+3), [(4, 0.4)], 0.2, "i_metal")
 
         for i in range(globe.STATE_NUMBER):
-            self.state_list.append(create_state(self.map_entities, self.map_topology, self.map_traffic))
+            self.state_list.append(create_state(self.map_entities, self.map_topology, self.map_traffic, self.state_colours[i]))
         for state in self.state_list:
             state.other_states = [i for i in self.state_list if i != state]
 
@@ -80,7 +82,7 @@ def gen_resource(map_resource, map_topology, map_noise, topology_target, chance,
     return map_resource
 
 
-def create_state(map_entities, map_topology, map_traffic):
+def create_state(map_entities, map_topology, map_traffic, colour):
 
     possible_locations = []
     for y in range(len(map_topology[0])):
@@ -88,7 +90,7 @@ def create_state(map_entities, map_topology, map_traffic):
             if map_topology[y][x] in [1, 2, 3]:
                 possible_locations.append((x, y))
 
-    return states.State(random.choice(possible_locations), map_entities, map_topology, map_traffic)
+    return states.State(random.choice(possible_locations), map_entities, map_topology, map_traffic, colour)
 
 
 def gen_noise(seed, scale=20, octaves=6, persistence=0.5, lacunarity=2.0):
