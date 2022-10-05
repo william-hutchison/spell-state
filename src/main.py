@@ -17,45 +17,25 @@ class Game:
         pg.init()
         globe.time = globe.Time()
         self.world = world.World()
-        self.menu = menus.Menu()
         self.player = player.Player(self.world.state_list[0].wizard)
         self.graphics = graphics.Graphics()
-        self.game_state = "start"
+        self.menu_manager = menus.MenuManager()
         audio.audio = audio.Audio(self.world.state_list[0].wizard)
 
     def update(self):
 
         events = event_loop()
-
-        if self.game_state == "play":
-            self.game_state = self.play(events)
+        if not self.menu_manager.current_menu:
+            self.play(events)
             audio.audio.stop_music()
-        elif self.game_state == "start":
-            self.game_state = self.menu.start(events)
-            self.graphics.draw_menu(self.menu.options, self.menu.current_option)
-            audio.audio.play_music("n_theme")
-        elif self.game_state == "settings":
-            self.game_state = self.menu.settings(events, self.graphics.set_window_scale)
-            audio.audio.play_music("n_theme")
-            self.graphics.draw_menu(self.menu.options, self.menu.current_option)
-        elif self.game_state == "pause":
-            self.game_state = self.menu.pause(events)
-            self.graphics.draw_menu(self.menu.options, self.menu.current_option)
-            audio.audio.play_music("n_theme")
-        elif self.game_state == "load":
-            self.game_state = self.menu.load(events, self.load_file)
-            self.graphics.draw_menu(self.menu.options, self.menu.current_option)
-            audio.audio.play_music("n_theme")
-        elif self.game_state == "save":
-            self.game_state = self.menu.save(events, self.save_file)
-            self.graphics.draw_menu(self.menu.options, self.menu.current_option)
-            audio.audio.play_music("n_theme")
-        elif self.game_state == "quit":
-            self.quit()
-
-        globe.time.update(self.game_state)
+            # TODO Stop time from increasing while the game is paused
+            globe.time.update()
+        else:
+            self.graphics.draw_menu(self.menu_manager.current_menu.options, self.menu_manager.current_menu.current_option)
+            self.menu_manager.update(events, self.graphics.set_window_scale, self.save_file, self.load_file, self.exit_game)
         pg.display.update()
 
+    # TODO Move these functions somewhere else
     def save_file(self, file_name):
 
         self.world.save_time = globe.time.now()
@@ -69,10 +49,10 @@ class Game:
         with open('saves/'+file_name, 'rb') as f:
             self.world = pickle.load(f)
 
-        globe.time.set_time(self.world.save_time)  
+        globe.time.set_time(self.world.save_time)
         self.player = self.world.save_player
 
-    def quit(self):
+    def exit_game(self):
         
         pg.quit()
         sys.exit()
@@ -88,9 +68,7 @@ class Game:
         self.graphics.update_window()
 
         if events[0] and events[1][pg.K_ESCAPE]:
-            return "pause"
-        else:
-            return "play"
+            self.menu_manager.current_menu = self.menu_manager.menu_dict["Pause"]()
 
 
 def event_loop():
