@@ -52,7 +52,7 @@ class Camera:
 
         # move the camera to follow the player_character
         if player_character.camera_follow:
-            camera_location = (player_character.wizard.location[0] - 20, player_character.wizard.location[1] - 20)
+            camera_location = (player_character.wizard.location[0] - 30, player_character.wizard.location[1] - 20)
 
         # prevent camera movement immediately after casting
         if spell_list := player_character.wizard.spell_list:
@@ -68,8 +68,8 @@ class Camera:
                     camera_location = (self.location[0]+move_x, self.location[1]+move_y)
                     player_character.camera_follow = False
                     self.time_last = globe.time.now()
-
-        inspector_location = (camera_location[0]+20, camera_location[1]+20)  # TODO This will brake if world scale changes.
+        # TODO This will brake if world scale changes
+        inspector_location = (camera_location[0]+30, camera_location[1]+20)
 
         return camera_location, inspector_location
 

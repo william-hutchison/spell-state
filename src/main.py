@@ -1,5 +1,6 @@
 import pygame as pg
 import sys
+import os
 import pickle
 
 import player
@@ -18,7 +19,7 @@ class Game:
         globe.time = globe.Time()
         self.world = world.World()
         self.player = player.Player(self.world.state_list[0].wizard)
-        self.graphics = graphics.Graphics()
+        self.graphics_manager = graphics.GraphicsManager()
         self.menu_manager = menus.MenuManager()
         audio.audio = audio.Audio(self.world.state_list[0].wizard)
 
@@ -31,8 +32,8 @@ class Game:
             # TODO Stop time from increasing while the game is paused
             globe.time.update()
         else:
-            self.graphics.draw_menu(self.menu_manager.current_menu.options, self.menu_manager.current_menu.current_option)
-            self.menu_manager.update(events, self.graphics.set_window_scale, self.save_file, self.load_file, self.exit_game)
+            self.graphics_manager.update_menu(self.menu_manager.current_menu.options, self.menu_manager.current_menu.current_option)
+            self.menu_manager.update(events, self.graphics_manager.set_window_scale, self.save_file, self.load_file, self.exit_game)
         pg.display.update()
 
     # TODO Move these functions somewhere else
@@ -61,9 +62,8 @@ class Game:
 
         self.player.update(self.world.map_topology, self.world.map_resource, self.world.map_item, self.world.map_entities, events)
         self.world.update()
-        self.graphics.update_world(self.player.camera.location, self.world.map_topology, self.world.map_resource, self.world.map_item, self.world.map_entities)
-        self.graphics.update_overlay(self.player.camera.location, self.player.camera.inspector_location, self.player.camera.inspector_mode, self.player.character.wizard.location, self.world.state_list)
-        self.graphics.update_interface(self.world.state_list[0], self.player.character, self.player.camera, self.player.camera.inspector_dict)
+        self.graphics_manager.update_terrain(self.player.camera.location, self.world.map_topology, self.world.map_resource, self.world.map_item, self.world.map_entities, self.player.camera.inspector_location, self.player.camera.inspector_mode, self.player.character.wizard.location, self.world.state_list)
+        self.graphics_manager.update_interface(self.world.state_list[0], self.player.character, self.player.camera, self.player.camera.inspector_dict)
 
         if events[0] and events[1][pg.K_ESCAPE]:
             self.menu_manager.current_menu = self.menu_manager.menu_dict["Pause"]()

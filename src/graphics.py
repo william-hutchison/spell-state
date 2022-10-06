@@ -4,125 +4,153 @@ import os
 import globe
 import tools
 
-
+# TODO Move these somewhere else
 os.chdir(os.path.dirname(__file__))
-
-image_inspector = pg.image.load('../sprites/inspector.png')
-image_selector = pg.image.load('../sprites/selector.png')
-image_food = pg.image.load('../sprites/resource_food.png')
-image_wood = pg.image.load('../sprites/resource_wood.png')
-image_metal = pg.image.load('../sprites/resource_metal.png')
-image_spell_hold = pg.image.load('../sprites/spell_hold.png')
-image_item = pg.image.load('../sprites/item.png')
-
-anim_water = [pg.image.load('../sprites/water_0.png'), pg.image.load('../sprites/water_1.png'), pg.image.load(
-    '../sprites/water_2.png')]
-
-colour_topology = [(40, 40, 40), (60, 60, 60), (80, 80, 80), (100, 100, 100)]
 window_size = [(1200, 800), (2400, 1600)]
 
 
-class Graphics:
+class GraphicsManager:
 
     def __init__(self):
 
+        pg.display.set_caption('Spell State')
         self.window = pg.display.set_mode((1200, 800))
+        self.surface = pg.Surface((1200, 800))
         self.scale = 0
-        self.surface_final = pg.Surface((1200, 800))
-        self.surface_terrain = pg.Surface((1200, 800))
 
+        self.menu = Menu()
+        self.terrain = Terrain()
         self.world_info = WorldInfo()
         self.state_info = StateInfo()
         self.inspector_info = InspectorInfo()
         self.player_info = PlayerInfo()
         self.spell_book = SpellBook()
 
-        pg.display.set_caption('Spell State')
-
-        self.font = pg.font.SysFont("timesnewroman", 24)
-
     def update_interface(self, state, character, camera, inspector_dict):
 
-        self.surface_final.blit(self.surface_terrain, (0, 0))
+        self.world_info.update(self.surface)
+        self.state_info.update(self.surface, state)
+        self.inspector_info.update(self.surface, inspector_dict)
+        self.player_info.update(self.surface, character, camera)
+        self.spell_book.update(self.surface, character)
+        self.window.blit(pg.transform.scale(self.surface, window_size[self.scale]), (0, 0))
 
-        self.world_info.update(self.surface_final)
-        self.state_info.update(self.surface_final, state)
-        self.inspector_info.update(self.surface_final, inspector_dict)
-        self.player_info.update(self.surface_final, character, camera)
-        self.spell_book.update(self.surface_final, character)
-        self.window.blit(pg.transform.scale(self.surface_final, window_size[self.scale]), (0, 0))
+    def update_terrain(self, camera_location, topology, resources, items, entities, inspector_location, inspector_mode, character_location, state_list):
+
+        self.terrain.draw_terrain(self.surface, camera_location, topology, resources, items, entities)
+        self.terrain.draw_overlay(self.surface, camera_location, inspector_location, inspector_mode, character_location, state_list)
+        self.window.blit(pg.transform.scale(self.surface, window_size[self.scale]), (0, 0))
+
+    def update_menu(self, options, current_option):
+
+        self.menu.draw_menu(self.surface, options, current_option)
+        self.window.blit(pg.transform.scale(self.surface, window_size[self.scale]), (0, 0))
 
     def set_window_scale(self, scale):
 
         self.scale = scale
         self.window = pg.display.set_mode(window_size[self.scale])
 
-    # TODO Replace with separate object managed by Graphics
-    def update_world(self, camera_location, topology, resources, items, entities):
 
-        self.surface_terrain.fill((0, 0, 0))
+class Menu:
+
+    def __init__(self):
+
+        self.position = (0, 0)
+        self.size = (1200, 800)
+        self.surface = pg.Surface(self.size)
+        self.font = pg.font.SysFont("timesnewroman", 24)
+
+    def draw_menu(self, final_surface, options, current_option):
+
+        self.surface.fill((0, 0, 0))
+        for i in range(len(options)):
+            text = self.font.render(options[i], True, (255, 255, 255))
+            self.surface.blit(text, (10, 10 + 30 * i))
+
+        pg.draw.rect(self.surface, (255, 255, 255), (100, 15 + 30 * current_option, 10, 10), 0)
+        final_surface.blit(self.surface, self.position)
+
+
+class Terrain:
+
+    def __init__(self):
+
+        self.position = (0, 0)
+        self.size = (1200, 800)
+        self.surface = pg.Surface(self.size)
+
+        os.chdir(os.path.dirname(__file__))
+
+        self.image_inspector = pg.image.load('../sprites/inspector.png')
+        self.image_selector = pg.image.load('../sprites/selector.png')
+        self.image_food = pg.image.load('../sprites/resource_food.png')
+        self.image_wood = pg.image.load('../sprites/resource_wood.png')
+        self.image_metal = pg.image.load('../sprites/resource_metal.png')
+        self.image_spell_hold = pg.image.load('../sprites/spell_hold.png')
+        self.image_item = pg.image.load('../sprites/item.png')
+
+        self.anim_water = [pg.image.load('../sprites/water_0.png'),
+                           pg.image.load('../sprites/water_1.png'),
+                           pg.image.load('../sprites/water_2.png')]
+
+        self.colour_topology = [(40, 40, 40), (60, 60, 60), (80, 80, 80), (100, 100, 100)]
+
+    def draw_terrain(self, final_surface, camera_location, topology, resources, items, entities):
+
+        self.surface.fill((0, 0, 0))
 
         # TODO Limit loop to screen
         for y in range(globe.WORLD_SIZE[1]):
             for x in range(globe.WORLD_SIZE[0]):
 
                 # draw tiles
-                pg.draw.rect(self.surface_terrain, (20, 8*topology[y][x], 20), ((x-camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE, globe.TILE_SIZE, globe.TILE_SIZE), 0)
+                pg.draw.rect(self.surface, (20, 8 * topology[y][x], 20), ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE, globe.TILE_SIZE, globe.TILE_SIZE), 0)
                 if topology[y][x] == 0:
-                    self.surface_terrain.blit(anim_water[globe.time.frame()], ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
+                    self.surface.blit(self.anim_water[globe.time.frame()], ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
                 # draw resources
                 if resources[y][x] == "i_food":
-                    self.surface_terrain.blit(image_food, ((x-camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
+                    self.surface.blit(self.image_food, ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
                 elif resources[y][x] == "i_wood":
-                    self.surface_terrain.blit(image_wood, ((x-camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
+                    self.surface.blit(self.image_wood, ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
                 elif resources[y][x] == "i_metal":
-                    self.surface_terrain.blit(image_metal, ((x-camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
+                    self.surface.blit(self.image_metal, ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
                 # draw items
                 if items[y][x]:
-                    self.surface_terrain.blit(image_item, ((x-camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
+                    self.surface.blit(self.image_item, ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
                 # draw entities
                 if entities[y][x]:
-                    self.surface_terrain.blit(
+                    self.surface.blit(
                         tools.colour_image(entities[y][x].sprite, entities[y][x].ruler_state.colour), ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
-        # draw contours
-        # TODO Move to within tile loop and eliminate glitch at contour corners.
+        # TODO Move to within tile loop and eliminate glitch at contour corners
         for y in range(globe.WORLD_SIZE[1]):
             for x in range(globe.WORLD_SIZE[0]):
                 if x + 1 < globe.WORLD_SIZE[0]:
                     if topology[y][x] != topology[y][x + 1]:
                         colour_index = int(min((topology[y][x], topology[y][x + 1])))
-                        pg.draw.rect(self.surface_terrain, colour_topology[colour_index], ((x+1-camera_location[0]) * globe.TILE_SIZE - 1, (y - camera_location[1]) * globe.TILE_SIZE, 2, globe.TILE_SIZE), 0)
+                        pg.draw.rect(self.surface, self.colour_topology[colour_index], ((x+1-camera_location[0]) * globe.TILE_SIZE - 1, (y - camera_location[1]) * globe.TILE_SIZE, 2, globe.TILE_SIZE), 0)
                 if y + 1 < globe.WORLD_SIZE[0]:
                     if topology[y][x] != topology[y + 1][x]:
                         colour_index = int(min((topology[y][x], topology[y + 1][x])))
-                        pg.draw.rect(self.surface_terrain, colour_topology[colour_index], ((x-camera_location[0]) * globe.TILE_SIZE - 1, (y + 1 - camera_location[1]) * globe.TILE_SIZE - 1, globe.TILE_SIZE, 2), 0)
+                        pg.draw.rect(self.surface, self.colour_topology[colour_index], ((x-camera_location[0]) * globe.TILE_SIZE - 1, (y + 1 - camera_location[1]) * globe.TILE_SIZE - 1, globe.TILE_SIZE, 2), 0)
 
-    def update_overlay(self, camera_location, inspector_location, inspector_mode, character_location, state_list):
+        final_surface.blit(self.surface, self.position)
+
+    def draw_overlay(self, final_surface, camera_location, inspector_location, inspector_mode, character_location, state_list):
 
         for state in state_list:
             for spell in state.wizard.spell_list:
-                self.surface_terrain.blit(image_spell_hold, ((spell.location[0]-camera_location[0]) * globe.TILE_SIZE, (spell.location[1] - camera_location[1]) * globe.TILE_SIZE))
+                final_surface.blit(self.image_spell_hold, ((spell.location[0] - camera_location[0]) * globe.TILE_SIZE, (spell.location[1] - camera_location[1]) * globe.TILE_SIZE))
 
         if inspector_mode == "inspect":
             if inspector_location != character_location:
-                self.surface_terrain.blit(image_inspector, ((inspector_location[0]-camera_location[0]) * globe.TILE_SIZE - 1, (inspector_location[1] - camera_location[1]) * globe.TILE_SIZE - 1))
+                final_surface.blit(self.image_inspector, ((inspector_location[0] - camera_location[0]) * globe.TILE_SIZE - 1, (inspector_location[1] - camera_location[1]) * globe.TILE_SIZE - 1))
         elif inspector_mode == "select":
-            self.surface_terrain.blit(image_selector, ((inspector_location[0]-camera_location[0]) * globe.TILE_SIZE - 1, (inspector_location[1] - camera_location[1]) * globe.TILE_SIZE - 1))
-
-
-    # TODO Replace with separate object managed by Graphics
-    def draw_menu(self, options, current_option):
-
-        self.window.fill((0, 0, 0))
-        for i in range(len(options)):
-            text = self.font.render(options[i], True, (255, 255, 255))
-            self.window.blit(text, (10, 10 + 30 * i))
-
-        pg.draw.rect(self.window, (255, 255, 255), (100, 15 + 30 * current_option, 10, 10), 0)
+            final_surface.blit(self.image_selector, ((inspector_location[0] - camera_location[0]) * globe.TILE_SIZE - 1, (inspector_location[1] - camera_location[1]) * globe.TILE_SIZE - 1))
 
 
 class Interface:
