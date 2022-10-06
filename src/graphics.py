@@ -4,7 +4,6 @@ import os
 import globe
 import tools
 
-pg.init()
 
 os.chdir(os.path.dirname(__file__))
 
@@ -22,31 +21,43 @@ anim_water = [pg.image.load('../sprites/water_0.png'), pg.image.load('../sprites
 colour_topology = [(40, 40, 40), (60, 60, 60), (80, 80, 80), (100, 100, 100)]
 window_size = [(1200, 800), (2400, 1600)]
 
-font_0 = pg.font.SysFont("timesnewroman", 24)
-
 
 class Graphics:
 
     def __init__(self):
 
         self.window = pg.display.set_mode((1200, 800))
-        self.surface_final = pg.Surface((1200, 800))
-        self.surface_terrain = pg.Surface((800, 800))
-        self.surface_ui_panel = pg.Surface((400, 800))
-        self.surface_ui_wizard = pg.Surface((300, 200))
-        self.surface_ui_spellbook = pg.Surface((300, 200))
         self.scale = 0
+        self.surface_final = pg.Surface((1200, 800))
+        self.surface_terrain = pg.Surface((1200, 800))
+
+        self.world_info = WorldInfo()
+        self.state_info = StateInfo()
+        self.inspector_info = InspectorInfo()
+        self.player_info = PlayerInfo()
+        self.spell_book = SpellBook()
 
         pg.display.set_caption('Spell State')
 
-    def update_window(self):
+        self.font = pg.font.SysFont("timesnewroman", 24)
+
+    def update_interface(self, state, character, camera, inspector_dict):
 
         self.surface_final.blit(self.surface_terrain, (0, 0))
-        self.surface_final.blit(self.surface_ui_panel, (800, 0))
-        self.surface_final.blit(self.surface_ui_wizard, (0, 400))
-        self.surface_final.blit(self.surface_ui_spellbook, (0, 600))
+
+        self.world_info.update(self.surface_final)
+        self.state_info.update(self.surface_final, state)
+        self.inspector_info.update(self.surface_final, inspector_dict)
+        self.player_info.update(self.surface_final, character, camera)
+        self.spell_book.update(self.surface_final, character)
         self.window.blit(pg.transform.scale(self.surface_final, window_size[self.scale]), (0, 0))
 
+    def set_window_scale(self, scale):
+
+        self.scale = scale
+        self.window = pg.display.set_mode(window_size[self.scale])
+
+    # TODO Replace with separate object managed by Graphics
     def update_world(self, camera_location, topology, resources, items, entities):
 
         self.surface_terrain.fill((0, 0, 0))
@@ -102,78 +113,128 @@ class Graphics:
         elif inspector_mode == "select":
             self.surface_terrain.blit(image_selector, ((inspector_location[0]-camera_location[0]) * globe.TILE_SIZE - 1, (inspector_location[1] - camera_location[1]) * globe.TILE_SIZE - 1))
 
-    def update_ui_panel(self, state, inspector_dict):
 
-        self.surface_ui_panel.fill((30, 30, 40))
-        draw_time(self.surface_ui_panel)
-        draw_state_info(self.surface_ui_panel, state)
-        draw_inspector_info(self.surface_ui_panel, inspector_dict)
-
-    def update_ui_wizard(self, camera, character):
-
-        self.surface_ui_wizard.fill((30, 30, 40))
-        self.surface_ui_spellbook.fill((30, 30, 40))
-
-        draw_player_info(self.surface_ui_wizard, camera, character)
-        draw_player_spells(self.surface_ui_spellbook, character)
-
-    def set_window_scale(self, scale):
-
-        self.scale = scale
-        self.window = pg.display.set_mode(window_size[self.scale])
-
+    # TODO Replace with separate object managed by Graphics
     def draw_menu(self, options, current_option):
 
         self.window.fill((0, 0, 0))
         for i in range(len(options)):
-            text = font_0.render(options[i], True, (255, 255, 255))
-            self.window.blit(text, (10, 10+30*i))
+            text = self.font.render(options[i], True, (255, 255, 255))
+            self.window.blit(text, (10, 10 + 30 * i))
 
-        pg.draw.rect(self.window, (255, 255, 255), (100, 15+30*current_option, 10, 10), 0)
-
-
-def draw_time(surface_ui_panel):
-
-    text0 = font_0.render("World time: " + str(globe.time.now()), True, (255, 255, 255))
-    surface_ui_panel.blit(text0, (10, 70))
+        pg.draw.rect(self.window, (255, 255, 255), (100, 15 + 30 * current_option, 10, 10), 0)
 
 
-def draw_state_info(surface_ui_panel, state):
+class Interface:
 
-    text0 = font_0.render("Building list: " + str([type(i).__name__ for i in state.building_list]), True, (255, 255, 255))
-    text1 = font_0.render("Person list: " + str([type(i).__name__ for i in state.person_list]), True, (255, 255, 255))
-    text2 = font_0.render("Action dict: " + str(state.action_dict), True, (255, 255, 255))
-    surface_ui_panel.blit(text0, (10, 100))
-    surface_ui_panel.blit(text1, (10, 130))
-    surface_ui_panel.blit(text2, (10, 160))
+    def __init__(self):
 
-def draw_inspector_info(surface_ui_panel, inspector_dict):
-    for i, item in enumerate(inspector_dict.items()):
-        if item[1]:
-            text = font_0.render(str(item[0]) + ": " + str(item[1]), True, (255, 255, 255))
-            surface_ui_panel.blit(text, (10, 300 + 30 * i))
+        self.text_spacing = 30
+        self.margin_spacing = 10
+        self.font = pg.font.SysFont("timesnewroman", 24)
+
+    def draw_text_lines(self, text_list, position):
+
+        for i, item in enumerate(text_list):
+            line = self.font.render(item, True, (255, 255, 255))
+            self.surface.blit(line, (position[0]+self.margin_spacing, position[1]+self.text_spacing*i))
 
 
-def draw_player_info(surface_ui_wizard, camera, character):
+class WorldInfo(Interface):
 
-    text0 = font_0.render("Inspector location: " + str(camera.inspector_location), True, (255, 255, 255))
-    text1 = font_0.render("Character location: " + str(character.wizard.location), True, (255, 255, 255))
-    text2 = font_0.render("Casting string: " + str(character.casting_string), True, (255, 255, 255))
-    text3 = font_0.render("Health: " + str(character.wizard.stat_dict['u_health_current']) + "/" + str(character.wizard.stat_dict['u_health_max']), True, (255, 255, 255))
-    text4 = font_0.render("Mana: " + str(character.wizard.stat_dict['u_mana_current']) + "/" + str(character.wizard.stat_dict['u_mana_max']), True, (255, 255, 255))
-    text5 = font_0.render("Items: " + str(character.wizard.stock_list), True, (255, 255, 255))
-    surface_ui_wizard.blit(text0, (10, 10))
-    surface_ui_wizard.blit(text1, (10, 40))
-    surface_ui_wizard.blit(text2, (10, 70))
-    surface_ui_wizard.blit(text3, (10, 100))
-    surface_ui_wizard.blit(text4, (10, 130))
-    surface_ui_wizard.blit(text5, (10, 160))
+    def __init__(self):
 
-def draw_player_spells(surface_ui_spellbook, character):
+        super().__init__()
+        self.position = (900, 0)
+        self.size = (300, 100)
+        self.surface = pg.Surface(self.size)
 
-    i = 0
-    for key, value in character.wizard.spell_dict.items():
-        if value["unlocked"]:
-            text = font_0.render(key + ": " + str(value["combo"]), True, (255, 255, 255))
-            surface_ui_spellbook.blit(text, (10, 10+i*30))
-            i += 1
+    def update(self, final_surface):
+
+        self.surface.fill((30, 30, 40))
+        text = ["World time: " + str(globe.time.now())]
+        self.draw_text_lines(text, (0, 0))
+        final_surface.blit(self.surface, self.position)
+
+
+class StateInfo(Interface):
+
+    def __init__(self):
+
+        super().__init__()
+        self.position = (900, 100)
+        self.size = (300, 200)
+        self.surface = pg.Surface(self.size)
+
+    def update(self, final_surface, state):
+
+        self.surface.fill((30, 30, 40))
+        text = ["Building list: " + str([type(i).__name__ for i in state.building_list]),
+                "Person list: " + str([type(i).__name__ for i in state.person_list]),
+                "Action dict: " + str(state.action_dict)]
+        self.draw_text_lines(text, (0, 0))
+        final_surface.blit(self.surface, self.position)
+
+
+class InspectorInfo(Interface):
+
+    def __init__(self):
+
+        super().__init__()
+        self.position = (900, 500)
+        self.size = (300, 400)
+        self.surface = pg.Surface(self.size)
+
+    def update(self, final_surface, inspector_dict):
+
+        self.surface.fill((30, 30, 40))
+        text = []
+        for i, item in enumerate(inspector_dict.items()):
+            if item[1]:
+                text.append(str(item[0]) + ": " + str(item[1]))
+        self.draw_text_lines(text, (0, 0))
+        final_surface.blit(self.surface, self.position)
+
+
+class PlayerInfo(Interface):
+
+    def __init__(self):
+
+        super().__init__()
+        self.position = (0, 0)
+        self.size = (400, 200)
+        self.surface = pg.Surface(self.size)
+
+    def update(self, final_surface, character, camera):
+
+        self.surface.fill((30, 30, 40))
+        text = ["Inspector location: " + str(camera.inspector_location),
+                "Character location: " + str(character.wizard.location),
+                "Casting string: " + str(character.casting_string),
+                "Health: " + str(character.wizard.stat_dict['u_health_current']) + "/" + str(character.wizard.stat_dict['u_health_max']),
+                "Mana: " + str(character.wizard.stat_dict['u_mana_current']) + "/" + str(character.wizard.stat_dict['u_mana_max']),
+                "Items: " + str(character.wizard.stock_list)]
+        self.draw_text_lines(text, (0, 0))
+        final_surface.blit(self.surface, self.position)
+
+
+class SpellBook(Interface):
+
+    def __init__(self):
+
+        super().__init__()
+        self.position = (0, 500)
+        self.size = (400, 300)
+        self.surface = pg.Surface(self.size)
+
+    def update(self, final_surface, character):
+
+        self.surface.fill((30, 30, 40))
+        text = []
+        i = 0
+        for key, value in character.wizard.spell_dict.items():
+            if value["unlocked"]:
+                text.append(key + ": " + str(value["combo"]))
+                i += 1
+        self.draw_text_lines(text, (0, 0))
+        final_surface.blit(self.surface, self.position)

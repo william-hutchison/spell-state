@@ -63,9 +63,7 @@ class Game:
         self.world.update()
         self.graphics.update_world(self.player.camera.location, self.world.map_topology, self.world.map_resource, self.world.map_item, self.world.map_entities)
         self.graphics.update_overlay(self.player.camera.location, self.player.camera.inspector_location, self.player.camera.inspector_mode, self.player.character.wizard.location, self.world.state_list)
-        self.graphics.update_ui_panel(self.world.state_list[0], self.player.camera.inspector_dict)
-        self.graphics.update_ui_wizard(self.player.camera, self.player.character)
-        self.graphics.update_window()
+        self.graphics.update_interface(self.world.state_list[0], self.player.character, self.player.camera, self.player.camera.inspector_dict)
 
         if events[0] and events[1][pg.K_ESCAPE]:
             self.menu_manager.current_menu = self.menu_manager.menu_dict["Pause"]()
