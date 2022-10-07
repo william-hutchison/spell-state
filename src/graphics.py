@@ -26,8 +26,12 @@ class GraphicsManager:
         self.player_info = PlayerInfo()
         self.spell_book = SpellBook()
 
+        self.image_ui = pg.image.load('../sprites/ui.png')
+        #self.set_window_scale(1) # For testing
+
     def update_interface(self, state, character, camera, inspector_dict):
 
+        self.surface.blit(self.image_ui, (0, 0))
         self.world_info.update(self.surface)
         self.state_info.update(self.surface, state)
         self.inspector_info.update(self.surface, inspector_dict)
@@ -159,7 +163,7 @@ class Interface:
 
         self.text_spacing = 30
         self.margin_spacing = 10
-        self.font = pg.font.SysFont("timesnewroman", 24)
+        self.font = pg.font.SysFont("timesnewroman", 18)
 
     def draw_text_lines(self, text_list, position):
 
@@ -173,14 +177,14 @@ class WorldInfo(Interface):
     def __init__(self):
 
         super().__init__()
-        self.position = (900, 0)
-        self.size = (300, 100)
+        self.position = (558, 0)
+        self.size = (120, 20)
         self.surface = pg.Surface(self.size)
 
     def update(self, final_surface):
 
-        self.surface.fill((30, 30, 40))
-        text = ["World time: " + str(globe.time.now())]
+        self.surface.fill((0, 0, 0))
+        text = ["Time: " + str(globe.time.now())]
         self.draw_text_lines(text, (0, 0))
         final_surface.blit(self.surface, self.position)
 
@@ -190,13 +194,13 @@ class StateInfo(Interface):
     def __init__(self):
 
         super().__init__()
-        self.position = (900, 100)
-        self.size = (300, 200)
+        self.position = (950, 0)
+        self.size = (250, 300)
         self.surface = pg.Surface(self.size)
 
     def update(self, final_surface, state):
 
-        self.surface.fill((30, 30, 40))
+        self.surface.fill((0, 0, 0))
         text = ["Building list: " + str([type(i).__name__ for i in state.building_list]),
                 "Person list: " + str([type(i).__name__ for i in state.person_list]),
                 "Action dict: " + str(state.action_dict)]
@@ -209,13 +213,13 @@ class InspectorInfo(Interface):
     def __init__(self):
 
         super().__init__()
-        self.position = (900, 500)
-        self.size = (300, 400)
+        self.position = (950, 430)
+        self.size = (300, 350)
         self.surface = pg.Surface(self.size)
 
     def update(self, final_surface, inspector_dict):
 
-        self.surface.fill((30, 30, 40))
+        self.surface.fill((0, 0, 0))
         text = []
         for i, item in enumerate(inspector_dict.items()):
             if item[1]:
@@ -230,12 +234,12 @@ class PlayerInfo(Interface):
 
         super().__init__()
         self.position = (0, 0)
-        self.size = (400, 200)
+        self.size = (250, 300)
         self.surface = pg.Surface(self.size)
 
     def update(self, final_surface, character, camera):
 
-        self.surface.fill((30, 30, 40))
+        self.surface.fill((0, 0, 0))
         text = ["Inspector location: " + str(camera.inspector_location),
                 "Character location: " + str(character.wizard.location),
                 "Casting string: " + str(character.casting_string),
@@ -251,13 +255,13 @@ class SpellBook(Interface):
     def __init__(self):
 
         super().__init__()
-        self.position = (0, 500)
-        self.size = (400, 300)
+        self.position = (0, 600)
+        self.size = (330, 300)
         self.surface = pg.Surface(self.size)
 
     def update(self, final_surface, character):
 
-        self.surface.fill((30, 30, 40))
+        self.surface.fill((0, 0, 0))
         text = []
         i = 0
         for key, value in character.wizard.spell_dict.items():
