@@ -9,21 +9,25 @@ class Building:
     
     def __init__(self, ruler_state, location):
 
+        self.stat_dict = {"stock_max":0,
+                          "health_max": 100,
+                          "health_current": 100}
+
+        self.sprite = pg.image.load('../sprites/house.png')
         self.ruler_state = ruler_state
         self.location = location
-        self.sprite = pg.image.load('../sprites/house.png')
         self.stock_list = []
         self.stock_list_needed = []
-        self.stock_list_limit = 0
+
         self.time_last = globe.time.now()
         self.under_construction = 0
         self.under_work = 0
 
-        self.stat_dict = {"u_health_max": 100, "u_health_current": 100}
+
 
     def update(self, map_topology, map_item):
 
-        if self.stat_dict["u_health_current"] <= 0:
+        if self.stat_dict["health_current"] <= 0:
             pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
             self.ruler_state.building_list.remove(self)
 
@@ -65,8 +69,8 @@ class Tower(Building):
     def constructed(self):
         
         self.sprite = pg.image.load('../sprites/tower.png')
-        self.stock_list_limit = 100
-        self.ruler_state.person_list_limit += 3
+        self.stat_dict["stock_max"] = 100
+        self.ruler_state.stat_dict["person_max"] += 3
 
 
 class House(Building):
@@ -75,16 +79,16 @@ class House(Building):
 
         super().__init__(ruler_state, location)
         self.sprite = pg.image.load('../sprites/construction.png')
-        self.stock_list_needed = ruler_state.building_dict["b_house"]["cost"]
-        self.stock_list_limit = len(self.stock_list_needed)
+        self.stock_list_needed = ruler_state.building_dict["house"]["cost"]
+        self.stat_dict["stock_max"] = len(self.stock_list_needed)
         self.under_construction = 4000
 
     def constructed(self):
 
         self.sprite = pg.image.load('../sprites/house.png')
         self.stock_list_needed = []
-        self.stock_list_limit = 0
-        self.ruler_state.person_list_limit += 1
+        self.stat_dict["stock_max"] = 0
+        self.ruler_state.stat_dict["person_max"] += 1
 
 
 class Shrine(Building):
@@ -113,8 +117,8 @@ class WellOfCurses(Building):
 
         super().__init__(ruler_state, location)
         self.sprite = pg.image.load('../sprites/construction.png')
-        self.stock_list_needed = ruler_state.building_dict["b_well_of_curses"]["cost"]
-        self.stock_list_limit = len(self.stock_list_needed)
+        self.stock_list_needed = ruler_state.building_dict["well_of_curses"]["cost"]
+        self.stat_dict["stock_max"] = len(self.stock_list_needed)
         self.under_construction = 6000
         self.max_work = 2000
         self.under_work = self.max_work
@@ -123,12 +127,12 @@ class WellOfCurses(Building):
 
         self.sprite = pg.image.load('../sprites/house.png')
         self.stock_list_needed = []
-        self.stock_list_limit = 0
+        self.stat_dict["stock_max"] = 0
 
     def work(self):
 
         temp_list = []
-        for i in ["s_fireball", "s_paralyse", "s_storm"]:
+        for i in ["fireball", "paralyse", "storm"]:
             if not self.ruler_state.wizard.spell_dict[i]["unlocked"]:
                 temp_list.append(i)
         if temp_list:
@@ -142,8 +146,8 @@ class WellOfBlessings(Building):
 
         super().__init__(ruler_state, location)
         self.sprite = pg.image.load('../sprites/construction.png')
-        self.stock_list_needed = ruler_state.building_dict["b_well_of_blessings"]["cost"]
-        self.stock_list_limit = len(self.stock_list_needed)
+        self.stock_list_needed = ruler_state.building_dict["well_of_blessings"]["cost"]
+        self.stat_dict["stock_max"] = len(self.stock_list_needed)
         self.under_construction = 6000
         self.max_work = 2000
         self.under_work = self.max_work
@@ -152,12 +156,12 @@ class WellOfBlessings(Building):
 
         self.sprite = pg.image.load('../sprites/house.png')
         self.stock_list_needed = []
-        self.stock_list_limit = 0
+        self.stat_dict["stock_max"] = 0
 
     def work(self):
 
         temp_list = []
-        for i in ["s_heal"]:
+        for i in ["heal"]:
             if not self.ruler_state.wizard.spell_dict[i]["unlocked"]:
                 temp_list.append(i)
         if temp_list:

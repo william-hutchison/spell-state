@@ -12,63 +12,58 @@ class State:
 
     def __init__(self, location, map_entities, map_topology, map_traffic, colour):
 
+        self.stat_dict = {"person_max": 0,
+                          "order_duration": 400,
+                          "birth_duration": 4000,
+                          "construction_duration": 8000}
+
         self.action_dict = {None: {"weight": 5, "function": None},
-                            "a_harvest_food": {"weight": 30, "function": persons.Person.harvest},
-                            "a_harvest_wood": {"weight": 30, "function": persons.Person.harvest},
-                            "a_harvest_metal": {"weight": 30, "function": persons.Person.harvest},
-                            "a_haul": {"weight": 90, "function": persons.Person.haul},
-                            "a_construct": {"weight": 90, "function": persons.Person.construct},
-                            "a_work": {"weight": 10, "function": persons.Person.work},
-                            "a_attack": {"weight": 0, "function": persons.Person.attack}}
+                            "harvest_food": {"weight": 30, "function": persons.Person.harvest},
+                            "harvest_wood": {"weight": 30, "function": persons.Person.harvest},
+                            "harvest_metal": {"weight": 30, "function": persons.Person.harvest},
+                            "haul": {"weight": 90, "function": persons.Person.haul},
+                            "construct": {"weight": 90, "function": persons.Person.construct},
+                            "work": {"weight": 10, "function": persons.Person.work},
+                            "attack": {"weight": 0, "function": persons.Person.attack}}
 
-        self.building_dict = {"b_tower": {"class": buildings.Tower, "cost": []},
-                              "b_house": {"class": buildings.House, "cost": ["i_wood", "i_wood"]},
-                              "b_shrine": {"class": buildings.Shrine, "cost": ["i_metal"]},
-                              "b_well_of_curses": {"class": buildings.WellOfCurses, "cost": ["i_wood", "i_metal"]},
-                              "b_well_of_blessings": {"class": buildings.WellOfBlessings, "cost": ["i_wood", "i_metal"]}}
+        self.building_dict = {"tower": {"class": buildings.Tower, "cost": []},
+                              "house": {"class": buildings.House, "cost": ["i_wood", "i_wood"]},
+                              "shrine": {"class": buildings.Shrine, "cost": ["i_metal"]},
+                              "well_of_curses": {"class": buildings.WellOfCurses, "cost": ["i_wood", "i_metal"]},
+                              "well_of_blessings": {"class": buildings.WellOfBlessings, "cost": ["i_wood", "i_metal"]}}
 
-        self.colour = colour #(random.randint(100, 255), random.randint(0, 50), random.randint(100, 255))
+        self.colour = colour
         self.location = location
         self.building_list = []
         self.person_list = []
         self.other_states = []
-        self.person_list_limit = 0
 
         self.time_last_order = globe.time.now()
         self.time_last_birth = globe.time.now()
         self.time_last_construct = globe.time.now()
-        self.time_dur_order = 200
-        self.time_dur_birth = 4000
-        self.time_dur_construct = 8000
-
-        self.time_dur_move = 200
-        self.time_dur_eat = 20000
-        self.time_dur_transfer = 400
-        self.time_dur_harvest = 400
-        self.time_dur_attack = 400
 
         self.wizard = self.create_wizard(map_entities, map_topology, self.location)
-        self.building_list.append(self.create_building("b_tower", map_entities, map_topology, map_traffic, self.location))
+        self.building_list.append(self.create_building("tower", map_entities, map_topology, map_traffic, self.location))
 
     def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 
         # assign person actions
         self.tune_action_wight()
-        if globe.time.check(self.time_last_order, self.time_dur_order):
+        if globe.time.check(self.time_last_order, self.stat_dict["order_duration"]):
             self.assign(self.person_list, self.building_list)
             self.time_last_order = globe.time.now()
 
         # TODO Add decide_building and decide_person functions to decide if action can / should be taken
         # create building
-        if globe.time.check(self.time_last_construct, self.time_dur_construct):
+        if globe.time.check(self.time_last_construct, self.stat_dict["construction_duration"]):
             if len([i for i in self.building_list if i.under_construction]) < 2:
-                if build_attempt := self.create_building(random.choice(["b_well_of_blessings", "b_well_of_curses"]), map_entities, map_topology, map_traffic, self.location):
+                if build_attempt := self.create_building(random.choice(["well_of_blessings", "well_of_curses"]), map_entities, map_topology, map_traffic, self.location):
                     self.building_list.append(build_attempt)
             self.time_last_construct = globe.time.now()
 
         # create person
-        if globe.time.check(self.time_last_birth, self.time_dur_birth):
-            if len(self.person_list) < self.person_list_limit:
+        if globe.time.check(self.time_last_birth, self.stat_dict["birth_duration"]):
+            if len(self.person_list) < self.stat_dict["person_max"]:
                 if person_attempt := self.create_person(map_entities, map_topology, self.location):
                     self.person_list.append(person_attempt)
             self.time_last_birth = globe.time.now()
@@ -92,7 +87,7 @@ class State:
         object."""
 
         # construct tower
-        if kind == "b_tower":
+        if kind == "tower":
             return self.building_dict[kind]["class"](self, location_tower)
 
         # construct buildings within radius of tower
@@ -130,17 +125,17 @@ class State:
         target_state = self.other_states[0]
 
         # Prepare lists of possible actions
-        possible_actions = [None, "a_harvest_food", "a_harvest_wood", "a_harvest_metal"]
+        possible_actions = [None, "harvest_food", "harvest_wood", "harvest_metal"]
         idle_person_list = [i for i in person_list if not i.action_super]
 
         if construction_list := [i for i in building_list if i.under_construction and not i.stock_list_needed]:
-            possible_actions.append("a_construct")
+            possible_actions.append("construct")
 
         if work_list := [i for i in building_list if not i.under_construction and i.under_work]:
-            possible_actions.append("a_work")
+            possible_actions.append("work")
 
         if attack_list := ([i.location for i in target_state.person_list]):
-            possible_actions.append("a_attack")
+            possible_actions.append("attack")
 
         # Create list of tuples where 0 - entity to haul to, 1 - entity to haul from, 2 - item to haul
         haul_links = []
@@ -155,31 +150,31 @@ class State:
                     if item in building_from.stock_list:
                         haul_links.append((building_to, building_from, item))
         if haul_links:
-            possible_actions.append("a_haul")
+            possible_actions.append("haul")
 
         # TODO Intelligently decide which building to construct next ect somewhere. Currently assign_build ect attempts to build everything until no idle workers / unbuilt buildings remain
         if idle_person_list:
             chosen_action = random.choices([i for i in possible_actions], weights=[self.action_dict[i]["weight"] for i in possible_actions])[0]
-            if chosen_action == "a_haul":
+            if chosen_action == "haul":
                 self.assign_haul(person_list, idle_person_list, haul_links)
-            elif chosen_action == "a_construct":
+            elif chosen_action == "construct":
                 self.assign_build(person_list, idle_person_list, construction_list)
-            elif chosen_action == "a_work":
+            elif chosen_action == "work":
                 self.assign_work(person_list, idle_person_list, work_list)
-            elif chosen_action == "a_attack":
+            elif chosen_action == "attack":
                 self.assign_attack(idle_person_list, target_state)
 
             # TODO Give assigning harvest its own function to match assign work, chose target resource within and set as action_target, then use generic harvest function
-            elif chosen_action in ["a_harvest_food", "a_harvest_wood", "a_harvest_metal"]:
+            elif chosen_action in ["harvest_food", "harvest_wood", "harvest_metal"]:
                 idle_person_list[0].action_super = chosen_action
 
                 # PLACEHOLDER CODE UNTIL ABOVE IS IMPLEMENTED
-                if chosen_action == "a_harvest_food":
-                    idle_person_list[0].action_set("a_harvest_food", "i_food")
-                if chosen_action == "a_harvest_wood":
-                    idle_person_list[0].action_set("a_harvest_wood", "i_wood")
-                if chosen_action == "a_harvest_metal":
-                    idle_person_list[0].action_set("a_harvest_metal", "i_metal")
+                if chosen_action == "harvest_food":
+                    idle_person_list[0].action_set("harvest_food", "i_food")
+                if chosen_action == "harvest_wood":
+                    idle_person_list[0].action_set("harvest_wood", "i_wood")
+                if chosen_action == "harvest_metal":
+                    idle_person_list[0].action_set("harvest_metal", "i_metal")
 
     def assign_haul(self, person_list, idle_person_list, haul_links):
 
@@ -190,11 +185,11 @@ class State:
             if not haul_assigned:
 
                 # Find the closest idle person with inventory space and assign to haul
-                if possible_person_list := [i for i in idle_person_list if len(i.stock_list) < i.stock_list_limit]:
+                if possible_person_list := [i for i in idle_person_list if len(i.stock_list) < i.stat_dict["stock_max"]]:
                     person_location = pathfinding.find_closest(haul_link[1].location, [i.location for i in possible_person_list])
                     person = [i for i in possible_person_list if i.location == person_location].pop()
                     # TODO Add support for hauling multiple items
-                    person.action_set("a_haul", haul_link)
+                    person.action_set("haul", haul_link)
 
 
     def assign_work(self, person_list, idle_person_list, work_list):
@@ -210,7 +205,7 @@ class State:
                 if idle_person_list:
                     person_location = pathfinding.find_closest(building.location, [i.location for i in idle_person_list])
                     person = [i for i in idle_person_list if i.location == person_location].pop()
-                    person.action_set("a_work", building)
+                    person.action_set("work", building)
 
     def assign_build(self, person_list, idle_person_list, construction_list):
         """Assign the closest person in the provided idle person list and assign them to construct
@@ -225,7 +220,7 @@ class State:
                 if idle_person_list:
                     person_location = pathfinding.find_closest(building.location, [i.location for i in idle_person_list])
                     person = [i for i in idle_person_list if i.location == person_location].pop()
-                    person.action_set("a_construct", building)
+                    person.action_set("construct", building)
 
     def assign_attack(self, idle_person_list, target_state):
 
@@ -234,7 +229,7 @@ class State:
             target_location = pathfinding.find_closest(self.location, [i.location for i in target_state.person_list])
             person_location = pathfinding.find_closest(target_location, [i.location for i in idle_person_list])
             person = [i for i in idle_person_list if i.location == person_location].pop()
-            person.action_set("a_attack", [i for i in target_state.person_list if i.location == target_location].pop())
+            person.action_set("attack", [i for i in target_state.person_list if i.location == target_location].pop())
 
     def tune_action_wight(self):
         """Restrict action weight to between 0 and 100, slowly move value towards 50."""

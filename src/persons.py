@@ -10,33 +10,37 @@ class Person:
 
     def __init__(self, ruler_state, location):
 
+        self.stat_dict = {"stock_max": 2,
+                          "health_max": 100,
+                          "health_current": 100,
+                          "attack_damage": 20,
+                          "move_duration": 600,
+                          "transfer_duration": 600,
+                          "eat_duration": 20000,
+                          "harvest_duration": 800,
+                          "attack_duration": 400}
+
+        self.sprite = pg.image.load('../sprites/person.png')
         self.ruler_state = ruler_state
         self.location = location
-        self.sprite = pg.image.load('../sprites/person.png')
         self.stock_list = []
-        self.stock_list_limit = 2
 
-        # TODO Move all stats into stat dict
-        self.time_last = globe.time.now()
-        self.time_last_eat = globe.time.now()
         self.action_super = None
         self.action_target = None
 
-        self.stat_dict = {"u_health_max": 100,
-                          "u_health_current": 100,
-                          "u_attack_damage": 20,
-                          "u_move_duration": 600}
+        self.time_last = globe.time.now()
+        self.time_last_eat = globe.time.now()
 
     def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 
-        if globe.time.check(self.time_last_eat, self.ruler_state.time_dur_eat):
+        if globe.time.check(self.time_last_eat, self.stat_dict["eat_duration"]):
             self.eat()
             self.time_last_eat = globe.time.now()
 
         if self.action_super:
             self.ruler_state.action_dict[self.action_super]["function"](self, map_entities, map_topology, map_resource, map_traffic, self.action_target)
 
-        if self.stat_dict["u_health_current"] <= 0:
+        if self.stat_dict["health_current"] <= 0:
             pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
             self.ruler_state.person_list.remove(self)
 
@@ -47,7 +51,7 @@ class Person:
             # Deposit item
             if self.location in pathfinding.find_edges(haul_link[0].location):
                 if haul_link[2] in haul_link[0].stock_list_needed:
-                    if globe.time.check(self.time_last, self.ruler_state.time_dur_transfer):
+                    if globe.time.check(self.time_last, self.stat_dict["transfer_duration"]):
                         tools.item_transfer(self.stock_list, haul_link[0].stock_list, haul_link[2], 1)
                         self.time_last = globe.time.now()
                         self.action_set(None, None)
@@ -60,7 +64,7 @@ class Person:
         else:
             # Collect item
             if self.location in pathfinding.find_edges(haul_link[1].location):
-                if globe.time.check(self.time_last, self.ruler_state.time_dur_transfer):
+                if globe.time.check(self.time_last, self.stat_dict["transfer_duration"]):
                     if haul_link[2] in haul_link[1].stock_list:
                         tools.item_transfer(haul_link[1].stock_list, self.stock_list, haul_link[2], 1)
                     else:
@@ -100,10 +104,10 @@ class Person:
 
         # attack attack_object
         if self.location in pathfinding.find_edges(attack_object.location):
-            if globe.time.check(self.time_last, self.ruler_state.time_dur_attack):
+            if globe.time.check(self.time_last, self.stat_dict["attack_duration"]):
 
-                attack_object.stat_dict["u_health_current"] -= self.stat_dict["u_attack_damage"]
-                if attack_object.stat_dict["u_health_current"] <= 0:
+                attack_object.stat_dict["health_current"] -= self.stat_dict["attack_damage"]
+                if attack_object.stat_dict["health_current"] <= 0:
                     self.action_set(None, None)
                 self.time_last = globe.time.now()
 
@@ -116,7 +120,7 @@ class Person:
         # TODO Replace with generic deposit item function
         # deposit stock_list
         if self.location in pathfinding.find_edges(self.ruler_state.building_list[0].location) and target_resource in self.stock_list:
-            if globe.time.check(self.time_last, self.ruler_state.time_dur_transfer):
+            if globe.time.check(self.time_last, self.stat_dict["transfer_duration"]):
                 tools.item_transfer(self.stock_list, self.ruler_state.building_list[0].stock_list, target_resource, 1)
                 self.time_last = globe.time.now()
 
@@ -124,12 +128,12 @@ class Person:
                     self.action_set(None, None)
 
         # move to base
-        elif len(self.stock_list) == self.stock_list_limit:
+        elif len(self.stock_list) == self.stat_dict["stock_max"]:
             self.move(map_entities, map_topology, map_traffic, self.ruler_state.location, adjacent=True)
 
         # harvest target resource
         elif map_resource[self.location[1]][self.location[0]] == target_resource:
-            if globe.time.check(self.time_last, self.ruler_state.time_dur_harvest):            
+            if globe.time.check(self.time_last, self.stat_dict["harvest_duration"]):
                 tools.item_add(self.stock_list, target_resource, 1)
                 self.time_last = globe.time.now()
 
@@ -145,7 +149,7 @@ class Person:
 
     def move(self, map_entities, map_topology, map_traffic, target, adjacent=False):
         
-        if globe.time.check(self.time_last, self.stat_dict["u_move_duration"]):
+        if globe.time.check(self.time_last, self.stat_dict["move_duration"]):
             path = pathfinding.astar(map_entities, map_topology, self.location, target, adjacent)
             if len(path) > 1:
                 self.location = path[1]
@@ -168,5 +172,5 @@ class Person:
             tools.item_remove(self.stock_list, "i_food", 1)
         else:
             # TODO Make person pickup food if possible, need a general purpose item pickup function
-            self.stat_dict["u_health_current"] -= 5
+            self.stat_dict["health_current"] -= 5
             pass
