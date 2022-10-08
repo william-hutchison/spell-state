@@ -10,6 +10,9 @@ class Spell:
         self.location = wizard.location
         self.status = "hold"
 
+        self.effect_target = None
+        self.effect_start_time = None
+
 
 class SpellKindSelf(Spell):
 
@@ -40,6 +43,10 @@ class SpellKindDirectional(Spell):
 
         if self.status == "hold":
             self.location = self.ruler_wizard.location
+        elif self.status == "effect":
+            print("try")
+            self.effect(self.effect_target)
+
         if type(move_attempt) == tuple:
             self.status = "moving"
             self.move_direction = move_attempt
@@ -65,16 +72,13 @@ class SpellKindDirectional(Spell):
                 elif type(self).__name__ in ["SpellGiveItem", "SpellPickupItem"]:
                     if target := map_entities[self.location[1]][self.location[0]]:
                         self.impact(target)
-                        self.ruler_wizard.spell_list.remove(self)
                     else:
                         self.map_item_impact(map_item)
-                        self.ruler_wizard.spell_list.remove(self)
 
                 # all other spells
                 else:
                     if target := map_entities[self.location[1]][self.location[0]]:
                         self.impact(target)
-                        self.ruler_wizard.spell_list.remove(self)
 
     def move(self, move_attempt):
 
@@ -100,7 +104,6 @@ class SpellKindSelect(Spell):
 
         if target := map_entities[self.location_select[1]][self.location_select[0]]:
             self.impact(target)
-        self.ruler_wizard.spell_list.remove(self)
 
 
 class SpellHarvest(SpellKindDirectional):
@@ -115,6 +118,8 @@ class SpellHarvest(SpellKindDirectional):
         if target:
             if len(self.ruler_wizard.stock_list) < self.ruler_wizard.stock_list_limit:
                 self.ruler_wizard.stock_list.append(target)
+
+        self.ruler_wizard.spell_list.remove(self)
 
 
 class SpellGiveItem(SpellKindDirectional):
@@ -131,11 +136,16 @@ class SpellGiveItem(SpellKindDirectional):
             if len(target.stock_list) < target.stock_list_limit:
                 target.stock_list.append(self.ruler_wizard.stock_list.pop(0))
 
+        self.ruler_wizard.spell_list.remove(self)
+
     def map_item_impact(self, map_item):
 
         if self.ruler_wizard.stock_list:
             if map_item[self.location[1]][self.location[0]] == "":
                 map_item[self.location[1]][self.location[0]] = self.ruler_wizard.stock_list.pop(0)
+
+        self.ruler_wizard.spell_list.remove(self)
+
 
 class SpellPickupItem(SpellKindDirectional):
 
@@ -151,12 +161,16 @@ class SpellPickupItem(SpellKindDirectional):
             if target.stock_list:
                 self.ruler_wizard.stock_list.append(target.stock_list.pop(0))
 
+        self.ruler_wizard.spell_list.remove(self)
+
     def map_item_impact(self, map_item):
 
         if len(self.ruler_wizard.stock_list) < self.ruler_wizard.stock_list_limit:
             if map_item[self.location[1]][self.location[0]]:
                 self.ruler_wizard.stock_list.append(map_item[self.location[1]][self.location[0]])
                 map_item[self.location[1]][self.location[0]] = ""
+
+        self.ruler_wizard.spell_list.remove(self)
 
 
 class SpellConsume(SpellKindDirectional):
@@ -175,8 +189,11 @@ class SpellConsume(SpellKindDirectional):
             target.stat_dict["u_health_current"] -= self.health_damage
             self.ruler_wizard.stat_dict["u_mana_current"] += self.mana_gain
 
+            # TODO Create function for this in Spell class
             if target.ruler_state == self.ruler_wizard.ruler_state:
                 target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
+
+        self.ruler_wizard.spell_list.remove(self)
 
 
 class SpellFireball(SpellKindDirectional):
@@ -195,6 +212,42 @@ class SpellFireball(SpellKindDirectional):
         if type(target).__name__ == "Person":
             if target.ruler_state == self.ruler_wizard.ruler_state:
                 target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
+
+        self.ruler_wizard.spell_list.remove(self)
+
+
+class SpellParalyse(SpellKindDirectional):
+
+    # TODO Allow multiple spells to exist simultaneously
+    def __init__(self, wizard):
+
+        super().__init__(wizard)
+        self.travel_max = 3
+        self.move_duration_change = 10000
+        self.effect_duration = 50000
+        self.action_weight_change = -5
+
+    def impact(self, target):
+
+        if type(target).__name__ in ["Person", "Wizard"]:
+            target.stat_dict["u_move_duration"] += self.move_duration_change
+            self.status = "effect"
+            self.effect_target = target
+            self.effect_start_time = globe.time.now()
+        else:
+            self.ruler_wizard.spell_list.remove(self)
+
+        if type(target).__name__ == "Person":
+            if target.ruler_state == self.ruler_wizard.ruler_state:
+                target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
+
+    def effect(self, target):
+
+        if globe.time.check(self.effect_start_time, self.effect_duration):
+            target.stat_dict["u_move_duration"] -= self.move_duration_change
+            self.ruler_wizard.spell_list.remove(self)
+
+        print("paralysing")
 
 
 class SpellStorm(SpellKindSelf):
@@ -218,7 +271,10 @@ class SpellStorm(SpellKindSelf):
                 map_entities[i[1]][i[0]].stat_dict["u_health_current"] -= self.health_damage
 
                 if type(target).__name__ == "Person":
-                    target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
+                    if target.ruler_state == self.ruler_wizard.ruler_state:
+                        target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
+
+        self.ruler_wizard.spell_list.remove(self)
 
 
 class SpellHeal(SpellKindSelect):
@@ -236,3 +292,5 @@ class SpellHeal(SpellKindSelect):
         if type(target).__name__ == "Person":
             if target.ruler_state == self.ruler_wizard.ruler_state:
                 target.ruler_state.action_dict[target.action_super]["weight"] += self.action_weight_change
+
+        self.ruler_wizard.spell_list.remove(self)

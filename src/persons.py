@@ -16,6 +16,7 @@ class Person:
         self.stock_list = []
         self.stock_list_limit = 2
 
+        # TODO Move all stats into stat dict
         self.time_last = globe.time.now()
         self.time_last_eat = globe.time.now()
         self.action_super = None
@@ -23,7 +24,8 @@ class Person:
 
         self.stat_dict = {"u_health_max": 100,
                           "u_health_current": 100,
-                          "u_attack_damage": 20}
+                          "u_attack_damage": 20,
+                          "u_move_duration": 600}
 
     def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 
@@ -143,7 +145,7 @@ class Person:
 
     def move(self, map_entities, map_topology, map_traffic, target, adjacent=False):
         
-        if globe.time.check(self.time_last, self.ruler_state.time_dur_move):
+        if globe.time.check(self.time_last, self.stat_dict["u_move_duration"]):
             path = pathfinding.astar(map_entities, map_topology, self.location, target, adjacent)
             if len(path) > 1:
                 self.location = path[1]

@@ -128,7 +128,7 @@ class WellOfCurses(Building):
     def work(self):
 
         temp_list = []
-        for i in ["s_storm", "s_fireball"]:
+        for i in ["s_fireball", "s_paralyse", "s_storm"]:
             if not self.ruler_state.wizard.spell_dict[i]["unlocked"]:
                 temp_list.append(i)
         if temp_list:

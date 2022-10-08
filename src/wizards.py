@@ -21,15 +21,17 @@ class Wizard:
         self.stat_dict = {"u_health_max": 100,
                           "u_health_current": 100,
                           "u_mana_max": 100,
-                          "u_mana_current": 100}
+                          "u_mana_current": 100,
+                          "u_move_duration": 500}
 
         self.spell_dict = {"s_harvest": {"class": spells.SpellHarvest, "cost": 20, "combo": ["down", "down"], "unlocked": True},
                            "s_give_item": {"class": spells.SpellGiveItem, "cost": 10, "combo": ["up"], "unlocked": True},
                            "s_pickup_item": {"class": spells.SpellPickupItem, "cost": 10, "combo": ["down"], "unlocked": True},
                            "s_consume": {"class": spells.SpellConsume, "cost": 20, "combo": ["right", "down", "left"], "unlocked": True},
-                           "s_fireball": {"class": spells.SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": True},
+                           "s_fireball": {"class": spells.SpellFireball, "cost": 40, "combo": ["up", "left"], "unlocked": False},
+                           "s_paralyse": {"class": spells.SpellParalyse, "cost": 100, "combo": ["up", "right", "up", "down"], "unlocked": True},
                            "s_storm": {"class": spells.SpellStorm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
-                           "s_heal": {"class": spells.SpellHeal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": True}}
+                           "s_heal": {"class": spells.SpellHeal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": False}}
 
     def update(self, map_entities, map_topology, map_resource, map_item, cast_attempt, move_character_attempt, move_spell_attempt):
 
