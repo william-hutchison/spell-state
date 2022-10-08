@@ -24,8 +24,8 @@ class State:
         self.building_dict = {"b_tower": {"class": buildings.Tower, "cost": []},
                               "b_house": {"class": buildings.House, "cost": ["i_wood", "i_wood"]},
                               "b_shrine": {"class": buildings.Shrine, "cost": ["i_metal"]},
-                              "b_tavern": {"class": buildings.Tavern, "cost": ["i_wood", "i_food"]},
-                              "b_lab_offence": {"class": buildings.LabOffence, "cost": ["i_wood", "i_metal"]}}
+                              "b_well_of_curses": {"class": buildings.WellOfCurses, "cost": ["i_wood", "i_metal"]},
+                              "b_well_of_blessings": {"class": buildings.WellOfBlessings, "cost": ["i_wood", "i_metal"]}}
 
         self.colour = colour #(random.randint(100, 255), random.randint(0, 50), random.randint(100, 255))
         self.location = location
@@ -62,7 +62,7 @@ class State:
         # create building
         if globe.time.check(self.time_last_construct, self.time_dur_construct):
             if len([i for i in self.building_list if i.under_construction]) < 2:
-                if build_attempt := self.create_building(random.choice(["b_house", "b_lab_offence"]), map_entities, map_topology, map_traffic, self.location):
+                if build_attempt := self.create_building(random.choice(["b_well_of_blessings", "b_well_of_curses"]), map_entities, map_topology, map_traffic, self.location):
                     self.building_list.append(build_attempt)
             self.time_last_construct = globe.time.now()
 

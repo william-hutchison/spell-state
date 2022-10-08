@@ -106,13 +106,14 @@ class Shrine(Building):
 
         print("work complete")
 
-class LabOffence(Building):
+
+class WellOfCurses(Building):
 
     def __init__(self, ruler_state, location):
 
         super().__init__(ruler_state, location)
         self.sprite = pg.image.load('../sprites/construction.png')
-        self.stock_list_needed = ruler_state.building_dict["b_lab_offence"]["cost"]
+        self.stock_list_needed = ruler_state.building_dict["b_well_of_curses"]["cost"]
         self.stock_list_limit = len(self.stock_list_needed)
         self.under_construction = 6000
         self.max_work = 2000
@@ -135,15 +136,30 @@ class LabOffence(Building):
             self.ruler_state.wizard.spell_dict[choice]["unlocked"] = True
 
 
-class Tavern(Building):
+class WellOfBlessings(Building):
 
     def __init__(self, ruler_state, location):
 
         super().__init__(ruler_state, location)
         self.sprite = pg.image.load('../sprites/construction.png')
+        self.stock_list_needed = ruler_state.building_dict["b_well_of_blessings"]["cost"]
+        self.stock_list_limit = len(self.stock_list_needed)
         self.under_construction = 6000
+        self.max_work = 2000
+        self.under_work = self.max_work
 
     def constructed(self):
 
         self.sprite = pg.image.load('../sprites/house.png')
-        pass
+        self.stock_list_needed = []
+        self.stock_list_limit = 0
+
+    def work(self):
+
+        temp_list = []
+        for i in ["s_heal"]:
+            if not self.ruler_state.wizard.spell_dict[i]["unlocked"]:
+                temp_list.append(i)
+        if temp_list:
+            choice = random.choice(temp_list)
+            self.ruler_state.wizard.spell_dict[choice]["unlocked"] = True
