@@ -243,8 +243,8 @@ class PlayerInfo(Interface):
         text = ["Inspector location: " + str(camera.inspector_location),
                 "Character location: " + str(character.wizard.location),
                 "Casting string: " + str(character.casting_string),
-                "Health: " + str(character.wizard.stat_dict['u_health_current']) + "/" + str(character.wizard.stat_dict['u_health_max']),
-                "Mana: " + str(character.wizard.stat_dict['u_mana_current']) + "/" + str(character.wizard.stat_dict['u_mana_max']),
+                "Health: " + str(character.wizard.stat_dict['health_current']) + "/" + str(character.wizard.stat_dict['health_max']),
+                "Mana: " + str(character.wizard.stat_dict['mana_current']) + "/" + str(character.wizard.stat_dict['mana_max']),
                 "Items: " + str(character.wizard.stock_list)]
         self.draw_text_lines(text, (0, 0))
         final_surface.blit(self.surface, self.position)
