@@ -14,13 +14,13 @@ class Wizard:
                           "health_current": 100,
                           "mana_max": 100,
                           "mana_current": 100,
-                          "move_duration": 300}
+                          "move_duration": 280}
 
         self.spell_dict = {"harvest": {"class": spells.Harvest, "cost": 20, "combo": ["down", "down"], "unlocked": True},
                            "give_item": {"class": spells.GiveItem, "cost": 10, "combo": ["up"], "unlocked": True},
                            "pickup_item": {"class": spells.PickupItem, "cost": 10, "combo": ["down"], "unlocked": True},
                            "consume": {"class": spells.Consume, "cost": 20, "combo": ["right", "down", "left"], "unlocked": True},
-                           "fireball": {"class": spells.Fireball, "cost": 40, "combo": ["up", "left"], "unlocked": False},
+                           "fireball": {"class": spells.Fireball, "cost": 40, "combo": ["up", "left"], "unlocked": True},
                            "paralyse": {"class": spells.Paralyse, "cost": 100, "combo": ["up", "right", "up", "down"], "unlocked": True},
                            "storm": {"class": spells.Storm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
                            "heal": {"class": spells.Heal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": False}}

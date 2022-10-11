@@ -67,14 +67,13 @@ class KindDirectional(Spell):
 
             # check for spell impact
             else:
-
                 # special case for harvesting
-                if type(self).__name__ == "SpellHarvest":
+                if type(self).__name__ == "Harvest":
                     if target := map_resource[self.location[1]][self.location[0]]:
                         self.impact(target)
 
                 # special case for accessing items
-                elif type(self).__name__ in ["SpellGiveItem", "SpellPickupItem"]:
+                elif type(self).__name__ in ["GiveItem", "PickupItem"]:
                     if target := map_entities[self.location[1]][self.location[0]]:
                         self.impact(target)
                     else:
@@ -215,7 +214,7 @@ class Fireball(KindDirectional):
 
     def impact(self, target):
 
-        target.stat_dict["health_current"] -= self.stat_dict["health_change"]
+        target.stat_dict["health_current"] += self.stat_dict["health_change"]
         self.change_action_weight(target, self.stat_dict["action_weight_change"])
         self.ruler_wizard.spell_list.remove(self)
 
@@ -245,6 +244,7 @@ class Paralyse(KindDirectional):
         self.change_action_weight(target, self.stat_dict["action_weight_change"])
 
     def effect(self, target):
+        """Remove spell effect after effect duration reached."""
 
         if globe.time.check(self.effect_start_time, self.stat_dict["effect_duration"]):
             target.stat_dict["move_duration"] -= self.stat_dict["move_duration_change"]

@@ -14,7 +14,7 @@ class Person:
                           "health_max": 100,
                           "health_current": 100,
                           "attack_damage": 20,
-                          "move_duration": 600,
+                          "move_duration": 400,
                           "transfer_duration": 600,
                           "eat_duration": 20000,
                           "harvest_duration": 800,
