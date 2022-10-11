@@ -24,7 +24,7 @@ If you like what one of your subjects is doing, bestow a blessing on them (resea
 - Access in-game menu - Escape
 
 ## Setup
-A macOS executable is available in the bin folder. Apologies for the current absence of Linux and Windows executables! Alternatively, the game can be run using Python 3.9 with the required libraries at main.py. The executable is a bundle of the project at git commit bd988b8. 
+A macOS executable is available in the bin folder. Apologies for the current absence of Linux and Windows executables! Alternatively, the game can be run using Python 3.9 with the required libraries at main.py. The executable is a bundle of the project at git commit 10c894c.
 
 ## Required libraries
 - os
