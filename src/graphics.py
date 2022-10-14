@@ -22,9 +22,11 @@ class GraphicsManager:
         self.terrain = Terrain()
         self.world_info = WorldInfo()
         self.state_info = StateInfo()
-        self.inspector_info = InspectorInfo()
         self.player_info = PlayerInfo()
         self.spell_book = SpellBook()
+
+        self.inspector_info = InspectorInfo()
+        self.item_transfer = None
 
         self.image_ui = pg.image.load('../sprites/ui.png')
         #self.set_window_scale(1) # For testing
@@ -34,9 +36,14 @@ class GraphicsManager:
         self.surface.blit(self.image_ui, (0, 0))
         self.world_info.update(self.surface)
         self.state_info.update(self.surface, state)
-        self.inspector_info.update(self.surface, inspector_dict)
         self.player_info.update(self.surface, character, camera)
         self.spell_book.update(self.surface, character)
+
+        # TODO selectively create and destroy these objects
+        self.inspector_info.update(self.surface, inspector_dict)
+        if self.item_transfer:
+            self.item_transfer.update(self.surface)
+
         self.window.blit(pg.transform.scale(self.surface, window_size[self.scale]), (0, 0))
 
     def update_terrain(self, camera_location, topology, resources, items, entities, inspector_location, inspector_mode, character_location, state_list):
@@ -54,6 +61,11 @@ class GraphicsManager:
 
         self.scale = scale
         self.window = pg.display.set_mode(window_size[self.scale])
+
+    def create_transfer_interface(self, options, current_option):
+
+        self.item_transfer = ItemTransfer(self, options, current_option)
+        return self.item_transfer
 
 
 class Menu:
@@ -270,3 +282,29 @@ class SpellBook(Interface):
                 i += 1
         self.draw_text_lines(text, (0, 0))
         final_surface.blit(self.surface, self.position)
+
+class ItemTransfer(Interface):
+
+    def __init__(self, graphics_manager, options, current_option):
+
+        super().__init__()
+
+        self.graphics_manager = graphics_manager
+        self.options = options
+        self.current_option = current_option
+
+        self.position = (950, 430)
+        self.size = (300, 350)
+        self.surface = pg.Surface(self.size)
+
+    def update(self, final_surface):
+
+        self.surface.fill((0, 200, 0))
+        self.draw_text_lines(self.options[0], (0, 0))
+        self.draw_text_lines(self.options[1], (150, 0))
+        pg.draw.rect(self.surface, (255, 255, 255), (self.current_option[0]*150+80, self.current_option[1]*self.text_spacing, 10, 10), 0)
+        final_surface.blit(self.surface, self.position)
+
+    def close(self):
+
+        self.graphics_manager.item_transfer = None

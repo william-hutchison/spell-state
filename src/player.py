@@ -7,18 +7,23 @@ class Player:  # TODO Should this object even exist? Probably not
 
     def __init__(self, player_wizard):
 
-        self.camera = Camera()
-        self.character = Character(player_wizard)
+        self.character = Character(self, player_wizard)
+        self.camera = Camera(self)
 
-    def update(self, map_topology, map_resource, map_item, map_entities, events):
+        self.interface_object = None
+
+
+    def update(self, map_topology, map_resource, map_item, map_entities, events, create_transfer_interface):
         
-        self.character.update(map_entities, map_topology, map_resource, map_item, events[0], events[1])
+        self.character.update(map_entities, map_topology, map_resource, map_item, events[0], events[1], create_transfer_interface)
         self.camera.update(self.character, map_topology, map_resource, map_item, map_entities, events[0], events[1])
 
 
 class Camera:
     
-    def __init__(self):
+    def __init__(self, ruler_player):
+
+        self.ruler_player = ruler_player
 
         self.location = (0, 0)
         self.time_last = 0
@@ -27,6 +32,10 @@ class Camera:
         self.inspector_dict = {"Topology": "", "Resource": "", "Entity type": "", "Location": "", "Action": "", "Stock": "", "Health": "", "Construction remaining": ""}
 
     def update(self, player_character, map_topology, map_resource, map_item, map_entities, key_press, keys):
+
+        # prevent camera actions when interface object is in use
+        if self.ruler_player.interface_object:
+            return None
 
         # check for a spell requiring target selection
         if spell_list := player_character.wizard.spell_list:
@@ -101,24 +110,42 @@ class Camera:
 
 class Character:
 
-    def __init__(self, wizard):
+    def __init__(self, ruler_player, wizard):
 
+        self.ruler_player = ruler_player
         self.wizard = wizard
 
         self.camera_follow = True
         self.casting_string = []
 
-    def update(self, map_entities, map_topology, map_resource, map_item, key_press, keys):
+    def update(self, map_entities, map_topology, map_resource, map_item, key_press, keys, create_transfer_interface):
 
-        move_character_attempt = self.move_character(keys)
+        # TODO This is messy
+        move_character_attempt = None
         move_spell_attempt = None
         cast_attempt = None
 
-        # move spell if holding otherwise cast new spell
-        if [i for i in self.wizard.spell_list if i.status == "hold"]:
-            move_spell_attempt = self.move_spell(key_press, keys)
+        # interact with interface
+        if self.ruler_player.interface_object:
+            self.navigate_interface(self.ruler_player.interface_object.current_option, self.ruler_player.interface_object.options, key_press, keys)
+            if key_press:
+                if keys[pg.K_e]:
+                    self.ruler_player.interface_object.close()
+                    self.ruler_player.interface_object = None
+
+        # perform all non-interface actions
         else:
-            cast_attempt = self.select_spell(key_press, keys)
+            move_character_attempt = self.move_character(keys)
+
+            # move spell if holding otherwise cast new spell
+            if [i for i in self.wizard.spell_list if i.status == "hold"]:
+                move_spell_attempt = self.move_spell(key_press, keys)
+            else:
+                cast_attempt = self.select_spell(key_press, keys)
+
+            if key_press:
+                if keys[pg.K_e]:
+                    self.ruler_player.interface_object = create_transfer_interface([self.wizard.stock_list, ["wheat", "sheep"]], [0, 0])
 
         self.wizard.update(map_entities, map_topology, map_resource, map_item, cast_attempt, move_character_attempt, move_spell_attempt)
 
@@ -177,3 +204,20 @@ class Character:
             self.casting_string = []
         return None
 
+    def navigate_interface(self, current_option, options, key_press, keys):
+
+        if key_press:
+            if keys[pg.K_DOWN]:
+                if current_option[1] < len(options[current_option[0]]) - 1:
+                    current_option[1] += 1
+            elif keys[pg.K_UP]:
+                if current_option[1] > 0:
+                    current_option[1] -= 1
+            elif keys[pg.K_RIGHT]:
+                if current_option[0] == 0:
+                    current_option[0] = 1
+                    current_option[1] = min(current_option[1], len(options[1])-1)
+            elif keys[pg.K_LEFT]:
+                if current_option[0] == 1:
+                    current_option[0] = 0
+                    current_option[1] = min(current_option[1], len(options[0])-1)
