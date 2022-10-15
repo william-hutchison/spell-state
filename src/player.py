@@ -9,14 +9,13 @@ class Player:  # TODO Should this object even exist? Probably not
 
         self.character = Character(self, player_wizard)
         self.camera = Camera(self)
+        self.interface = Interface(self, player_wizard)
 
-        self.interface_object = None
-
-
-    def update(self, map_topology, map_resource, map_item, map_entities, events, create_transfer_interface):
+    def update(self, map_topology, map_resource, map_item, map_entities, events):
         
-        self.character.update(map_entities, map_topology, map_resource, map_item, events[0], events[1], create_transfer_interface)
+        self.character.update(map_entities, map_topology, map_resource, map_item, events[0], events[1])
         self.camera.update(self.character, map_topology, map_resource, map_item, map_entities, events[0], events[1])
+        self.interface.update(map_entities, map_item, events[0], events[1])
 
 
 class Camera:
@@ -34,7 +33,7 @@ class Camera:
     def update(self, player_character, map_topology, map_resource, map_item, map_entities, key_press, keys):
 
         # prevent camera actions when interface object is in use
-        if self.ruler_player.interface_object:
+        if self.ruler_player.interface.transfer_target:
             return None
 
         # check for a spell requiring target selection
@@ -118,34 +117,22 @@ class Character:
         self.camera_follow = True
         self.casting_string = []
 
-    def update(self, map_entities, map_topology, map_resource, map_item, key_press, keys, create_transfer_interface):
+    def update(self, map_entities, map_topology, map_resource, map_item, key_press, keys):
 
         # TODO This is messy
         move_character_attempt = None
         move_spell_attempt = None
         cast_attempt = None
 
-        # interact with interface
-        if self.ruler_player.interface_object:
-            self.navigate_interface(self.ruler_player.interface_object.current_option, self.ruler_player.interface_object.options, key_press, keys)
-            if key_press:
-                if keys[pg.K_e]:
-                    self.ruler_player.interface_object.close()
-                    self.ruler_player.interface_object = None
+        move_character_attempt = self.move_character(keys)
 
         # perform all non-interface actions
-        else:
-            move_character_attempt = self.move_character(keys)
-
+        if not self.ruler_player.interface.transfer_target:
             # move spell if holding otherwise cast new spell
             if [i for i in self.wizard.spell_list if i.status == "hold"]:
                 move_spell_attempt = self.move_spell(key_press, keys)
             else:
                 cast_attempt = self.select_spell(key_press, keys)
-
-            if key_press:
-                if keys[pg.K_e]:
-                    self.ruler_player.interface_object = create_transfer_interface([self.wizard.stock_list, ["wheat", "sheep"]], [0, 0])
 
         self.wizard.update(map_entities, map_topology, map_resource, map_item, cast_attempt, move_character_attempt, move_spell_attempt)
 
@@ -204,20 +191,93 @@ class Character:
             self.casting_string = []
         return None
 
-    def navigate_interface(self, current_option, options, key_press, keys):
+
+class Interface:
+
+    def __init__(self, ruler_player, wizard):
+
+        self.ruler_player = ruler_player
+        self.wizard = wizard
+
+        self.transfer_target = None
+        self.options = [[], []]
+        self.current_option = [0, 0]
+
+    def update(self, map_entities, map_item, key_press, keys):
+
+        if self.transfer_target:
+            self.options[0] = self.wizard.stock_list
+            self.options[1] = self.transfer_target.stock_list
+
+            self.navigate_transfer_interface(key_press, keys)
+
+        else:
+            self.check_transfer_interface(map_entities, map_item, key_press, keys)
+
+    def navigate_transfer_interface(self, key_press, keys):
 
         if key_press:
-            if keys[pg.K_DOWN]:
-                if current_option[1] < len(options[current_option[0]]) - 1:
-                    current_option[1] += 1
+
+            # close interface
+            if 1 in (keys[pg.K_e], keys[pg.K_w], keys[pg.K_a], keys[pg.K_s], keys[pg.K_d]):
+                self.transfer_target = None
+
+            # change selection
+            elif keys[pg.K_DOWN]:
+                if self.current_option[1] < len(self.options[self.current_option[0]]) - 1:
+                    self.current_option[1] += 1
             elif keys[pg.K_UP]:
-                if current_option[1] > 0:
-                    current_option[1] -= 1
+                if self.current_option[1] > 0:
+                    self.current_option[1] -= 1
             elif keys[pg.K_RIGHT]:
-                if current_option[0] == 0:
-                    current_option[0] = 1
-                    current_option[1] = min(current_option[1], len(options[1])-1)
+                if self.current_option[0] == 0:
+                    self.current_option[0] = 1
+                    self.current_option[1] = min(self.current_option[1], len(self.options[1])-1)
             elif keys[pg.K_LEFT]:
-                if current_option[0] == 1:
-                    current_option[0] = 0
-                    current_option[1] = min(current_option[1], len(options[0])-1)
+                if self.current_option[0] == 1:
+                    self.current_option[0] = 0
+                    self.current_option[1] = min(self.current_option[1], len(self.options[0])-1)
+
+            # attempt item transfer
+            elif keys[pg.K_RETURN]:
+                self.transfer()
+
+    def check_transfer_interface(self, map_entities, map_item, key_press, keys):
+
+        if key_press:
+            if keys[pg.K_e] and keys[pg.K_UP]:
+                if map_entities[self.wizard.location[1]-1][self.wizard.location[0]]:
+                    self.transfer_target = map_entities[self.wizard.location[1]-1][self.wizard.location[0]]
+                else:
+                    self.transfer_target = map_item[self.wizard.location[1]-1][self.wizard.location[0]]
+
+            elif keys[pg.K_e] and keys[pg.K_LEFT]:
+                if map_entities[self.wizard.location[1]][self.wizard.location[0]-1]:
+                    self.transfer_target = map_entities[self.wizard.location[1]][self.wizard.location[0]-1]
+                else:
+                    self.transfer_target = map_item[self.wizard.location[1]][self.wizard.location[0]-1]
+
+            elif keys[pg.K_e] and keys[pg.K_DOWN]:
+                if map_entities[self.wizard.location[1]+1][self.wizard.location[0]]:
+                    self.transfer_target = map_entities[self.wizard.location[1]+1][self.wizard.location[0]]
+                else:
+                    self.transfer_target = map_item[self.wizard.location[1]+1][self.wizard.location[0]]
+
+            elif keys[pg.K_e] and keys[pg.K_RIGHT]:
+                if map_entities[self.wizard.location[1]][self.wizard.location[0]+1]:
+                    self.transfer_target = map_entities[self.wizard.location[1]][self.wizard.location[0]+1]
+                else:
+                    self.transfer_target = map_item[self.wizard.location[1]][self.wizard.location[0]+1]
+
+    def transfer(self):
+
+        if self.current_option[0] == 0:
+            if len(self.transfer_target.stock_list) < self.transfer_target.stat_dict["stock_max"]:
+                self.transfer_target.stock_list.append(self.options[0][self.current_option[1]])
+                self.wizard.stock_list.remove(self.options[0][self.current_option[1]])
+        elif self.current_option[0] == 1:
+            if len(self.wizard.stock_list) < self.wizard.stat_dict["stock_max"]:
+                self.wizard.stock_list.append(self.options[1][self.current_option[1]])
+                self.transfer_target.stock_list.remove(self.options[1][self.current_option[1]])
+
+
