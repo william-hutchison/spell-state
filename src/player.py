@@ -26,6 +26,7 @@ class Camera:
 
         self.location = (0, 0)
         self.time_last = 0
+        self.camera_follow = True
         self.inspector_location = (0, 0)
         self.inspector_mode = "inspect"
         self.inspector_dict = {"Topology": "", "Resource": "", "Entity type": "", "Location": "", "Action": "", "Stock": "", "Health": "", "Construction remaining": ""}
@@ -58,8 +59,12 @@ class Camera:
 
         camera_location = self.location
 
+        # set camera to follow the player
+        if pg.key.get_pressed()[pg.K_f]:
+            self.camera_follow = True
+
         # move the camera to follow the player_character
-        if player_character.camera_follow:
+        if self.camera_follow:
             camera_location = (player_character.wizard.location[0] - 30, player_character.wizard.location[1] - 20)
 
         # prevent camera movement immediately after casting
@@ -74,7 +79,7 @@ class Camera:
                     move_x = keys[pg.K_RIGHT] - keys[pg.K_LEFT]
                     move_y = keys[pg.K_DOWN] - keys[pg.K_UP]
                     camera_location = (self.location[0]+move_x, self.location[1]+move_y)
-                    player_character.camera_follow = False
+                    self.camera_follow = False
                     self.time_last = globe.time.now()
         # TODO This will brake if world scale changes
         inspector_location = (camera_location[0]+30, camera_location[1]+20)
@@ -114,7 +119,6 @@ class Character:
         self.ruler_player = ruler_player
         self.wizard = wizard
 
-        self.camera_follow = True
         self.casting_string = []
 
     def update(self, map_entities, map_topology, map_resource, map_item, key_press, keys):
@@ -138,9 +142,6 @@ class Character:
 
     def move_character(self, keys):
         """Detect keyboard input and return appropriate direction tuple for wizard move."""
-
-        if pg.key.get_pressed()[pg.K_f]:
-            self.camera_follow = True
 
         if 1 in (keys[pg.K_w], keys[pg.K_a], keys[pg.K_s], keys[pg.K_d]):
             move_x = keys[pg.K_d] - keys[pg.K_a]
@@ -207,19 +208,25 @@ class Interface:
 
         if self.transfer_target:
             self.options[0] = self.wizard.stock_list
-            self.options[1] = self.transfer_target.stock_list
 
-            self.navigate_transfer_interface(key_press, keys)
+            if type(self.transfer_target) == tuple:
+                self.options[1] = [map_item[self.transfer_target[1]][self.transfer_target[0]]]
+            else:
+                self.options[1] = self.transfer_target.stock_list
+
+            self.navigate_transfer_interface(map_item, key_press, keys)
 
         else:
-            self.check_transfer_interface(map_entities, map_item, key_press, keys)
+            self.check_transfer_interface(map_entities, key_press, keys)
 
-    def navigate_transfer_interface(self, key_press, keys):
+    def navigate_transfer_interface(self, map_item, key_press, keys):
+        """Navigate through the transfer interface and attempt to transfer the desired item."""
 
         if key_press:
 
             # close interface
-            if 1 in (keys[pg.K_e], keys[pg.K_w], keys[pg.K_a], keys[pg.K_s], keys[pg.K_d]):
+            if 1 in (keys[pg.K_e], keys[pg.K_f], keys[pg.K_w], keys[pg.K_a], keys[pg.K_s], keys[pg.K_d]):
+                self.ruler_player.camera.camera_follow = True
                 self.transfer_target = None
 
             # change selection
@@ -232,52 +239,69 @@ class Interface:
             elif keys[pg.K_RIGHT]:
                 if self.current_option[0] == 0:
                     self.current_option[0] = 1
-                    self.current_option[1] = min(self.current_option[1], len(self.options[1])-1)
             elif keys[pg.K_LEFT]:
                 if self.current_option[0] == 1:
                     self.current_option[0] = 0
-                    self.current_option[1] = min(self.current_option[1], len(self.options[0])-1)
 
             # attempt item transfer
             elif keys[pg.K_RETURN]:
-                self.transfer()
+                if self.options[self.current_option[0]]:
+                    self.transfer(map_item)
 
-    def check_transfer_interface(self, map_entities, map_item, key_press, keys):
+        # prevent selection of invalid option
+        self.current_option[1] = min(self.current_option[1], len(self.options[self.current_option[0]])-1)
+        self.current_option[1] = max(self.current_option[1], 0)
+
+    def check_transfer_interface(self, map_entities, key_press, keys):
+        """Check for the creation of a new transfer interface and assignment of a new transfer target, either a tuple
+        location on the item map or another entity."""
 
         if key_press:
             if keys[pg.K_e] and keys[pg.K_UP]:
                 if map_entities[self.wizard.location[1]-1][self.wizard.location[0]]:
                     self.transfer_target = map_entities[self.wizard.location[1]-1][self.wizard.location[0]]
                 else:
-                    self.transfer_target = map_item[self.wizard.location[1]-1][self.wizard.location[0]]
+                    self.transfer_target = (self.wizard.location[0], self.wizard.location[1]-1)
 
             elif keys[pg.K_e] and keys[pg.K_LEFT]:
                 if map_entities[self.wizard.location[1]][self.wizard.location[0]-1]:
                     self.transfer_target = map_entities[self.wizard.location[1]][self.wizard.location[0]-1]
                 else:
-                    self.transfer_target = map_item[self.wizard.location[1]][self.wizard.location[0]-1]
+                    self.transfer_target = (self.wizard.location[0]-1, self.wizard.location[1])
 
             elif keys[pg.K_e] and keys[pg.K_DOWN]:
                 if map_entities[self.wizard.location[1]+1][self.wizard.location[0]]:
                     self.transfer_target = map_entities[self.wizard.location[1]+1][self.wizard.location[0]]
                 else:
-                    self.transfer_target = map_item[self.wizard.location[1]+1][self.wizard.location[0]]
+                    self.transfer_target = (self.wizard.location[0], self.wizard.location[1]+1)
 
             elif keys[pg.K_e] and keys[pg.K_RIGHT]:
                 if map_entities[self.wizard.location[1]][self.wizard.location[0]+1]:
                     self.transfer_target = map_entities[self.wizard.location[1]][self.wizard.location[0]+1]
                 else:
-                    self.transfer_target = map_item[self.wizard.location[1]][self.wizard.location[0]+1]
+                    self.transfer_target = (self.wizard.location[0]+1, self.wizard.location[1])
 
-    def transfer(self):
+    def transfer(self, map_item):
+        """Transfer the desired item between the player character and the transfer target."""
 
-        if self.current_option[0] == 0:
-            if len(self.transfer_target.stock_list) < self.transfer_target.stat_dict["stock_max"]:
-                self.transfer_target.stock_list.append(self.options[0][self.current_option[1]])
-                self.wizard.stock_list.remove(self.options[0][self.current_option[1]])
-        elif self.current_option[0] == 1:
-            if len(self.wizard.stock_list) < self.wizard.stat_dict["stock_max"]:
-                self.wizard.stock_list.append(self.options[1][self.current_option[1]])
-                self.transfer_target.stock_list.remove(self.options[1][self.current_option[1]])
+        # transfer between player character and a location in the item map
+        if type(self.transfer_target) == tuple:
+            if self.current_option[0] == 0:
+                if not map_item[self.transfer_target[1]][self.transfer_target[0]]:
+                    map_item[self.transfer_target[1]][self.transfer_target[0]] = self.options[0][self.current_option[1]]
+                    self.wizard.stock_list.remove(self.options[0][self.current_option[1]])
+            elif self.current_option[0] == 1:
+                if len(self.wizard.stock_list) < self.wizard.stat_dict["stock_max"]:
+                    self.wizard.stock_list.append(map_item[self.transfer_target[1]][self.transfer_target[0]])
+                    map_item[self.transfer_target[1]][self.transfer_target[0]] = ""
 
-
+        # transfer between player character and another entity
+        else:
+            if self.current_option[0] == 0:
+                if len(self.transfer_target.stock_list) < self.transfer_target.stat_dict["stock_max"]:
+                    self.transfer_target.stock_list.append(self.options[0][self.current_option[1]])
+                    self.wizard.stock_list.remove(self.options[0][self.current_option[1]])
+            elif self.current_option[0] == 1:
+                if len(self.wizard.stock_list) < self.wizard.stat_dict["stock_max"]:
+                    self.wizard.stock_list.append(self.options[1][self.current_option[1]])
+                    self.transfer_target.stock_list.remove(self.options[1][self.current_option[1]])
