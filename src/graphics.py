@@ -29,9 +29,9 @@ class GraphicsManager:
         self.item_transfer = ItemTransfer()
 
         self.image_ui = pg.image.load('../sprites/ui.png')
-        self.set_window_scale(1) # For testing
+        # self.set_window_scale(1) # For testing
 
-    def update_interface(self, state, character, camera, inspector_dict, transfer_object):
+    def update_interface(self, state, character, camera, inspector_dict, transfer_object, map_item):
 
         self.surface.blit(self.image_ui, (0, 0))
         self.world_info.update(self.surface)
@@ -41,7 +41,7 @@ class GraphicsManager:
 
         # TODO selectively create and destroy these objects
         self.inspector_info.update(self.surface, inspector_dict)
-        self.item_transfer.update(self.surface, transfer_object)
+        self.item_transfer.update(self.surface, character, transfer_object, map_item)
 
         self.window.blit(pg.transform.scale(self.surface, window_size[self.scale]), (0, 0))
 
@@ -166,9 +166,9 @@ class Interface:
 
     def __init__(self):
 
-        self.text_spacing = 30
+        self.text_spacing = 24
         self.margin_spacing = 10
-        self.font = pg.font.SysFont("timesnewroman", 18)
+        self.font = pg.font.SysFont("timesnewroman", 15)
 
     def draw_text_lines(self, text_list, position):
 
@@ -286,11 +286,25 @@ class ItemTransfer(Interface):
         self.size = (300, 350)
         self.surface = pg.Surface(self.size)
 
-    def update(self, final_surface, transfer_object):
+    def update(self, final_surface, character, transfer_object, map_item):
 
         if transfer_object.transfer_target:
-            self.surface.fill((0, 200, 0))
-            self.draw_text_lines(transfer_object.options[0], (0, 0))
-            self.draw_text_lines(transfer_object.options[1], (150, 0))
-            pg.draw.rect(self.surface, (255, 255, 255), (transfer_object.current_option[0]*150+80, transfer_object.current_option[1]*self.text_spacing, 10, 10), 0)
+
+            # determine item transfer headings
+            player_text = self.font.render("Player ({}/{})".format(len(character.wizard.stock_list), character.wizard.stat_dict["stock_max"]), True, (255, 255, 255))
+            if type(transfer_object.transfer_target) == tuple:
+                if map_item[transfer_object.transfer_target[1]][transfer_object.transfer_target[0]]:
+                    target_text = self.font.render("Tile (1/1)", True, (255, 255, 255))
+                else:
+                    target_text = self.font.render("Tile (0/1)", True, (255, 255, 255))
+            else:
+                target_text = self.font.render("{} ({}/{})".format(type(transfer_object.transfer_target).__name__, len(transfer_object.transfer_target.stock_list), transfer_object.transfer_target.stat_dict["stock_max"]), True, (255, 255, 255))
+
+            # draw item transfer information
+            self.surface.fill((0, 0, 0))
+            self.surface.blit(player_text, (0, 0))
+            self.surface.blit(target_text, (150, 0))
+            self.draw_text_lines(transfer_object.options[0], (0, self.text_spacing))
+            self.draw_text_lines(transfer_object.options[1], (150, self.text_spacing))
+            pg.draw.rect(self.surface, (255, 255, 255), (transfer_object.current_option[0]*150+80, transfer_object.current_option[1]*self.text_spacing+self.text_spacing, 10, 10), 0)
             final_surface.blit(self.surface, self.position)
