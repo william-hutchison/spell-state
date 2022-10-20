@@ -72,13 +72,6 @@ class KindDirectional(Spell):
                     if target := map_resource[self.location[1]][self.location[0]]:
                         self.impact(target)
 
-                # special case for accessing items
-                elif type(self).__name__ in ["GiveItem", "PickupItem"]:
-                    if target := map_entities[self.location[1]][self.location[0]]:
-                        self.impact(target)
-                    else:
-                        self.map_item_impact(map_item)
-
                 # all other spells
                 else:
                     if target := map_entities[self.location[1]][self.location[0]]:
@@ -127,59 +120,6 @@ class Harvest(KindDirectional):
         self.ruler_wizard.spell_list.remove(self)
 
 
-class GiveItem(KindDirectional):
-
-    def __init__(self, wizard):
-
-        super().__init__(wizard)
-        self.stat_dict["move_duration"] = 100
-        self.stat_dict["move_max"] = 1
-
-    def impact(self, target):
-
-        # TODO Select item from item list with arrow keys and enter (matching location selection spells)
-        if self.ruler_wizard.stock_list:
-            if len(target.stock_list) < target.stat_dict["stock_max"]:
-                target.stock_list.append(self.ruler_wizard.stock_list.pop(0))
-
-        self.ruler_wizard.spell_list.remove(self)
-
-    def map_item_impact(self, map_item):
-
-        if self.ruler_wizard.stock_list:
-            if map_item[self.location[1]][self.location[0]] == "":
-                map_item[self.location[1]][self.location[0]] = self.ruler_wizard.stock_list.pop(0)
-
-        self.ruler_wizard.spell_list.remove(self)
-
-
-class PickupItem(KindDirectional):
-
-    def __init__(self, wizard):
-
-        super().__init__(wizard)
-        self.stat_dict["move_duration"] = 100
-        self.stat_dict["move_max"] = 1
-
-    def impact(self, target):
-
-        # TODO Select item from item list with arrow keys and enter (matching location selection spells)
-        if len(self.ruler_wizard.stock_list) < self.ruler_wizard.stat_dict["stock_max"]:
-            if target.stock_list:
-                self.ruler_wizard.stock_list.append(target.stock_list.pop(0))
-
-        self.ruler_wizard.spell_list.remove(self)
-
-    def map_item_impact(self, map_item):
-
-        if len(self.ruler_wizard.stock_list) < self.ruler_wizard.stat_dict["stock_max"]:
-            if map_item[self.location[1]][self.location[0]]:
-                self.ruler_wizard.stock_list.append(map_item[self.location[1]][self.location[0]])
-                map_item[self.location[1]][self.location[0]] = ""
-
-        self.ruler_wizard.spell_list.remove(self)
-
-
 class Consume(KindDirectional):
 
     def __init__(self, wizard):
@@ -187,7 +127,6 @@ class Consume(KindDirectional):
         super().__init__(wizard)
         self.stat_dict["move_duration"] = 100
         self.stat_dict["move_max"] = 1
-        self.stat_dict["action_weight_change"] = -5
         self.stat_dict["action_weight_change"] = -5
         self.stat_dict["health_change"] = -1000
         self.stat_dict["mana_change"] = 60

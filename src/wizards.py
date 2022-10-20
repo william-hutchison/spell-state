@@ -17,8 +17,6 @@ class Wizard:
                           "move_duration": 280}
 
         self.spell_dict = {"harvest": {"class": spells.Harvest, "cost": 20, "combo": ["down", "down"], "unlocked": True},
-                           "give_item": {"class": spells.GiveItem, "cost": 10, "combo": ["up"], "unlocked": True},
-                           "pickup_item": {"class": spells.PickupItem, "cost": 10, "combo": ["down"], "unlocked": True},
                            "consume": {"class": spells.Consume, "cost": 20, "combo": ["right", "down", "left"], "unlocked": True},
                            "fireball": {"class": spells.Fireball, "cost": 40, "combo": ["up", "left"], "unlocked": True},
                            "paralyse": {"class": spells.Paralyse, "cost": 100, "combo": ["up", "right", "up", "down"], "unlocked": True},
