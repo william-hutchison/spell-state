@@ -20,8 +20,8 @@ class Wizard:
                            "consume": {"class": spells.Consume, "cost": 20, "combo": ["right", "down", "left"], "unlocked": True},
                            "fireball": {"class": spells.Fireball, "cost": 40, "combo": ["up", "left"], "unlocked": True},
                            "paralyse": {"class": spells.Paralyse, "cost": 100, "combo": ["up", "right", "up", "down"], "unlocked": True},
-                           "storm": {"class": spells.Storm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": False},
-                           "heal": {"class": spells.Heal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": False}}
+                           "storm": {"class": spells.Storm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": True},
+                           "heal": {"class": spells.Heal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": True}}
 
         self.sprite = pg.image.load('../sprites/wizard.png')
         self.ruler_state = ruler_state

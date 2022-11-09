@@ -162,19 +162,8 @@ def find_free(locations, map_entities, map_topology):
 
     return free_locations
 
-
-def find_within_radius(location, radius):
-    """Returns list of coordinates within a given radius of a location."""
-
-    possible_locations = [] 
-    for x in range(-radius, radius):
-        for y in range(-radius, radius):
-            possible_locations.append((location[0]+x, location[1]+y))
-
-    return possible_locations
-
-
 def drop_items(location, items, map_topology, map_item):
+
     possible_locations = find_within_radius(location, round(2+len(items)/4))
     for item in items:
 
@@ -189,4 +178,23 @@ def drop_items(location, items, map_topology, map_item):
 
             # TODO Do something to avoid infinite loop in case of no locations found
 
+def find_within_radius(location, radius):
+    """Returns list of coordinates within a given radius of a location and within the bounds of the map."""
 
+    possible_locations = []
+    for x in range(-radius, radius+1):
+        for y in range(-radius, radius+1):
+            if (0 <= location[0]+x < globe.WORLD_SIZE[0]) and (0 <= location[1]+y < globe.WORLD_SIZE[0]):
+                possible_locations.append((location[0]+x, location[1]+y))
+
+    return possible_locations
+
+def find_within_ring(location, radius):
+
+    inner_tiles = find_within_radius(location, radius-1)
+    all_tiles = find_within_radius(location, radius)
+
+    for tile in inner_tiles:
+        all_tiles.remove(tile)
+
+    return all_tiles

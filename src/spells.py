@@ -15,6 +15,8 @@ class Spell:
         self.effect_target = None
         self.effect_start_time = None
 
+        self.sprite = None # TODO Add spell specific sprites
+
     def change_action_weight(self, target, action_weight_change):
 
         if type(target).__name__ == "Person":
@@ -34,7 +36,9 @@ class KindSelf(Spell):
             self.location = self.ruler_wizard.location
         if move_attempt:
             self.impact(map_entities)
-            self.ruler_wizard.spell_list.remove(self)
+
+        if self.status == "effect":
+            self.effect(map_entities, self.effect_target)
 
 
 class KindDirectional(Spell):
@@ -51,7 +55,7 @@ class KindDirectional(Spell):
         if self.status == "hold":
             self.location = self.ruler_wizard.location
         elif self.status == "effect":
-            self.effect(self.effect_target)
+            self.effect(map_entities, self.effect_target)
 
         if type(move_attempt) == tuple:
             self.status = "moving"
@@ -182,7 +186,7 @@ class Paralyse(KindDirectional):
 
         self.change_action_weight(target, self.stat_dict["action_weight_change"])
 
-    def effect(self, target):
+    def effect(self, map_entities, target):
         """Remove spell effect after effect duration reached."""
 
         if globe.time.check(self.effect_start_time, self.stat_dict["effect_duration"]):
@@ -198,21 +202,33 @@ class Storm(KindSelf):
         self.stat_dict["action_weight_change"] = -5
         self.stat_dict["health_change"] = -100
         self.stat_dict["radius"] = 4
+        self.stat_dict["ring_duration"] = 200
+        self.stat_dict["effect_duration"] = 300
 
     def impact(self, map_entities):
 
-        radius_list = pathfinding.find_within_radius(self.ruler_wizard.location, self.stat_dict["radius"])
-        radius_list.remove(self.ruler_wizard.location)
+        self.status = "effect"
+        self.effect_target = self.ruler_wizard
+        self.effect_start_time = globe.time.now()
+        self.current_ring = 1
 
-        # TODO Move logic to within area of effect class and inherit
-        for i in radius_list:
-            target = map_entities[i[1]][i[0]]
-            if target:
-                map_entities[i[1]][i[0]].stat_dict["health_current"] += self.stat_dict["health_change"]
-                self.change_action_weight(target, self.stat_dict["action_weight_change"])
+    def effect(self, map_entities, target):
+        """Remove spell effect after effect duration reached."""
 
-        self.ruler_wizard.spell_list.remove(self)
+        if globe.time.check(self.effect_start_time, self.stat_dict["ring_duration"]):
+            self.effect_start_time = globe.time.now()
 
+            # Create dummy spell and apply effect for each tile in radius ring
+            ring_tiles = pathfinding.find_within_ring(self.ruler_wizard.location, self.current_ring)
+            for tile in ring_tiles:
+                self.ruler_wizard.spell_list.append(DummySpell(self.ruler_wizard, tile, self.stat_dict["effect_duration"], self.sprite))
+                if target := map_entities[tile[1]][tile[0]]:
+                    target.stat_dict["health_current"] += self.stat_dict["health_change"]
+                    self.change_action_weight(target, self.stat_dict["action_weight_change"])
+
+            self.current_ring += 1
+            if self.current_ring > self.stat_dict["radius"]:
+                self.ruler_wizard.spell_list.remove(self)
 
 class Heal(KindSelect):
 
@@ -227,3 +243,21 @@ class Heal(KindSelect):
         target.stat_dict["health_current"] += self.stat_dict["health_change"]
         self.change_action_weight(target, self.stat_dict["action_weight_change"])
         self.ruler_wizard.spell_list.remove(self)
+
+
+class DummySpell:
+
+    def __init__(self, ruler_wizard, location, duration, sprite):
+
+        self.ruler_wizard = ruler_wizard
+        self.location = location
+        self.duration = duration
+        self.sprite = sprite
+
+        self.dummy_start_time = globe.time.now()
+        self.status = None
+
+    def update(self, map_entities, map_resource, map_item, move_attempt):
+
+        if globe.time.check(self.dummy_start_time, self.duration):
+            self.ruler_wizard.spell_list.remove(self)
