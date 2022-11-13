@@ -1,3 +1,5 @@
+import pygame as pg
+
 import globe
 import pathfinding
 
@@ -15,7 +17,7 @@ class Spell:
         self.effect_target = None
         self.effect_start_time = None
 
-        self.sprite = None # TODO Add spell specific sprites
+        self.sprite = pg.image.load('../sprites/spell_hold.png')
 
     def change_action_weight(self, target, action_weight_change):
 
@@ -154,6 +156,7 @@ class Fireball(KindDirectional):
         self.stat_dict["move_duration"] = 100
         self.stat_dict["move_max"] = 10
         self.stat_dict["health_change"] = -50
+        self.sprite = pg.image.load("../sprites/spell_fireball.png")
 
     def impact(self, target):
 
@@ -204,6 +207,7 @@ class Storm(KindSelf):
         self.stat_dict["radius"] = 4
         self.stat_dict["ring_duration"] = 200
         self.stat_dict["effect_duration"] = 300
+        self.sprite = pg.image.load("../sprites/spell_storm.png")
 
     def impact(self, map_entities):
 

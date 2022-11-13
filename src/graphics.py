@@ -29,7 +29,7 @@ class GraphicsManager:
         self.item_transfer = ItemTransfer()
 
         self.image_ui = pg.image.load('../sprites/ui.png')
-        # self.set_window_scale(1) # For testing
+        self.set_window_scale(1) # For testing
 
     def update_interface(self, state, character, camera, inspector_dict, transfer_object, map_item):
 
@@ -96,9 +96,7 @@ class Terrain:
         self.image_food = pg.image.load('../sprites/resource_food.png')
         self.image_wood = pg.image.load('../sprites/resource_wood.png')
         self.image_metal = pg.image.load('../sprites/resource_metal.png')
-        self.image_spell_hold = pg.image.load('../sprites/spell_hold.png')
         self.image_item = pg.image.load('../sprites/item.png')
-
         self.anim_water = [pg.image.load('../sprites/water_0.png'),
                            pg.image.load('../sprites/water_1.png'),
                            pg.image.load('../sprites/water_2.png')]
@@ -153,7 +151,7 @@ class Terrain:
 
         for state in state_list:
             for spell in state.wizard.spell_list:
-                final_surface.blit(self.image_spell_hold, ((spell.location[0] - camera_location[0]) * globe.TILE_SIZE, (spell.location[1] - camera_location[1]) * globe.TILE_SIZE))
+                final_surface.blit(spell.sprite, ((spell.location[0] - camera_location[0]) * globe.TILE_SIZE, (spell.location[1] - camera_location[1]) * globe.TILE_SIZE))
 
         if inspector_mode == "inspect":
             if inspector_location != character_location:
