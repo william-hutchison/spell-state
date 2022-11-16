@@ -163,6 +163,7 @@ def find_free(locations, map_entities, map_topology):
 
     return free_locations
 
+
 def drop_items(location, items, map_topology, map_item):
     """Finds free locations and adds items to map_item at those locations."""
 
@@ -180,6 +181,7 @@ def drop_items(location, items, map_topology, map_item):
 
             # TODO Do something to avoid infinite loop in case of no locations found
 
+
 def find_within_radius(location, radius):
     """Returns list of coordinates within the given radius of location and within the bounds of the map."""
 
@@ -190,6 +192,7 @@ def find_within_radius(location, radius):
                 possible_locations.append((location[0]+x, location[1]+y))
 
     return possible_locations
+
 
 def find_within_ring(location, radius):
     """Returns list of coordinates within a one tile thick ring at the given radius of location and within the bounds
@@ -202,6 +205,7 @@ def find_within_ring(location, radius):
         all_tiles.remove(tile)
 
     return all_tiles
+
 
 def find_within_cross(location, radius):
     """Returns list of tiles in straight lines of length radius emanating from location and within the bounds of the
@@ -219,3 +223,23 @@ def find_within_cross(location, radius):
     return possible_locations
 
 
+def find_direction(location_from, location_to):
+    """Returns a tuple of x and y coordinates with direction for each dimension represented as -1, 0 or 1."""
+
+    difference = (location_to[0] - location_from[0], location_to[1] - location_from[1])
+
+    if difference[0] > 0:
+        x_direction = 1
+    elif difference[0] < 0:
+        x_direction = -1
+    else:
+        x_direction = 0
+
+    if difference[1] > 0:
+        y_direction = 1
+    elif difference[1] < 0:
+        y_direction = -1
+    else:
+        y_direction = 0
+
+    return (x_direction, y_direction)

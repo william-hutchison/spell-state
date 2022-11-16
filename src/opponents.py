@@ -1,7 +1,9 @@
 import pathfinding
+import globe
 
 
 class Opponent:
+    """Class to control opponent wizards."""
 
     def __init__(self, subject_wizard):
 
@@ -10,13 +12,14 @@ class Opponent:
 
     def update(self, map_topology, map_resource, map_item, map_entities):
 
-        move_character_attempt = None
+        target = (1, 1) # FOR TESTING
+        move_character_attempt = self.move_attempt(map_entities, map_topology, target)
         cast_attempt, move_spell_attempt = self.attempt_attack(map_entities)
-
 
         self.subject_wizard.update(map_entities, map_topology, map_resource, map_item, cast_attempt, move_character_attempt, move_spell_attempt)
 
     def attempt_attack(self, map_entities):
+        """Attempt to attack any nearby wizard."""
 
         cast_attempt = None
         move_spell_attempt = None
@@ -31,14 +34,23 @@ class Opponent:
                 cast_attempt = "fireball"
 
                 if entity.location in pathfinding.find_within_cross(self.subject_wizard.location, 2):
-                    diff = (entity.location[0] - self.subject_wizard.location[0], entity.location[1] - self.subject_wizard.location[1])
-                    if diff[0] > 0:
-                        move_spell_attempt = (1, 0)
-                    elif diff[0] < 0:
-                        move_spell_attempt = (-1, 0)
-                    elif diff[1] > 0:
-                        move_spell_attempt = (0, 1)
-                    elif diff[1] < 0:
-                        move_spell_attempt = (0, -1)
+                    move_spell_attempt = pathfinding.find_direction(self.subject_wizard.location, entity.location)
 
         return cast_attempt, move_spell_attempt
+
+    def move_attempt(self, map_entities, map_topology, target, adjacent=True):
+        """Finds the shortest path to target and returns a tuple vector of next step. Returns None if no path is
+        found."""
+
+        # TODO Avoid checking time twice (here and within the wizard)
+        if globe.time.check(self.subject_wizard.time_last, self.subject_wizard.stat_dict["move_duration"]):
+
+            # Find the shortest path to target
+            path = pathfinding.astar(map_entities, map_topology, self.subject_wizard.location, target, adjacent)
+            print(path)
+
+            # Return a direction vector for the next move towards the target
+            if len(path) > 1:
+                return pathfinding.find_direction(self.subject_wizard.location, path[1])
+            else:
+                return None
