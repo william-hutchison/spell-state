@@ -33,6 +33,7 @@ class Wizard:
 
     def update(self, map_entities, map_topology, map_resource, map_item, cast_attempt, move_character_attempt, move_spell_attempt):
 
+        # TODO Control these attempts through dedicated functions instead passed variables
         if move_character_attempt:
             self.move(move_character_attempt, map_entities, map_topology)
 
@@ -46,7 +47,6 @@ class Wizard:
         if self.stat_dict["mana_current"] < self.stat_dict["mana_max"]:
             self.stat_dict["mana_current"] += 1
 
-        # TODO Assuming this works, unable to test
         if self.stat_dict["health_current"] <= 0:
             pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
             del self.spell_list
@@ -66,8 +66,16 @@ class Wizard:
     def create_spell(self, kind):
         """Attempt to create spell kind. Returns the new spell object if successful, otherwise returns none."""
 
-        if self.stat_dict["mana_current"] >= self.spell_dict[kind]["cost"]:
-            self.stat_dict["mana_current"] -= self.spell_dict[kind]["cost"]
-            return self.spell_dict[kind]["class"](self)
+        # Prevent new spell creation if a spell is currently being held
+        if self.spell_list:
+            if self.spell_list[0].status != "hold":
+                return None
 
-        return None
+        # Prevent new spell creation if insufficient mana
+        if self.stat_dict["mana_current"] < self.spell_dict[kind]["cost"]:
+            return None
+
+        # Create spell
+        self.stat_dict["mana_current"] -= self.spell_dict[kind]["cost"]
+        return self.spell_dict[kind]["class"](self)
+

@@ -103,6 +103,9 @@ class Camera:
             self.inspector_dict["Stock"] = str(inspect_object.stock_list)
             self.inspector_dict.update(inspect_object.stat_dict)
 
+            if type(inspect_object).__name__ == 'Wizard':
+                self.inspector_dict["Spell list"] = str(inspect_object.spell_list)
+
             if type(inspect_object).__name__ == 'Person':
                 self.inspector_dict["Action"] = str(inspect_object.action_super)
 

@@ -202,3 +202,20 @@ def find_within_ring(location, radius):
         all_tiles.remove(tile)
 
     return all_tiles
+
+def find_within_cross(location, radius):
+    """Returns list of tiles in straight lines of length radius emanating from location and within the bounds of the
+    map."""
+
+    possible_locations = []
+    for x in range(-radius, radius+1):
+        if (0 <= location[0] + x < globe.WORLD_SIZE[0]):
+            possible_locations.append((location[0] + x, location[1]))
+
+    for y in range(-radius, radius+1):
+        if (0 <= location[1] + y < globe.WORLD_SIZE[1]):
+            possible_locations.append((location[0], location[1] + y))
+
+    return possible_locations
+
+
