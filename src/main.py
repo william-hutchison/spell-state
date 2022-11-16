@@ -3,6 +3,7 @@ import sys
 import pickle
 
 import player
+import opponents
 import world
 import graphics
 import menus
@@ -19,6 +20,7 @@ class Game:
         globe.time = globe.Time()
         self.world = world.World()
         self.player = player.Player(self.world.state_list[0].wizard)
+        self.opponent = opponents.Opponent(self.world.state_list[1].wizard)
         self.graphics_manager = graphics.GraphicsManager()
         self.menu_manager = menus.MenuManager()
         audio.audio = audio.Audio(self.world.state_list[0].wizard)
@@ -47,6 +49,7 @@ class Game:
         """Update all objects necessary to run the game."""
 
         self.player.update(self.world.map_topology, self.world.map_resource, self.world.map_item, self.world.map_entities, events)
+        self.opponent.update(self.world.map_topology, self.world.map_resource, self.world.map_item, self.world.map_entities)
         self.world.update()
         self.graphics_manager.update_terrain(self.player.camera.location, self.world.map_topology, self.world.map_resource, self.world.map_item, self.world.map_entities, self.player.camera.inspector_location, self.player.camera.inspector_mode, self.player.character.wizard.location, self.world.state_list)
         self.graphics_manager.update_interface(self.world.state_list[0], self.player.character, self.player.camera, self.player.camera.inspector_dict, self.player.interface, self.world.map_item)
