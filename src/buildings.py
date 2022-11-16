@@ -6,6 +6,7 @@ import globe
 
 
 class Building:
+    """Parent building class for various building objects."""
     
     def __init__(self, ruler_state, location):
 
@@ -22,8 +23,6 @@ class Building:
         self.time_last = globe.time.now()
         self.under_construction = 0
         self.under_work = 0
-
-
 
     def update(self, map_topology, map_item):
 

@@ -5,6 +5,7 @@ import pathfinding
 
 
 class Spell:
+    """Parent class for spell kinds."""
 
     def __init__(self, wizard):
 
@@ -20,6 +21,8 @@ class Spell:
         self.sprite = pg.image.load('../sprites/spell_hold.png')
 
     def change_action_weight(self, target, action_weight_change):
+        """Change the action weight of the ruler_state of the target person based on the input
+        action_weight_change."""
 
         if type(target).__name__ == "Person":
             if target.ruler_state == self.ruler_wizard.ruler_state:
@@ -27,6 +30,7 @@ class Spell:
 
 
 class KindSelf(Spell):
+    """Parent class for spells cast on the wizard entity itself."""
 
     def __init__(self, wizard):
 
@@ -44,6 +48,7 @@ class KindSelf(Spell):
 
 
 class KindDirectional(Spell):
+    """Parent class for spells with directional movement."""
 
     def __init__(self, wizard):
 
@@ -65,20 +70,20 @@ class KindDirectional(Spell):
 
         if self.status == "moving":
 
-            # check for spell movement
+            # Check for spell movement
             if self.travel_current <= self.stat_dict["move_max"]+1:
                 self.move(self.move_direction)
             if self.travel_current >= self.stat_dict["move_max"]+1 or not 0 <= self.location[0] < globe.WORLD_SIZE[0] or not 0 <= self.location[1] < globe.WORLD_SIZE[1]:
                 self.ruler_wizard.spell_list.remove(self)
 
-            # check for spell impact
+            # Check for spell impact
             else:
-                # special case for harvesting
+                # Special case for harvesting
                 if type(self).__name__ == "Harvest":
                     if target := map_resource[self.location[1]][self.location[0]]:
                         self.impact(target)
 
-                # all other spells
+                # All other spells
                 else:
                     if target := map_entities[self.location[1]][self.location[0]]:
                         self.impact(target)
@@ -92,6 +97,7 @@ class KindDirectional(Spell):
 
 
 class KindSelect(Spell):
+    """Parent class for spells with target selection."""
 
     def __init__(self, wizard):
 
@@ -250,6 +256,7 @@ class Heal(KindSelect):
 
 
 class DummySpell:
+    """Superficial dummy spell, exists at a given tile for a given duration then vanishes."""
 
     def __init__(self, ruler_wizard, location, duration, sprite):
 

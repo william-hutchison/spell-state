@@ -2,13 +2,14 @@ import pygame as pg
 
 
 class Time:
+    """Class to store time information and handle time information requests from other parts of
+    the program."""
 
     def __init__(self):
 
         self.clock = pg.time.Clock()
         self.time_now = 0
         self.frame_now = 0
-
         self.frame_last = 0
 
     def update(self):
@@ -45,14 +46,15 @@ class Time:
             return False
 
     def set_time(self, new_time):
+        """Set time_now to equaly tht input new_time."""
 
         self.time_now = new_time
 
 
+# Time object stored within this file for easy access elsewhere in the program
 time = None
 
 # TODO This can probably all go somewhere else, turn globe into a file for time only
-
 WORLD_SIZE = (60, 60)
 TILE_SIZE = 20
 STATE_NUMBER = 2

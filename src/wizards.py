@@ -53,6 +53,8 @@ class Wizard:
             del self.ruler_state.wizard
 
     def move(self, move_attempt, map_entities, map_topology):
+        """Attempt to move wizard in direction move_attempt, check for collision with map_entities or impassable terrain
+        with map_topology."""
 
         if globe.time.check(self.time_last, self.stat_dict["move_duration"]):
             location_attempt = (self.location[0]+move_attempt[0], self.location[1]+move_attempt[1])
@@ -62,6 +64,7 @@ class Wizard:
                 self.time_last = globe.time.now()
 
     def create_spell(self, kind):
+        """Attempt to create spell kind. Returns the new spell object if successful, otherwise returns none."""
 
         if self.stat_dict["mana_current"] >= self.spell_dict[kind]["cost"]:
             self.stat_dict["mana_current"] -= self.spell_dict[kind]["cost"]

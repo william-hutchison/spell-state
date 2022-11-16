@@ -5,6 +5,7 @@ import pathfinding
 
 
 class Audio:
+    """Class to store sound information and manage sound playback."""
 
     def __init__(self, receiver_entity):
 
@@ -21,7 +22,7 @@ class Audio:
 
     def play_relative_sound(self, sound, location):
         """Play a sound from the sound dictionary base on input sound key, each with its own base volume and audio file.
-        Volume relative to distance from player wizard."""
+        Volume is calculated relative to the audio source's distance from player wizard."""
 
         distance_modifier = 1 / math.sqrt(pathfinding.find_distance(location, self.receiver_entity.location) + 0.01)
         if self.sound_dict[sound][1] * distance_modifier >= 0.05:
@@ -29,6 +30,7 @@ class Audio:
             self.sound_dict[sound][0].play()
 
     def play_music(self, music):
+        """Start playing music if not already playing."""
 
         if self.music_current != music:
             pg.mixer.music.load(self.music_dict[music])
@@ -37,9 +39,11 @@ class Audio:
             self.music_current = music
 
     def stop_music(self):
+        """Stop playing music."""
 
         pg.mixer.music.stop()
         self.music_current = None
 
 
+# Audio object stored within this file for easy access elsewhere in the program
 audio = None

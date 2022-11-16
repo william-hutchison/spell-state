@@ -24,6 +24,7 @@ class MenuManager:
 
 
 class Menu:
+    """Parent class for various menu objects."""
 
     def __init__(self):
 
@@ -31,6 +32,7 @@ class Menu:
         self.current_option = 0
 
     def navigate(self, events):
+        """Change current menu option based on events."""
 
         key_press = events[0]
         keys = events[1]

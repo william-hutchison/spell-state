@@ -4,12 +4,14 @@ import os
 import globe
 import tools
 
+# TODO Improve the way system directory is managed
 # TODO Move these somewhere else
 os.chdir(os.path.dirname(__file__))
 window_size = [(1200, 800), (2400, 1600)]
 
 
 class GraphicsManager:
+    """Class to control the display and manage the terrain and interface objects."""
 
     def __init__(self):
 
@@ -29,9 +31,10 @@ class GraphicsManager:
         self.item_transfer = ItemTransfer()
 
         self.image_ui = pg.image.load('../sprites/ui.png')
-        self.set_window_scale(1) # For testing
+        #self.set_window_scale(1) # For testing
 
     def update_interface(self, state, character, camera, inspector_dict, transfer_object, map_item):
+        """Update interface objects and draw to the window."""
 
         self.surface.blit(self.image_ui, (0, 0))
         self.world_info.update(self.surface)
@@ -39,29 +42,34 @@ class GraphicsManager:
         self.player_info.update(self.surface, character, camera)
         self.spell_book.update(self.surface, character)
 
-        # TODO selectively create and destroy these objects
+        # TODO Selectively create and destroy these objects
         self.inspector_info.update(self.surface, inspector_dict)
         self.item_transfer.update(self.surface, character, transfer_object, map_item)
 
+        # TODO Prevent window being drawn twice
         self.window.blit(pg.transform.scale(self.surface, window_size[self.scale]), (0, 0))
 
     def update_terrain(self, camera_location, topology, resources, items, entities, inspector_location, inspector_mode, character_location, state_list):
+        """Update terrain objects and draw to the window."""
 
         self.terrain.draw_terrain(self.surface, camera_location, topology, resources, items, entities)
         self.terrain.draw_overlay(self.surface, camera_location, inspector_location, inspector_mode, character_location, state_list)
         self.window.blit(pg.transform.scale(self.surface, window_size[self.scale]), (0, 0))
 
     def update_menu(self, options, current_option):
+        """Update the menu object and draw to the window."""
 
         self.menu.draw_menu(self.surface, options, current_option)
         self.window.blit(pg.transform.scale(self.surface, window_size[self.scale]), (0, 0))
 
     def set_window_scale(self, scale):
+        """Control window scaling."""
 
         self.scale = scale
         self.window = pg.display.set_mode(window_size[self.scale])
 
 class Menu:
+    """Class to draw a whole screen menu to a surface."""
 
     def __init__(self):
 
@@ -71,6 +79,8 @@ class Menu:
         self.font = pg.font.SysFont("timesnewroman", 24)
 
     def draw_menu(self, final_surface, options, current_option):
+        """Draw menu comprised of options and current_option indicator onto the input final_surface."""
+
 
         self.surface.fill((0, 0, 0))
         for i in range(len(options)):
@@ -82,6 +92,7 @@ class Menu:
 
 
 class Terrain:
+    """Class to draw terrain, entities and overlays to a surface."""
 
     def __init__(self):
 
@@ -104,19 +115,20 @@ class Terrain:
         self.colour_topology = [(40, 40, 40), (60, 60, 60), (80, 80, 80), (100, 100, 100)]
 
     def draw_terrain(self, final_surface, camera_location, topology, resources, items, entities):
+        """Draw terrain tiles, items and entities onto the input final_surface."""
 
         self.surface.fill((0, 0, 0))
 
-        # TODO Limit loop to screen
+        # TODO Limit loop to tiles present on screen
         for y in range(globe.WORLD_SIZE[1]):
             for x in range(globe.WORLD_SIZE[0]):
 
-                # draw tiles
+                # Draw tiles
                 pg.draw.rect(self.surface, (20, 8 * topology[y][x], 20), ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE, globe.TILE_SIZE, globe.TILE_SIZE), 0)
                 if topology[y][x] == 0:
                     self.surface.blit(self.anim_water[globe.time.frame()], ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
-                # draw resources
+                # Draw resources
                 if resources[y][x] == "i_food":
                     self.surface.blit(self.image_food, ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
                 elif resources[y][x] == "i_wood":
@@ -124,11 +136,11 @@ class Terrain:
                 elif resources[y][x] == "i_metal":
                     self.surface.blit(self.image_metal, ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
-                # draw items
+                # Draw items
                 if items[y][x]:
                     self.surface.blit(self.image_item, ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
 
-                # draw entities
+                # Draw entities
                 if entities[y][x]:
                     self.surface.blit(
                         tools.colour_image(entities[y][x].sprite, entities[y][x].ruler_state.colour), ((x - camera_location[0]) * globe.TILE_SIZE, (y - camera_location[1]) * globe.TILE_SIZE))
@@ -148,11 +160,14 @@ class Terrain:
         final_surface.blit(self.surface, self.position)
 
     def draw_overlay(self, final_surface, camera_location, inspector_location, inspector_mode, character_location, state_list):
+        """Draw spells and the inspector or selector onto the input final_surface."""
 
+        # Draw spells
         for state in state_list:
             for spell in state.wizard.spell_list:
                 final_surface.blit(spell.sprite, ((spell.location[0] - camera_location[0]) * globe.TILE_SIZE, (spell.location[1] - camera_location[1]) * globe.TILE_SIZE))
 
+        # Draw inspector or selector if necessary
         if inspector_mode == "inspect":
             if inspector_location != character_location:
                 final_surface.blit(self.image_inspector, ((inspector_location[0] - camera_location[0]) * globe.TILE_SIZE - 1, (inspector_location[1] - camera_location[1]) * globe.TILE_SIZE - 1))
@@ -161,6 +176,7 @@ class Terrain:
 
 
 class Interface:
+    """Parent class for the various on-screen interface objects."""
 
     def __init__(self):
 
@@ -169,6 +185,7 @@ class Interface:
         self.font = pg.font.SysFont("timesnewroman", 15)
 
     def draw_text_lines(self, text_list, position):
+        """Draw text_list of strings at position as lines of text."""
 
         for i, item in enumerate(text_list):
             line = self.font.render(item, True, (255, 255, 255))
@@ -288,7 +305,7 @@ class ItemTransfer(Interface):
 
         if transfer_object.transfer_target:
 
-            # determine item transfer headings
+            # Determine item transfer headings
             player_text = self.font.render("Player ({}/{})".format(len(character.wizard.stock_list), character.wizard.stat_dict["stock_max"]), True, (255, 255, 255))
             if type(transfer_object.transfer_target) == tuple:
                 if map_item[transfer_object.transfer_target[1]][transfer_object.transfer_target[0]]:
@@ -298,7 +315,7 @@ class ItemTransfer(Interface):
             else:
                 target_text = self.font.render("{} ({}/{})".format(type(transfer_object.transfer_target).__name__, len(transfer_object.transfer_target.stock_list), transfer_object.transfer_target.stat_dict["stock_max"]), True, (255, 255, 255))
 
-            # draw item transfer information
+            # Draw item transfer information
             self.surface.fill((0, 0, 0))
             self.surface.blit(player_text, (0, 0))
             self.surface.blit(target_text, (150, 0))

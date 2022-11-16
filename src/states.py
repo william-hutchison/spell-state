@@ -47,28 +47,28 @@ class State:
 
     def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 
-        # assign person actions
+        # Assign person actions
         self.tune_action_wight()
         if globe.time.check(self.time_last_order, self.stat_dict["order_duration"]):
             self.assign(self.person_list, self.building_list)
             self.time_last_order = globe.time.now()
 
         # TODO Add decide_building and decide_person functions to decide if action can / should be taken
-        # create building
+        # Create building
         if globe.time.check(self.time_last_construct, self.stat_dict["construction_duration"]):
             if len([i for i in self.building_list if i.under_construction]) < 2:
                 if build_attempt := self.create_building(random.choice(["well_of_blessings", "well_of_curses"]), map_entities, map_topology, map_traffic, self.location):
                     self.building_list.append(build_attempt)
             self.time_last_construct = globe.time.now()
 
-        # create person
+        # Create person
         if globe.time.check(self.time_last_birth, self.stat_dict["birth_duration"]):
             if len(self.person_list) < self.stat_dict["person_max"]:
                 if person_attempt := self.create_person(map_entities, map_topology, self.location):
                     self.person_list.append(person_attempt)
             self.time_last_birth = globe.time.now()
 
-        # update entities
+        # Update entities
         for building in self.building_list:
             building.update(map_topology, map_item)
         for person in self.person_list:
@@ -86,11 +86,11 @@ class State:
         """Create building site of a given kind at an appropriate location. Returns new building
         object."""
 
-        # construct tower
+        # Construct tower
         if kind == "tower":
             return self.building_dict[kind]["class"](self, location_tower)
 
-        # construct buildings within radius of tower
+        # Construct buildings within radius of tower
         # TODO Ensure building access (maybe astar check each building with tower)
         else:
             build_radius = 4 + round(len(self.building_list) * 0.25)
@@ -109,7 +109,7 @@ class State:
         return None
 
     def create_person(self, map_entities, map_topology, location_tower):
-        """Create person at the edge of the tower. Returns new person object."""
+        """Create person at the edge of the location_tower. Returns new person object."""
 
         if possible_locations := pathfinding.find_free(pathfinding.find_edges(location_tower), map_entities, map_topology):
             location = random.choice(possible_locations)
@@ -180,7 +180,7 @@ class State:
 
         for haul_link in haul_links:
 
-            # check if entity already has haul assigned
+            # Check if entity already has haul assigned
             haul_assigned = [i for i in person_list if i.action_target == haul_link[0]]
             if not haul_assigned:
 
@@ -198,25 +198,25 @@ class State:
 
         for building in work_list:
 
-            # check if building already has construction assigned
+            # Check if building already has construction assigned
             if not [i for i in person_list if i.action_target == building]:
 
-                # check for and assign appropriate person to construction
+                # Check for and assign appropriate person to construction
                 if idle_person_list:
                     person_location = pathfinding.find_closest(building.location, [i.location for i in idle_person_list])
                     person = [i for i in idle_person_list if i.location == person_location].pop()
                     person.action_set("work", building)
 
     def assign_build(self, person_list, idle_person_list, construction_list):
-        """Assign the closest person in the provided idle person list and assign them to construct
+        """Find the closest person in the provided idle_person_list and assign them to construct
         given building."""
 
         for building in construction_list:
 
-            # check if building already has construction assigned
+            # Check if building already has construction assigned
             if not [i for i in person_list if i.action_target == building]:
 
-                # check for and assign appropriate person to construction
+                # Check for and assign appropriate person to construction
                 if idle_person_list:
                     person_location = pathfinding.find_closest(building.location, [i.location for i in idle_person_list])
                     person = [i for i in idle_person_list if i.location == person_location].pop()
@@ -224,7 +224,7 @@ class State:
 
     def assign_attack(self, idle_person_list, target_state):
 
-        # check for and assign appropriate person to construction
+        # Check for and assign appropriate person to construction
         if idle_person_list and target_state.person_list:
             target_location = pathfinding.find_closest(self.location, [i.location for i in target_state.person_list])
             person_location = pathfinding.find_closest(target_location, [i.location for i in idle_person_list])

@@ -5,7 +5,7 @@ import globe
 
 
 class Node:
-    """A node class for A* Pathfinding"""
+    """A node class for A* Pathfinding."""
 
     def __init__(self, parent=None, position=None):
         self.parent = parent
@@ -20,8 +20,8 @@ class Node:
 
 
 def astar(map_entities, map_topology, start, end, adjacent=False, max_children=400):
-    """Returns a list of tuples as a path from the given start to the given end in the given maze.
-    Returns an empty list if no path is found."""
+    """Returns a list of tuples as a path from the given start to the given end in the given maze. Returns an empty list
+    if no path is found."""
     
     if adjacent:
         end_list = find_edges(end)
@@ -115,7 +115,7 @@ def astar(map_entities, map_topology, start, end, adjacent=False, max_children=4
 
 
 def find_targets(map, target_kind):
-    """Returns list of all tile coordinates in map matching target kind."""
+    """Returns list of all tile coordinates in map matching target_kind."""
 
     matches = []
     for y, row in enumerate(map):
@@ -127,7 +127,7 @@ def find_targets(map, target_kind):
 
 
 def find_closest(location, target_list):
-    """Returns tile coordinate of the closest target to start as the crow flies."""
+    """Returns coordinate of the closest tile in target_list to location as the crow flies."""
 
     distances = []
     for target in target_list:
@@ -138,13 +138,13 @@ def find_closest(location, target_list):
 
 
 def find_distance(start, end):
-    """Returns float distance between points as the crow flies."""
+    """Returns float distance between start and end points as the crow flies."""
 
     return math.sqrt(abs(start[0] - end[0]) ** 2 + abs(start[1] - end[1]) ** 2)
 
 
 def find_edges(location):
-    """Returns list of coordinates adjacent to a location."""
+    """Returns list of coordinates adjacent to location."""
 
     adjacent_list = [(location[0], location[1] - 1), (location[0] - 1, location[1]), (location[0], location[1] + 1), (location[0] + 1, location[1])]
 
@@ -152,7 +152,8 @@ def find_edges(location):
 
 
 def find_free(locations, map_entities, map_topology):
-    """Returns list of coordinates not overlapped by collision and within the bounds of the map."""
+    """Returns list of coordinates not overlapped by collision and within the bounds of the map, out of the input list
+    locations."""
 
     free_locations = [] 
     for location in locations:
@@ -163,6 +164,7 @@ def find_free(locations, map_entities, map_topology):
     return free_locations
 
 def drop_items(location, items, map_topology, map_item):
+    """Finds free locations and adds items to map_item at those locations."""
 
     possible_locations = find_within_radius(location, round(2+len(items)/4))
     for item in items:
@@ -179,7 +181,7 @@ def drop_items(location, items, map_topology, map_item):
             # TODO Do something to avoid infinite loop in case of no locations found
 
 def find_within_radius(location, radius):
-    """Returns list of coordinates within a given radius of a location and within the bounds of the map."""
+    """Returns list of coordinates within the given radius of location and within the bounds of the map."""
 
     possible_locations = []
     for x in range(-radius, radius+1):
@@ -190,6 +192,8 @@ def find_within_radius(location, radius):
     return possible_locations
 
 def find_within_ring(location, radius):
+    """Returns list of coordinates within a one tile thick ring at the given radius of location and within the bounds
+    of the map."""
 
     inner_tiles = find_within_radius(location, radius-1)
     all_tiles = find_within_radius(location, radius)

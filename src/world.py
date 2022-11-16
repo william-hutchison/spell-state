@@ -7,6 +7,7 @@ import globe
 
 
 class World:
+    """Class to store world information and update states each step."""
     
     def __init__(self):
 
@@ -17,7 +18,7 @@ class World:
         self.save_player = None
 
         self.state_list = []
-        self.map_topology = np.zeros(globe.WORLD_SIZE)
+        self.map_topology = np.zeros(globe.WORLD_SIZE) # TODO Avoid declaring these twice
         self.map_resource = np.empty(globe.WORLD_SIZE, dtype="<U10")
         self.map_item = np.empty(globe.WORLD_SIZE, dtype="<U10")
         self.map_traffic = np.zeros(globe.WORLD_SIZE)
@@ -40,6 +41,8 @@ class World:
         self.map_entities = self.update_entity_map(self.state_list)
 
     def update_entity_map(self, state_list):
+        """Updates and returns map_entities, providing easy entity information access to other 
+        parts of the program."""
 
         map_entities = np.empty(globe.WORLD_SIZE, dtype=object)
         for state in state_list:
@@ -53,6 +56,8 @@ class World:
 
 
 def gen_topology(map_topology, map_noise):
+    """Generates and returns topology map of 5 levels based on map_noise."""
+
     for y in range(len(map_topology[0])):
         for x in range(len(map_topology[1])):
             if map_noise[y][x] > 0.8:
@@ -70,6 +75,9 @@ def gen_topology(map_topology, map_noise):
 
 
 def gen_resource(map_resource, map_topology, map_noise, topology_target, chance, resource):
+    """Generates and returns map of input resource based on map_noise. The chance of resource 
+    occuring at a given tile is modified by the topology_target, map_topology and chance."""
+
     for y in range(len(map_resource[1])):
         for x in range(len(map_resource[0])):
             for topology in topology_target:
@@ -82,6 +90,7 @@ def gen_resource(map_resource, map_topology, map_noise, topology_target, chance,
 
 
 def create_state(map_entities, map_topology, map_traffic, colour):
+    """Returns state object of input colour at a suitable location."""
 
     possible_locations = []
     for y in range(len(map_topology[0])):
@@ -93,6 +102,7 @@ def create_state(map_entities, map_topology, map_traffic, colour):
 
 
 def gen_noise(seed, scale=20, octaves=6, persistence=0.5, lacunarity=2.0):
+    """Returns a numpy array of perlin noise scaled between 0 and 1."""
 
     map_new = np.zeros(globe.WORLD_SIZE)
     for y in range(len(map_new[0])):

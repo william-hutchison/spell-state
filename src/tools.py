@@ -2,6 +2,7 @@ import pygame as pg
 
 
 def item_add(list, item, number):
+    """Add the input number of item to list. Returns the number of items added."""
 
     count = 0
     while count < number:
@@ -11,6 +12,7 @@ def item_add(list, item, number):
 
 
 def item_remove(list, item, number):
+    """Remove the input number of item from list. Returns the number of items removed"""
 
     count = 0
     while count < number and item in list:
@@ -20,6 +22,8 @@ def item_remove(list, item, number):
 
 
 def item_transfer(list_from, list_to, item, number):
+    """Move up to the input number of item from list_from to list_to. Returns the number of items
+    moved."""
 
     count = 0
     while count < number and item in list_from:
@@ -30,6 +34,7 @@ def item_transfer(list_from, list_to, item, number):
 
 
 def item_count(list, item):
+    """Returns the amount of item in the list."""
 
     count = 0
     for i in list:
@@ -39,7 +44,7 @@ def item_count(list, item):
 
 
 def colour_image(image, colour):
-    """Replace the file colour values with the given input colour."""
+    """Replace the image colour values with the given input colour."""
 
     image = image.copy()
     image.fill((0, 0, 0, 255), None, pg.BLEND_RGBA_MULT)
