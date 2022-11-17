@@ -3,7 +3,7 @@ import numpy as np
 import random
 
 import states
-import globe
+import timer
 
 
 class World:
@@ -11,28 +11,32 @@ class World:
     
     def __init__(self):
 
-        self.seed = random.randint(0, 20)
-        self.state_colours = [(85, 220, 121), (174, 84, 220), (14, 44, 120)] # TODO Capitalise constant names
+        self.SEED = random.randint(0, 20)
+        self.WORLD_SIZE = (60, 60)
+        self.STATE_NUMBER = 3
+        self.STATE_COLOURS = [(85, 220, 121), (174, 84, 220), (14, 44, 120)]
 
+        # Variables to capture information outside the world object when saving game
         self.save_time = 0
         self.save_player = None
 
-        self.map_topology = np.zeros(globe.WORLD_SIZE) # TODO Avoid declaring these twice
-        self.map_resource = np.empty(globe.WORLD_SIZE, dtype="<U10")
-        self.map_item = np.empty(globe.WORLD_SIZE, dtype="<U10")
-        self.map_traffic = np.zeros(globe.WORLD_SIZE)
-        self.map_entities = np.empty(globe.WORLD_SIZE, dtype=object)
+        # Create empty maps
+        self.map_topology = np.zeros(self.WORLD_SIZE)
+        self.map_resource = np.empty(self.WORLD_SIZE, dtype="<U10")
+        self.map_item = np.empty(self.WORLD_SIZE, dtype="<U10")
+        self.map_traffic = np.zeros(self.WORLD_SIZE)
+        self.map_entities = np.empty(self.WORLD_SIZE, dtype=object)
 
         # Create terrain
-        self.map_topology = gen_topology(self.map_topology, gen_noise(self.seed))
-        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+1), [(1, 0.2), (2, 0.1)],  0.4, "i_food")
-        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+2), [(1, 0.2), (2, 0.4), (3, 0.2)],  0.5, "i_wood")
-        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.seed+3), [(4, 0.4)], 0.2, "i_metal")
+        self.map_topology = gen_topology(self.map_topology, gen_noise(self.WORLD_SIZE, self.SEED))
+        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.WORLD_SIZE, self.SEED+1), [(1, 0.2), (2, 0.1)],  0.4, "i_food")
+        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.WORLD_SIZE, self.SEED+2), [(1, 0.2), (2, 0.4), (3, 0.2)],  0.5, "i_wood")
+        self.map_resource = gen_resource(self.map_resource, self.map_topology, gen_noise(self.WORLD_SIZE, self.SEED+3), [(4, 0.4)], 0.2, "i_metal")
 
         # Create states
         self.state_list = []
-        for i in range(globe.STATE_NUMBER):
-            self.state_list.append(create_state(self.map_entities, self.map_topology, self.map_traffic, self.state_colours[i]))
+        for i in range(self.STATE_NUMBER):
+            self.state_list.append(create_state(self.map_entities, self.map_topology, self.map_traffic, self.STATE_COLOURS[i]))
         for state in self.state_list:
             for other_state in self.state_list:
                 if state != other_state:
@@ -48,7 +52,7 @@ class World:
         """Updates and returns map_entities, providing easy entity information access to other 
         parts of the program."""
 
-        map_entities = np.empty(globe.WORLD_SIZE, dtype=object)
+        map_entities = np.empty(self.WORLD_SIZE, dtype=object)
         for state in state_list:
             for building in state.building_list:
                 map_entities[building.location[1]][building.location[0]] = building
@@ -105,10 +109,10 @@ def create_state(map_entities, map_topology, map_traffic, colour):
     return states.State(random.choice(possible_locations), map_entities, map_topology, map_traffic, colour)
 
 
-def gen_noise(seed, scale=20, octaves=6, persistence=0.5, lacunarity=2.0):
+def gen_noise(map_size, seed, scale=20, octaves=6, persistence=0.5, lacunarity=2.0):
     """Returns a numpy array of perlin noise scaled between 0 and 1."""
 
-    map_new = np.zeros(globe.WORLD_SIZE)
+    map_new = np.zeros(map_size)
     for y in range(len(map_new[0])):
         for x in range(len(map_new[1])):
             map_new[y][x] = pnoise2(y / scale, x / scale, octaves=octaves, persistence=persistence, lacunarity=lacunarity, repeatx=1024, repeaty=1024, base=seed)

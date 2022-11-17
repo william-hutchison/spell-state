@@ -1,7 +1,7 @@
 import pygame as pg
 
 import spells
-import globe
+import timer
 import pathfinding
 
 
@@ -29,7 +29,7 @@ class Wizard:
         self.stock_list = []
         self.spell_list = []
 
-        self.time_last = globe.time.now()
+        self.time_last = timer.timer.now()
 
     def update(self, map_entities, map_topology, map_resource, map_item, cast_attempt, move_character_attempt, move_spell_attempt):
 
@@ -57,12 +57,12 @@ class Wizard:
         """Attempt to move wizard in direction move_attempt, check for collision with map_entities or impassable terrain
         with map_topology."""
 
-        if globe.time.check(self.time_last, self.stat_dict["move_duration"]):
+        if timer.timer.check(self.time_last, self.stat_dict["move_duration"]):
             location_attempt = (self.location[0]+move_attempt[0], self.location[1]+move_attempt[1])
             
             if pathfinding.find_free([location_attempt], map_entities, map_topology):
                 self.location = location_attempt
-                self.time_last = globe.time.now()
+                self.time_last = timer.timer.now()
 
     def create_spell(self, kind):
         """Attempt to create spell kind. Returns the new spell object if successful, otherwise returns none."""

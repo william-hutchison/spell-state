@@ -1,14 +1,13 @@
 import pygame as pg
 
-import globe
 import pathfinding
 import tools
+import timer
 import audio
 
 
 class Person:
     """Class to store person information and manage person actions."""
-
 
     def __init__(self, ruler_state, location):
 
@@ -30,14 +29,15 @@ class Person:
         self.action_super = None
         self.action_target = None
 
-        self.time_last = globe.time.now()
-        self.time_last_eat = globe.time.now()
+        # Seperate timee_last_move from other counters, maybe store these in a dict?
+        self.time_last = timer.timer.now()
+        self.time_last_eat = timer.timer.now()
 
     def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 
-        if globe.time.check(self.time_last_eat, self.stat_dict["eat_duration"]):
+        if timer.timer.check(self.time_last_eat, self.stat_dict["eat_duration"]):
             self.eat()
-            self.time_last_eat = globe.time.now()
+            self.time_last_eat = timer.timer.now()
 
         if self.action_super:
             self.ruler_state.action_dict[self.action_super]["function"](self, map_entities, map_topology, map_resource, map_traffic, self.action_target)
@@ -51,9 +51,9 @@ class Person:
 
         # Work at work_object in milliseconds until it returns 0
         if self.location in pathfinding.find_edges(work_object.location):
-            if not work_object.working(globe.time.now() - self.time_last):
+            if not work_object.working(timer.timer.now() - self.time_last):
                 self.action_set(None, None)
-            self.time_last = globe.time.now()
+            self.time_last = timer.timer.now()
 
         # Move to work object
         else:
@@ -64,9 +64,9 @@ class Person:
 
         # construct construct_object in milliseconds until it returns 0
         if self.location in pathfinding.find_edges(construct_object.location):
-            if not construct_object.constructing(globe.time.now() - self.time_last):
+            if not construct_object.constructing(timer.timer.now() - self.time_last):
                 self.action_set(None, None)
-            self.time_last = globe.time.now()
+            self.time_last = timer.timer.now()
 
         # Move to construct object
         else:
@@ -77,12 +77,12 @@ class Person:
 
         # Attack attack_object
         if self.location in pathfinding.find_edges(attack_object.location):
-            if globe.time.check(self.time_last, self.stat_dict["attack_duration"]):
+            if timer.timer.check(self.time_last, self.stat_dict["attack_duration"]):
 
                 attack_object.stat_dict["health_current"] -= self.stat_dict["attack_damage"]
                 if attack_object.stat_dict["health_current"] <= 0:
                     self.action_set(None, None)
-                self.time_last = globe.time.now()
+                self.time_last = timer.timer.now()
 
         # Move to attack object
         else:
@@ -95,9 +95,9 @@ class Person:
         # TODO Replace with generic deposit item function
         # Deposit stock_list
         if self.location in pathfinding.find_edges(self.ruler_state.building_list[0].location) and target_resource in self.stock_list:
-            if globe.time.check(self.time_last, self.stat_dict["transfer_duration"]):
+            if timer.timer.check(self.time_last, self.stat_dict["transfer_duration"]):
                 tools.item_transfer(self.stock_list, self.ruler_state.building_list[0].stock_list, target_resource, 1)
-                self.time_last = globe.time.now()
+                self.time_last = timer.timer.now()
 
                 if target_resource not in self.stock_list:
                     self.action_set(None, None)
@@ -108,9 +108,9 @@ class Person:
 
         # Harvest target resource
         elif map_resource[self.location[1]][self.location[0]] == target_resource:
-            if globe.time.check(self.time_last, self.stat_dict["harvest_duration"]):
+            if timer.timer.check(self.time_last, self.stat_dict["harvest_duration"]):
                 tools.item_add(self.stock_list, target_resource, 1)
-                self.time_last = globe.time.now()
+                self.time_last = timer.timer.now()
 
         # Move to the closest target resource
         else:
@@ -125,15 +125,15 @@ class Person:
     def move(self, map_entities, map_topology, map_traffic, target, adjacent=False):
         """Finds the shortest path to either target or a tile adjacent to target, then attempts to make a single move
         along that path. Plays sound and updates traffic map upon successful move. Sets action_super and action_target
-        to None if no path is found. """
+        to None if no path is found."""
         
-        if globe.time.check(self.time_last, self.stat_dict["move_duration"]):
+        if timer.timer.check(self.time_last, self.stat_dict["move_duration"]):
             path = pathfinding.astar(map_entities, map_topology, self.location, target, adjacent)
             if len(path) > 1:
                 self.location = path[1]
             else:
                 self.action_set(None, None)
-            self.time_last = globe.time.now()
+            self.time_last = timer.timer.now()
 
             # Add move location to traffic map
             audio.audio.play_relative_sound("n_move", self.location)
@@ -147,9 +147,9 @@ class Person:
             # Deposit item
             if self.location in pathfinding.find_edges(haul_link[0].location):
                 if haul_link[2] in haul_link[0].stock_list_needed:
-                    if globe.time.check(self.time_last, self.stat_dict["transfer_duration"]):
+                    if timer.timer.check(self.time_last, self.stat_dict["transfer_duration"]):
                         tools.item_transfer(self.stock_list, haul_link[0].stock_list, haul_link[2], 1)
-                        self.time_last = globe.time.now()
+                        self.time_last = timer.timer.now()
                         self.action_set(None, None)
                 else:
                     self.action_set(None, None)
@@ -160,12 +160,12 @@ class Person:
         else:
             # Collect item
             if self.location in pathfinding.find_edges(haul_link[1].location):
-                if globe.time.check(self.time_last, self.stat_dict["transfer_duration"]):
+                if timer.timer.check(self.time_last, self.stat_dict["transfer_duration"]):
                     if haul_link[2] in haul_link[1].stock_list:
                         tools.item_transfer(haul_link[1].stock_list, self.stock_list, haul_link[2], 1)
                     else:
                         self.action_set(None, None)
-                    self.time_last = globe.time.now()
+                    self.time_last = timer.timer.now()
             # Move to haul from location
             else:
                 self.move(map_entities, map_topology, map_traffic, haul_link[1].location, adjacent=True)

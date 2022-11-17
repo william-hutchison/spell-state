@@ -1,8 +1,7 @@
 import random
 import math
 
-import globe
-
+WORLD_SIZE = (60, 60) # TODO Remove this requirement
 
 class Node:
     """A node class for A* Pathfinding."""
@@ -157,7 +156,7 @@ def find_free(locations, map_entities, map_topology):
 
     free_locations = [] 
     for location in locations:
-        if (0 <= location[0] < globe.WORLD_SIZE[0]) and (0 <= location[1] < globe.WORLD_SIZE[0]):
+        if (0 <= location[0] < WORLD_SIZE[0]) and (0 <= location[1] < WORLD_SIZE[0]):
             if not map_entities[location[1]][location[0]] and map_topology[location[1]][location[0]] != 0:
                 free_locations.append(location)
 
@@ -188,7 +187,7 @@ def find_within_radius(location, radius):
     possible_locations = []
     for x in range(-radius, radius+1):
         for y in range(-radius, radius+1):
-            if (0 <= location[0]+x < globe.WORLD_SIZE[0]) and (0 <= location[1]+y < globe.WORLD_SIZE[0]):
+            if (0 <= location[0]+x < WORLD_SIZE[0]) and (0 <= location[1]+y < WORLD_SIZE[0]):
                 possible_locations.append((location[0]+x, location[1]+y))
 
     return possible_locations
@@ -213,11 +212,11 @@ def find_within_cross(location, radius):
 
     possible_locations = []
     for x in range(-radius, radius+1):
-        if (0 <= location[0] + x < globe.WORLD_SIZE[0]):
+        if (0 <= location[0] + x < WORLD_SIZE[0]):
             possible_locations.append((location[0] + x, location[1]))
 
     for y in range(-radius, radius+1):
-        if (0 <= location[1] + y < globe.WORLD_SIZE[1]):
+        if (0 <= location[1] + y < WORLD_SIZE[1]):
             possible_locations.append((location[0], location[1] + y))
 
     return possible_locations

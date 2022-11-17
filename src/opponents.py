@@ -1,5 +1,5 @@
 import pathfinding
-import globe
+import timer
 
 
 class Opponent:
@@ -42,12 +42,11 @@ class Opponent:
         """Finds the shortest path to target and returns a tuple vector of next step. Returns None if no path is
         found."""
 
-        # TODO Avoid checking time twice (here and within the wizard)
-        if globe.time.check(self.subject_wizard.time_last, self.subject_wizard.stat_dict["move_duration"]):
+        # TODO Avoid checking timer twice (here and within the wizard)
+        if timer.timer.check(self.subject_wizard.time_last, self.subject_wizard.stat_dict["move_duration"]):
 
             # Find the shortest path to target
             path = pathfinding.astar(map_entities, map_topology, self.subject_wizard.location, target, adjacent)
-            print(path)
 
             # Return a direction vector for the next move towards the target
             if len(path) > 1:

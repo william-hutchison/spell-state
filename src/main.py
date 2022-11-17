@@ -1,5 +1,6 @@
 import pygame as pg
 import sys
+import os
 import pickle
 
 import player
@@ -7,9 +8,8 @@ import opponents
 import world
 import graphics
 import menus
-import globe
 import audio
-
+import timer
 
 class Game:
     """Class to store, update and coordinate the objects required for gameplay, menus, user input and graphics."""
@@ -17,7 +17,9 @@ class Game:
     def __init__(self):
 
         pg.init()
-        globe.time = globe.Time()
+        os.chdir(os.path.dirname(__file__))
+
+        timer.timer = timer.Timer()
         self.world = world.World()
         self.player = player.Player(self.world.state_list[0].wizard)
         self.opponent = opponents.Opponent(self.world.state_list[1].wizard)
@@ -35,7 +37,7 @@ class Game:
         if not self.menu_manager.current_menu:
             self.play(events)
             audio.audio.stop_music()
-            globe.time.update()
+            timer.timer.update()
 
         # TODO Stop time from increasing while the game is paused
         # Run the menu
@@ -62,7 +64,7 @@ class Game:
         """Store any necessary information outside the world object within the world object, then create a save file
         from the world object."""
 
-        self.world.save_time = globe.time.now()
+        self.world.save_time = timer.timer.now()
         self.world.save_player = player.Player(self.world.state_list[0].wizard)
         
         with open('saves/'+file_name, 'wb') as f:
@@ -75,7 +77,7 @@ class Game:
         with open('saves/'+file_name, 'rb') as f:
             self.world = pickle.load(f)
 
-        globe.time.set_time(self.world.save_time)
+        timer.timer.set_time(self.world.save_time)
         self.player = self.world.save_player
 
     def exit_game(self):

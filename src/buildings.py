@@ -2,7 +2,7 @@ import pygame as pg
 import random
 
 import pathfinding
-import globe
+import timer
 
 
 class Building:
@@ -20,7 +20,7 @@ class Building:
         self.stock_list = []
         self.stock_list_needed = []
 
-        self.time_last = globe.time.now()
+        self.time_last = timer.timer.now()
         self.under_construction = 0
         self.under_work = 0
 

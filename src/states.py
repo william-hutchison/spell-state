@@ -4,7 +4,7 @@ import wizards
 import buildings
 import persons
 import pathfinding
-import globe
+import timer
 import audio
 
 
@@ -38,9 +38,9 @@ class State:
         self.colour = colour
         self.location = location
 
-        self.time_last_order = globe.time.now()
-        self.time_last_birth = globe.time.now()
-        self.time_last_construct = globe.time.now()
+        self.time_last_order = timer.timer.now()
+        self.time_last_birth = timer.timer.now()
+        self.time_last_construct = timer.timer.now()
 
         self.wizard = self.create_wizard(map_entities, map_topology, self.location)
         self.building_list.append(self.create_building("tower", map_entities, map_topology, map_traffic, self.location))
@@ -49,24 +49,24 @@ class State:
 
         # Assign person actions
         self.tune_action_wight()
-        if globe.time.check(self.time_last_order, self.stat_dict["order_duration"]):
+        if timer.timer.check(self.time_last_order, self.stat_dict["order_duration"]):
             self.assign(self.person_list, self.building_list)
-            self.time_last_order = globe.time.now()
+            self.time_last_order = timer.timer.now()
 
         # TODO Add decide_building and decide_person functions to decide if action can / should be taken
         # Create building
-        if globe.time.check(self.time_last_construct, self.stat_dict["construction_duration"]):
+        if timer.timer.check(self.time_last_construct, self.stat_dict["construction_duration"]):
             if len([i for i in self.building_list if i.under_construction]) < 2:
                 if build_attempt := self.create_building(random.choice(["well_of_blessings", "well_of_curses"]), map_entities, map_topology, map_traffic, self.location):
                     self.building_list.append(build_attempt)
-            self.time_last_construct = globe.time.now()
+            self.time_last_construct = timer.timer.now()
 
         # Create person
-        if globe.time.check(self.time_last_birth, self.stat_dict["birth_duration"]):
+        if timer.timer.check(self.time_last_birth, self.stat_dict["birth_duration"]):
             if len(self.person_list) < self.stat_dict["person_max"]:
                 if person_attempt := self.create_person(map_entities, map_topology, self.location):
                     self.person_list.append(person_attempt)
-            self.time_last_birth = globe.time.now()
+            self.time_last_birth = timer.timer.now()
 
         # Update entities
         for building in self.building_list:

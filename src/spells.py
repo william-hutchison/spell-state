@@ -1,6 +1,6 @@
 import pygame as pg
 
-import globe
+import timer
 import pathfinding
 
 
@@ -31,15 +31,10 @@ class Spell:
     def change_relation_weight(self, target, relation_weight_change):
         """Change the relation weight of the ruler_state of the target entity based on the input
         relation_weight_change."""
-        print("trying")
-        print(relation_weight_change)
-        print(target.ruler_state.relation_dict[self.ruler_wizard.ruler_state])
 
         if target.ruler_state != self.ruler_wizard.ruler_state:
-            print("again")
             target.ruler_state.relation_dict[self.ruler_wizard.ruler_state] += relation_weight_change
 
-        print(target.ruler_state.relation_dict[self.ruler_wizard.ruler_state])
 
 class KindSelf(Spell):
     """Parent class for spells cast on the wizard entity itself."""
@@ -85,7 +80,7 @@ class KindDirectional(Spell):
             # Check for spell movement
             if self.travel_current <= self.stat_dict["move_max"]+1:
                 self.move(self.move_direction)
-            if self.travel_current >= self.stat_dict["move_max"]+1 or not 0 <= self.location[0] < globe.WORLD_SIZE[0] or not 0 <= self.location[1] < globe.WORLD_SIZE[1]:
+            if self.travel_current >= self.stat_dict["move_max"]+1 or not 0 <= self.location[0] < len(map_entities[0]) or not 0 <= self.location[1] < len(map_entities[1]):
                 self.ruler_wizard.spell_list.remove(self)
 
             # Check for spell impact
@@ -102,10 +97,10 @@ class KindDirectional(Spell):
 
     def move(self, move_attempt):
 
-        if globe.time.check(self.time_last, self.stat_dict["move_duration"]):
+        if timer.timer.check(self.time_last, self.stat_dict["move_duration"]):
             self.location = (self.location[0] + move_attempt[0], self.location[1] + move_attempt[1])
             self.travel_current += 1
-            self.time_last = globe.time.now()
+            self.time_last = timer.timer.now()
 
 
 class KindSelect(Spell):
@@ -206,7 +201,7 @@ class Paralyse(KindDirectional):
             target.stat_dict["move_duration"] += self.stat_dict["move_duration_change"]
             self.status = "effect"
             self.effect_target = target
-            self.effect_start_time = globe.time.now()
+            self.effect_start_time = timer.timer.now()
         else:
             self.ruler_wizard.spell_list.remove(self)
 
@@ -216,7 +211,7 @@ class Paralyse(KindDirectional):
     def effect(self, map_entities, target):
         """Remove spell effect after effect duration reached."""
 
-        if globe.time.check(self.effect_start_time, self.stat_dict["effect_duration"]):
+        if timer.timer.check(self.effect_start_time, self.stat_dict["effect_duration"]):
             target.stat_dict["move_duration"] -= self.stat_dict["move_duration_change"]
             self.ruler_wizard.spell_list.remove(self)
 
@@ -238,14 +233,14 @@ class Storm(KindSelf):
 
         self.status = "effect"
         self.effect_target = self.ruler_wizard
-        self.effect_start_time = globe.time.now()
+        self.effect_start_time = timer.timer.now()
         self.current_ring = 1
 
     def effect(self, map_entities, target):
         """Remove spell effect after effect duration reached."""
 
-        if globe.time.check(self.effect_start_time, self.stat_dict["ring_duration"]):
-            self.effect_start_time = globe.time.now()
+        if timer.timer.check(self.effect_start_time, self.stat_dict["ring_duration"]):
+            self.effect_start_time = timer.timer.now()
 
             # Create dummy spell and apply effect for each tile in radius ring
             ring_tiles = pathfinding.find_within_ring(self.ruler_wizard.location, self.current_ring)
@@ -287,10 +282,10 @@ class DummySpell:
         self.duration = duration
         self.sprite = sprite
 
-        self.dummy_start_time = globe.time.now()
+        self.dummy_start_time = timer.timer.now()
         self.status = None
 
     def update(self, map_entities, map_resource, map_item, move_attempt):
 
-        if globe.time.check(self.dummy_start_time, self.duration):
+        if timer.timer.check(self.dummy_start_time, self.duration):
             self.ruler_wizard.spell_list.remove(self)

@@ -1,6 +1,6 @@
 import pygame as pg
 
-import globe
+import timer
 
 
 class Player:  # TODO Should this object even exist? Probably not
@@ -23,6 +23,8 @@ class Camera:
     def __init__(self, ruler_player):
 
         self.ruler_player = ruler_player
+
+        self.TIME_CAMERA_MOVE = 100
 
         self.location = (0, 0)
         self.time_last = 0
@@ -70,17 +72,17 @@ class Camera:
         # Prevent camera movement immediately after casting
         if spell_list := player_character.wizard.spell_list:
             if spell_list[0].status == "hold":
-                self.time_last = globe.time.now() + 300
+                self.time_last = timer.timer.now() + 300
 
         # Move the camera independently of the player_character
         if 1 in (keys[pg.K_UP], keys[pg.K_LEFT], keys[pg.K_DOWN], keys[pg.K_RIGHT]):
             if not keys[pg.K_SPACE]:
-                if globe.time.check(self.time_last, globe.TIME_CAMERA):
+                if timer.timer.check(self.time_last, self.TIME_CAMERA_MOVE):
                     move_x = keys[pg.K_RIGHT] - keys[pg.K_LEFT]
                     move_y = keys[pg.K_DOWN] - keys[pg.K_UP]
                     camera_location = (self.location[0]+move_x, self.location[1]+move_y)
                     self.camera_follow = False
-                    self.time_last = globe.time.now()
+                    self.time_last = timer.timer.now()
         # TODO This will brake if world scale changes
         inspector_location = (camera_location[0]+30, camera_location[1]+20)
 
