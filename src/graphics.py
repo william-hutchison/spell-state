@@ -223,7 +223,8 @@ class StateInfo(Interface):
         self.surface.fill((0, 0, 0))
         text = ["Building list: " + str([type(i).__name__ for i in state.building_list]),
                 "Person list: " + str([type(i).__name__ for i in state.person_list]),
-                "Action dict: " + str(state.action_dict)]
+                "Action dict: " + str(state.action_dict),
+                "Relation dict: " + str(state.relation_dict)]
         self.draw_text_lines(text, (0, 0))
         final_surface.blit(self.surface, self.position)
 

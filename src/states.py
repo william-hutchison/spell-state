@@ -16,7 +16,7 @@ class State:
                           "order_duration": 400,
                           "birth_duration": 4000,
                           "construction_duration": 8000}
-
+        
         self.action_dict = {None: {"weight": 5, "function": None},
                             "harvest_food": {"weight": 30, "function": persons.Person.harvest},
                             "harvest_wood": {"weight": 30, "function": persons.Person.harvest},
@@ -32,11 +32,11 @@ class State:
                               "well_of_curses": {"class": buildings.WellOfCurses, "cost": ["i_wood", "i_metal"]},
                               "well_of_blessings": {"class": buildings.WellOfBlessings, "cost": ["i_wood", "i_metal"]}}
 
-        self.colour = colour
-        self.location = location
+        self.relation_dict = {}
         self.building_list = []
         self.person_list = []
-        self.other_states = []
+        self.colour = colour
+        self.location = location
 
         self.time_last_order = globe.time.now()
         self.time_last_birth = globe.time.now()
@@ -120,9 +120,9 @@ class State:
 
     def assign(self, person_list, building_list):
         """Assign an idle person to a random action, based on action dictionary weights and available tasks."""
-        
+
         #TODO Replace with diplomacy system
-        target_state = self.other_states[0]
+        target_state = list(self.relation_dict.keys())[0]
 
         # Prepare lists of possible actions
         possible_actions = [None, "harvest_food", "harvest_wood", "harvest_metal"]
@@ -238,3 +238,4 @@ class State:
         for action in self.action_dict.keys():
             self.action_dict[action]["weight"] = max(min(100, self.action_dict[action]["weight"]), 0)
             self.action_dict[action]["weight"] += (self.action_dict[action]["weight"] - 50) * -0.0005
+            self.action_dict[action]["weight"] = round(self.action_dict[action]["weight"], 3)

@@ -28,6 +28,18 @@ class Spell:
             if target.ruler_state == self.ruler_wizard.ruler_state:
                 target.ruler_state.action_dict[target.action_super]["weight"] += action_weight_change
 
+    def change_relation_weight(self, target, relation_weight_change):
+        """Change the relation weight of the ruler_state of the target entity based on the input
+        relation_weight_change."""
+        print("trying")
+        print(relation_weight_change)
+        print(target.ruler_state.relation_dict[self.ruler_wizard.ruler_state])
+
+        if target.ruler_state != self.ruler_wizard.ruler_state:
+            print("again")
+            target.ruler_state.relation_dict[self.ruler_wizard.ruler_state] += relation_weight_change
+
+        print(target.ruler_state.relation_dict[self.ruler_wizard.ruler_state])
 
 class KindSelf(Spell):
     """Parent class for spells cast on the wizard entity itself."""
@@ -137,9 +149,10 @@ class Consume(KindDirectional):
     def __init__(self, wizard):
 
         super().__init__(wizard)
+        self.stat_dict["action_weight_change"] = -10
+        self.stat_dict["relation_weight_change"] = -10
         self.stat_dict["move_duration"] = 100
         self.stat_dict["move_max"] = 1
-        self.stat_dict["action_weight_change"] = -5
         self.stat_dict["health_change"] = -1000
         self.stat_dict["mana_change"] = 60
 
@@ -150,6 +163,7 @@ class Consume(KindDirectional):
             self.ruler_wizard.stat_dict["mana_current"] += self.stat_dict["mana_change"]
 
         self.change_action_weight(target, self.stat_dict["action_weight_change"])
+        self.change_relation_weight(target, self.stat_dict["relation_weight_change"])
         self.ruler_wizard.spell_list.remove(self)
 
 
@@ -159,6 +173,7 @@ class Fireball(KindDirectional):
 
         super().__init__(wizard)
         self.stat_dict["action_weight_change"] = -5
+        self.stat_dict["relation_weight_change"] = -5
         self.stat_dict["move_duration"] = 100
         self.stat_dict["move_max"] = 10
         self.stat_dict["health_change"] = -50
@@ -168,6 +183,7 @@ class Fireball(KindDirectional):
 
         target.stat_dict["health_current"] += self.stat_dict["health_change"]
         self.change_action_weight(target, self.stat_dict["action_weight_change"])
+        self.change_relation_weight(target, self.stat_dict["relation_weight_change"])
         self.ruler_wizard.spell_list.remove(self)
 
 
@@ -178,6 +194,7 @@ class Paralyse(KindDirectional):
 
         super().__init__(wizard)
         self.stat_dict["action_weight_change"] = -5
+        self.stat_dict["relation_weight_change"] = -5
         self.stat_dict["move_duration"] = 100
         self.stat_dict["move_max"] = 3
         self.stat_dict["move_duration_change"] = 10000
@@ -194,6 +211,7 @@ class Paralyse(KindDirectional):
             self.ruler_wizard.spell_list.remove(self)
 
         self.change_action_weight(target, self.stat_dict["action_weight_change"])
+        self.change_action_weight(target, self.stat_dict["relation_weight_change"])
 
     def effect(self, map_entities, target):
         """Remove spell effect after effect duration reached."""
@@ -209,6 +227,7 @@ class Storm(KindSelf):
 
         super().__init__(wizard)
         self.stat_dict["action_weight_change"] = -5
+        self.stat_dict["relation_weight_change"] = -5
         self.stat_dict["health_change"] = -100
         self.stat_dict["radius"] = 4
         self.stat_dict["ring_duration"] = 200
@@ -235,6 +254,7 @@ class Storm(KindSelf):
                 if target := map_entities[tile[1]][tile[0]]:
                     target.stat_dict["health_current"] += self.stat_dict["health_change"]
                     self.change_action_weight(target, self.stat_dict["action_weight_change"])
+                    self.change_relation_weight(target, self.stat_dict["relation_weight_change"])
 
             self.current_ring += 1
             if self.current_ring > self.stat_dict["radius"]:
@@ -246,12 +266,14 @@ class Heal(KindSelect):
 
         super().__init__(wizard)
         self.stat_dict["action_weight_change"] = 10
+        self.stat_dict["relation_weight_change"] = 10
         self.stat_dict["health_change"] = 50
 
     def impact(self, target):
 
         target.stat_dict["health_current"] += self.stat_dict["health_change"]
         self.change_action_weight(target, self.stat_dict["action_weight_change"])
+        self.change_relation_weight(target, self.stat_dict["relation_weight_change"])
         self.ruler_wizard.spell_list.remove(self)
 
 
