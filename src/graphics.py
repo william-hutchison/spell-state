@@ -31,7 +31,7 @@ class GraphicsManager:
         self.item_transfer = ItemTransfer()
 
         self.image_ui = pg.image.load('../sprites/ui.png')
-        #self.set_window_scale(1) # For testing
+        # self.set_window_scale(1) # For testing
 
     def update_interface(self, state, character, camera, inspector_dict, transfer_object, map_item):
         """Update interface objects and draw to the window."""
@@ -68,6 +68,7 @@ class GraphicsManager:
         self.scale = scale
         self.window = pg.display.set_mode(window_size[self.scale])
 
+
 class Menu:
     """Class to draw a whole screen menu to a surface."""
 
@@ -76,11 +77,10 @@ class Menu:
         self.position = (0, 0)
         self.size = (1200, 800)
         self.surface = pg.Surface(self.size)
-        self.font = pg.font.SysFont("timesnewroman", 24)
+        self.font = pg.font.SysFont("..fonts/steelfish.otf", 24)
 
     def draw_menu(self, final_surface, options, current_option):
         """Draw menu comprised of options and current_option indicator onto the input final_surface."""
-
 
         self.surface.fill((0, 0, 0))
         for i in range(len(options)):
@@ -182,7 +182,7 @@ class Interface:
 
         self.text_spacing = 24
         self.margin_spacing = 10
-        self.font = pg.font.SysFont("timesnewroman", 15)
+        self.font = pg.font.SysFont("..fints/steelfish.otf", 16)
 
     def draw_text_lines(self, text_list, position):
         """Draw text_list of strings at position as lines of text."""
