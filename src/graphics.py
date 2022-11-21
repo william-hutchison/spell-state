@@ -185,7 +185,7 @@ class Interface:
         """Draw text_list of strings at position as lines of text."""
 
         for i, item in enumerate(text_list):
-            line = self.font.render(item, True, (255, 255, 255))
+            line = self.font.render(str(item), True, (255, 255, 255))
             self.surface.blit(line, (position[0]+self.margin_spacing, position[1]+self.text_spacing*i))
 
 
@@ -212,17 +212,27 @@ class StateInfo(Interface):
 
         super().__init__()
         self.position = (950, 0)
-        self.size = (250, 300)
+        self.size = (250, 325)
         self.surface = pg.Surface(self.size)
 
     def update(self, final_surface, state):
 
+        # TODO Also show other states' opinion of the player, or maybe merge these counts into one? 
+
+        # Prepare lists of text
+        action_text = list(zip(list(state.action_dict.keys()), [round(state.action_dict[i]["weight"], 1) for i in list(state.action_dict)]))
+        relation_text = list(zip(list(state.relation_dict.keys()), list(state.relation_dict.values())))
+        building_text = ["BUILDINGS: " + str([type(i).__name__ for i in state.building_list])]
+        person_text = ["PEOPLE: " + str([type(i).__name__ for i in state.person_list])]
+
+        # Draw to the surface
         self.surface.fill((0, 0, 0))
-        text = ["Building list: " + str([type(i).__name__ for i in state.building_list]),
-                "Person list: " + str([type(i).__name__ for i in state.person_list]),
-                "Action dict: " + str(state.action_dict),
-                "Relation dict: " + str(state.relation_dict)]
-        self.draw_text_lines(text, (0, 0))
+        self.draw_text_lines(["ACTION WEIGHTS..."], (0, 0))
+        self.draw_text_lines(action_text, (0, 24))
+        self.draw_text_lines(["RELATION WEIGHTS..."], (0, 216))
+        self.draw_text_lines(relation_text, (0, 240))
+        self.draw_text_lines(building_text, (0, 288))
+        self.draw_text_lines(person_text, (0, 312))
         final_surface.blit(self.surface, self.position)
 
 
