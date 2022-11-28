@@ -1,3 +1,5 @@
+import random
+
 import pathfinding
 import timer
 
@@ -8,31 +10,54 @@ class Opponent:
     def __init__(self, subject_wizard):
 
         self.subject_wizard = subject_wizard
+
         self.ruler_state = subject_wizard.ruler_state
+
+        self.action_super = None
+        self.action_target = None
 
     def update(self, map_topology, map_resource, map_item, map_entities):
 
         # TODO This is messy
         move_character_attempt = None
-        cast_attempt = None
         move_spell_attempt = None
-        target = None 
+        cast_attempt = None
 
+        # TODO Replace with intelligent decision making function
+        # Assign action_super
+        self.action_super = "wander"
         for state in list(self.ruler_state.relation_dict.keys()):
             if self.ruler_state.relation_dict[state] < 50:
-                cast_attempt, move_spell_attempt = self.attempt_attack(map_entities)
-                target_cross = pathfinding.find_within_cross(state.wizard.location, 4) 
-                if self.subject_wizard.location not in target_cross:
-                    # TODO Replace with dedicated pathfinding function. Use combo of astar and find_closest to check options one by one, also require line of sight
-                    target = pathfinding.find_closest(self.subject_wizard.location, target_cross)
+                self.action_super = "attack"
+                self.action_target = state.wizard
 
-        if target:
-            move_character_attempt = self.move_attempt(map_entities, map_topology, target)
+        # Wander aimlessly around the map
+        if self.action_super == "wander":
+            self.action_target = self.wander()
+            if self.action_target:
+                move_character_attempt = self.attempt_move(map_entities, map_topology, self.action_target)
+
+        # Move to and attack the action_target entity
+        elif self.action_super == "attack":
+            cast_attempt, move_spell_attempt = self.attempt_fireball(map_entities, self.action_target)
+            target_cross = pathfinding.find_within_cross(self.action_target.location, 4)
+            if self.subject_wizard.location not in target_cross:
+                # TODO Replace with dedicated pathfinding function. Use combo of astar and find_closest to check options one by one, also require line of sight
+                move_character_attempt = self.attempt_move(map_entities, map_topology, pathfinding.find_closest(self.subject_wizard.location, target_cross))
 
         self.subject_wizard.update(map_entities, map_topology, map_resource, map_item, cast_attempt, move_character_attempt, move_spell_attempt)
 
-    def attempt_attack(self, map_entities):
-        """Attempt to attack any nearby wizard."""
+    def wander(self):
+
+        if not self.action_target or self.action_target == self.subject_wizard.location:
+            target = random.choice(pathfinding.find_within_radius(self.subject_wizard.location, 12))
+        else:
+            target = self.action_target
+
+        return target
+
+    def attempt_fireball(self, map_entities, target):
+        """Attempt to cast a fireball at the target wizard."""
 
         cast_attempt = None
         move_spell_attempt = None
@@ -43,15 +68,14 @@ class Opponent:
 
         # Attack nearby entities
         for entity in aware_entities:
-            if type(entity).__name__ == 'Wizard' and entity.ruler_state != self.ruler_state:
+            if entity == target:
                 cast_attempt = "fireball"
-
                 if entity.location in pathfinding.find_within_cross(self.subject_wizard.location, 4):
                     move_spell_attempt = pathfinding.find_direction(self.subject_wizard.location, entity.location)
 
         return cast_attempt, move_spell_attempt
 
-    def move_attempt(self, map_entities, map_topology, target, adjacent=False):
+    def attempt_move(self, map_entities, map_topology, target, adjacent=False):
         """Finds the shortest path to target and returns a tuple vector of next step. Returns None if no path is
         found."""
 
