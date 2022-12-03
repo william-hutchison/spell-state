@@ -9,15 +9,16 @@ class GraphicsManager:
 
     def __init__(self):
 
-        self.WINDOW_SIZES = [(1200, 800), (2400, 1600)]
-
         pg.display.set_caption('Spell State')
- 
+
+        self.WINDOW_SIZES = [(1200, 800), (2400, 1600)]
         self.scale = 0
         self.window = pg.display.set_mode(self.WINDOW_SIZES[self.scale])
         self.surface = pg.Surface(self.WINDOW_SIZES[0])
 
+        self.start_menu = StartMenu()
         self.menu = Menu()
+
         self.terrain = Terrain()
         self.world_info = WorldInfo()
         self.state_info = StateInfo()
@@ -53,10 +54,14 @@ class GraphicsManager:
         self.terrain.draw_overlay(self.surface, camera_location, inspector_location, inspector_mode, character_location, state_list)
         self.window.blit(pg.transform.scale(self.surface, self.WINDOW_SIZES[self.scale]), (0, 0))
 
-    def update_menu(self, options, current_option):
+    def update_menu(self, current_menu, options, current_option):
         """Update the menu object and draw to the window."""
 
-        self.menu.draw_menu(self.surface, options, current_option)
+        if type(current_menu).__name__ == "Start":
+            self.start_menu.draw_menu(self.surface, options, current_option)
+        else:
+            self.menu.draw_menu(self.surface, options, current_option)
+
         self.window.blit(pg.transform.scale(self.surface, self.WINDOW_SIZES[self.scale]), (0, 0))
 
     def set_window_scale(self, scale):
@@ -64,6 +69,26 @@ class GraphicsManager:
 
         self.scale = scale
         self.window = pg.display.set_mode(self.WINDOW_SIZES[self.scale])
+
+
+class StartMenu:
+    """Class to draw a whole screen menu to a surface."""
+
+    def __init__(self):
+
+        self.position = (0, 0)
+        self.size = (1200, 800)
+        self.surface = pg.Surface(self.size)
+        self.background = pg.image.load('../sprites/start_menu/background.png')
+        self.select = pg.image.load('../sprites/start_menu/select.png')
+
+
+    def draw_menu(self, final_surface, options, current_option):
+
+        self.surface.blit(self.background, self.position)
+        self.surface.blit(self.select, (420, 430 + 80 * current_option))
+
+        final_surface.blit(self.surface, self.position)
 
 
 class Menu:
@@ -74,7 +99,9 @@ class Menu:
         self.position = (0, 0)
         self.size = (1200, 800)
         self.surface = pg.Surface(self.size)
-        self.font = pg.font.SysFont("..fonts/steelfish.otf", 24)
+        self.font = pg.font.Font("../fonts/linden_hill.otf", 24)
+        self.image_inspector = pg.image.load('../sprites/inspector.png')
+
 
     def draw_menu(self, final_surface, options, current_option):
         """Draw menu comprised of options and current_option indicator onto the input final_surface."""
@@ -179,7 +206,7 @@ class Interface:
 
         self.text_spacing = 24
         self.margin_spacing = 10
-        self.font = pg.font.SysFont("..fints/steelfish.otf", 16)
+        self.font = pg.font.Font("../fonts/linden_hill.otf", 16)
 
     def draw_text_lines(self, text_list, position):
         """Draw text_list of strings at position as lines of text."""

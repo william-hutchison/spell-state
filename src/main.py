@@ -42,7 +42,7 @@ class Game:
         # TODO Stop time from increasing while the game is paused
         # Run the menu
         else:
-            self.graphics_manager.update_menu(self.menu_manager.current_menu.options, self.menu_manager.current_menu.current_option)
+            self.graphics_manager.update_menu(self.menu_manager.current_menu, self.menu_manager.current_menu.options, self.menu_manager.current_menu.current_option)
             self.menu_manager.update(events, self.graphics_manager.set_window_scale, self.save_file, self.load_file, self.exit_game)
 
         pg.display.update()
