@@ -14,7 +14,7 @@ class World:
         self.SEED = random.randint(0, 20)
         self.WORLD_SIZE = (60, 60)
         self.STATE_NUMBER = 3
-        self.STATE_COLOURS = [(85, 220, 121), (174, 84, 220), (14, 44, 120)]
+        self.STATE_COLOURS = [(120, 17, 146), (17, 146, 134), (151, 54, 13), (15, 154, 57)]
 
         # Variables to capture information outside the world object when saving game
         self.save_time = 0

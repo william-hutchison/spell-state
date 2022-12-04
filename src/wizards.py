@@ -23,7 +23,7 @@ class Wizard:
                            "storm": {"class": spells.Storm, "cost": 100, "combo": ["left", "up", "right", "down"], "unlocked": True},
                            "heal": {"class": spells.Heal, "cost": 40, "combo": ["up", "down", "up"], "unlocked": True}}
 
-        self.sprite = pg.image.load('../sprites/wizard.png')
+        self.sprite = pg.image.load('../sprites/entities/wizard.png')
         self.ruler_state = ruler_state
         self.location = location
         self.stock_list = []

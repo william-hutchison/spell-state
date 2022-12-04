@@ -21,7 +21,7 @@ class Person:
                           "harvest_duration": 800,
                           "attack_duration": 400}
 
-        self.sprite = pg.image.load('../sprites/person.png')
+        self.sprite = pg.image.load('../sprites/entities/person.png')
         self.ruler_state = ruler_state
         self.location = location
         self.stock_list = []
@@ -29,19 +29,22 @@ class Person:
         self.action_super = None
         self.action_target = None
 
-        # Seperate timee_last_move from other counters, maybe store these in a dict?
+        # TODO Separate time_last_move from other counters, maybe store these in a dict?
         self.time_last = timer.timer.now()
         self.time_last_eat = timer.timer.now()
 
     def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 
+        # Eat food
         if timer.timer.check(self.time_last_eat, self.stat_dict["eat_duration"]):
             self.eat()
             self.time_last_eat = timer.timer.now()
 
+        # Act upon action_super
         if self.action_super:
             self.ruler_state.action_dict[self.action_super]["function"](self, map_entities, map_topology, map_resource, map_traffic, self.action_target)
 
+        # Check for destruction
         if self.stat_dict["health_current"] <= 0:
             pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
             self.ruler_state.person_list.remove(self)
@@ -62,7 +65,7 @@ class Person:
     def construct(self, map_entities, map_topology, map_resource, map_traffic, construct_object):
         """Attempt to construct construct_object. Move adjacent to construct_object if necessary.."""
 
-        # construct construct_object in milliseconds until it returns 0
+        # Construct construct_object in milliseconds until it returns 0
         if self.location in pathfinding.find_edges(construct_object.location):
             if not construct_object.constructing(timer.timer.now() - self.time_last):
                 self.action_set(None, None)
@@ -153,11 +156,13 @@ class Person:
                         self.action_set(None, None)
                 else:
                     self.action_set(None, None)
+
             # Move to haul to location
             else:
                 self.move(map_entities, map_topology, map_traffic, haul_link[0].location, adjacent=True)
 
         else:
+
             # Collect item
             if self.location in pathfinding.find_edges(haul_link[1].location):
                 if timer.timer.check(self.time_last, self.stat_dict["transfer_duration"]):
@@ -166,6 +171,7 @@ class Person:
                     else:
                         self.action_set(None, None)
                     self.time_last = timer.timer.now()
+
             # Move to haul from location
             else:
                 self.move(map_entities, map_topology, map_traffic, haul_link[1].location, adjacent=True)

@@ -18,7 +18,7 @@ class Spell:
         self.effect_target = None
         self.effect_start_time = None
 
-        self.sprite = pg.image.load('../sprites/spell_hold.png')
+        self.sprite = pg.image.load('../sprites/spells/hold.png')
 
     def change_action_weight(self, target, action_weight_change):
         """Change the action weight of the ruler_state of the target person based on the input
@@ -172,7 +172,7 @@ class Fireball(KindDirectional):
         self.stat_dict["move_duration"] = 100
         self.stat_dict["move_max"] = 10
         self.stat_dict["health_change"] = -50
-        self.sprite = pg.image.load("../sprites/spell_fireball.png")
+        self.sprite = pg.image.load("../sprites/spells/fireball.png")
 
     def impact(self, target):
 
@@ -227,7 +227,7 @@ class Storm(KindSelf):
         self.stat_dict["radius"] = 4
         self.stat_dict["ring_duration"] = 200
         self.stat_dict["effect_duration"] = 300
-        self.sprite = pg.image.load("../sprites/spell_storm.png")
+        self.sprite = pg.image.load("../sprites/spells/storm.png")
 
     def impact(self, map_entities):
 

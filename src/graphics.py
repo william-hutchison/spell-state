@@ -28,7 +28,7 @@ class GraphicsManager:
         self.inspector_info = InspectorInfo()
         self.item_transfer = ItemTransfer()
 
-        self.image_ui = pg.image.load('../sprites/ui.png')
+        self.image_ui = pg.image.load('../sprites/interface/ui.png')
         # self.set_window_scale(1) # For testing
 
     def update_interface(self, state, character, camera, inspector_dict, transfer_object, map_item):
@@ -79,8 +79,8 @@ class StartMenu:
         self.position = (0, 0)
         self.size = (1200, 800)
         self.surface = pg.Surface(self.size)
-        self.background = pg.image.load('../sprites/start_menu/background.png')
-        self.select = pg.image.load('../sprites/start_menu/select.png')
+        self.background = pg.image.load('../sprites/menus/start_background.png')
+        self.select = pg.image.load('../sprites/menus/start_select.png')
 
 
     def draw_menu(self, final_surface, options, current_option):
@@ -100,7 +100,7 @@ class Menu:
         self.size = (1200, 800)
         self.surface = pg.Surface(self.size)
         self.font = pg.font.Font("../fonts/linden_hill.otf", 24)
-        self.image_inspector = pg.image.load('../sprites/inspector.png')
+        self.image_inspector = pg.image.load('../sprites/interface/inspector.png')
 
 
     def draw_menu(self, final_surface, options, current_option):
@@ -124,23 +124,28 @@ class Terrain:
         self.SURFACE_SIZE = (1200, 800)
         self.SURFACE_POSITION = (0, 0)
 
-        self.surface = pg.Surface(self.SURFACE_SIZE)
+        self.BACKGROUND_COLOUR = (0, 0, 0)
+        self.CONTOUR_COLOURS = [(39, 53, 60), (49, 53, 70), (59, 63, 80), (69, 73, 90)]
 
-        self.colour_topology = [(40, 40, 40), (60, 60, 60), (80, 80, 80), (100, 100, 100)]
-        self.image_inspector = pg.image.load('../sprites/inspector.png')
-        self.image_selector = pg.image.load('../sprites/selector.png')
-        self.image_food = pg.image.load('../sprites/resource_food.png')
-        self.image_wood = pg.image.load('../sprites/resource_wood.png')
-        self.image_metal = pg.image.load('../sprites/resource_metal.png')
-        self.image_item = pg.image.load('../sprites/item.png')
-        self.anim_water = [pg.image.load('../sprites/water_0.png'),
-                           pg.image.load('../sprites/water_1.png'),
-                           pg.image.load('../sprites/water_2.png')]
+        self.surface = pg.Surface(self.SURFACE_SIZE)
+        self.image_inspector = pg.image.load('../sprites/interface/inspector.png')
+        self.image_selector = pg.image.load('../sprites/interface/selector.png')
+        self.image_food = pg.image.load('../sprites/terrain/resource_food.png')
+        self.image_wood = pg.image.load('../sprites/terrain/resource_wood.png')
+        self.image_metal = pg.image.load('../sprites/terrain/resource_metal.png')
+        self.image_item = pg.image.load('../sprites/misc/item.png')
+        self.image_topology_0 = pg.image.load('../sprites/terrain/topology_0.png')
+        self.image_topology_1 = pg.image.load('../sprites/terrain/topology_1.png')
+        self.image_topology_2 = pg.image.load('../sprites/terrain/topology_2.png')
+        self.image_topology_3 = pg.image.load('../sprites/terrain/topology_3.png')
+        self.anim_water = [pg.image.load('../sprites/terrain/water_0.png'),
+                           pg.image.load('../sprites/terrain/water_1.png'),
+                           pg.image.load('../sprites/terrain/water_2.png')]
 
     def draw_terrain(self, final_surface, camera_location, topology, resources, items, entities):
         """Draw terrain tiles, items and entities onto the input final_surface."""
 
-        self.surface.fill((0, 0, 0))
+        self.surface.fill(self.BACKGROUND_COLOUR)
 
         # TODO Limit loop to tiles present on screen, remove reliance on temp_world_size
         temp_world_size = (60, 60)
@@ -148,9 +153,16 @@ class Terrain:
             for x in range(temp_world_size[0]):
 
                 # Draw tiles
-                pg.draw.rect(self.surface, (20, 8 * topology[y][x], 20), ((x - camera_location[0]) * self.TILE_SIZE, (y - camera_location[1]) * self.TILE_SIZE, self.TILE_SIZE, self.TILE_SIZE), 0)
                 if topology[y][x] == 0:
                     self.surface.blit(self.anim_water[timer.timer.frame()], ((x - camera_location[0]) * self.TILE_SIZE, (y - camera_location[1]) * self.TILE_SIZE))
+                elif topology[y][x] == 1:
+                    self.surface.blit(self.image_topology_0, ((x - camera_location[0]) * self.TILE_SIZE, (y - camera_location[1]) * self.TILE_SIZE))
+                elif topology[y][x] == 2:
+                    self.surface.blit(self.image_topology_1, ((x - camera_location[0]) * self.TILE_SIZE, (y - camera_location[1]) * self.TILE_SIZE))
+                elif topology[y][x] == 3:
+                    self.surface.blit(self.image_topology_2, ((x - camera_location[0]) * self.TILE_SIZE, (y - camera_location[1]) * self.TILE_SIZE))
+                elif topology[y][x] == 4:
+                    self.surface.blit(self.image_topology_3, ((x - camera_location[0]) * self.TILE_SIZE, (y - camera_location[1]) * self.TILE_SIZE))
 
                 # Draw resources
                 if resources[y][x] == "i_food":
@@ -175,11 +187,11 @@ class Terrain:
                 if x + 1 < temp_world_size[0]:
                     if topology[y][x] != topology[y][x + 1]:
                         colour_index = int(min((topology[y][x], topology[y][x + 1])))
-                        pg.draw.rect(self.surface, self.colour_topology[colour_index], ((x+1-camera_location[0]) * self.TILE_SIZE - 1, (y - camera_location[1]) * self.TILE_SIZE, 2, self.TILE_SIZE), 0)
+                        pg.draw.rect(self.surface, self.CONTOUR_COLOURS[colour_index], ((x+1-camera_location[0]) * self.TILE_SIZE - 1, (y - camera_location[1]) * self.TILE_SIZE, 2, self.TILE_SIZE), 0)
                 if y + 1 < temp_world_size[0]:
                     if topology[y][x] != topology[y + 1][x]:
                         colour_index = int(min((topology[y][x], topology[y + 1][x])))
-                        pg.draw.rect(self.surface, self.colour_topology[colour_index], ((x-camera_location[0]) * self.TILE_SIZE - 1, (y + 1 - camera_location[1]) * self.TILE_SIZE - 1, self.TILE_SIZE, 2), 0)
+                        pg.draw.rect(self.surface, self.CONTOUR_COLOURS[colour_index], ((x-camera_location[0]) * self.TILE_SIZE - 1, (y + 1 - camera_location[1]) * self.TILE_SIZE - 1, self.TILE_SIZE, 2), 0)
 
         final_surface.blit(self.surface, self.SURFACE_POSITION)
 
@@ -204,16 +216,19 @@ class Interface:
 
     def __init__(self):
 
-        self.text_spacing = 24
-        self.margin_spacing = 10
+        self.BACKGROUND_COLOUR = (4, 9, 29)
+        self.TEXT_COLOUR = (206, 205, 233)
+        self.TEXT_SPACING = 24
+        self.MARGIN_SPACING = 10
+
         self.font = pg.font.Font("../fonts/linden_hill.otf", 16)
 
     def draw_text_lines(self, text_list, position):
         """Draw text_list of strings at position as lines of text."""
 
         for i, item in enumerate(text_list):
-            line = self.font.render(str(item), True, (255, 255, 255))
-            self.surface.blit(line, (position[0]+self.margin_spacing, position[1]+self.text_spacing*i))
+            line = self.font.render(str(item), True, self.TEXT_COLOUR)
+            self.surface.blit(line, (position[0]+self.MARGIN_SPACING, position[1]+self.TEXT_SPACING*i))
 
 
 class WorldInfo(Interface):
@@ -227,7 +242,7 @@ class WorldInfo(Interface):
 
     def update(self, final_surface):
 
-        self.surface.fill((0, 0, 0))
+        self.surface.fill(self.BACKGROUND_COLOUR)
         text = ["Time: " + str(timer.timer.now())]
         self.draw_text_lines(text, (0, 0))
         final_surface.blit(self.surface, self.position)
@@ -253,7 +268,7 @@ class StateInfo(Interface):
         person_text = ["PEOPLE: " + str([type(i).__name__ for i in state.person_list])]
 
         # Draw to the surface
-        self.surface.fill((0, 0, 0))
+        self.surface.fill(self.BACKGROUND_COLOUR)
         self.draw_text_lines(["ACTION WEIGHTS..."], (0, 0))
         self.draw_text_lines(action_text, (0, 24))
         self.draw_text_lines(["RELATION WEIGHTS..."], (0, 216))
@@ -274,7 +289,7 @@ class InspectorInfo(Interface):
 
     def update(self, final_surface, inspector_dict):
 
-        self.surface.fill((0, 0, 0))
+        self.surface.fill(self.BACKGROUND_COLOUR)
         text = []
         for i, item in enumerate(inspector_dict.items()):
             if item[1]:
@@ -294,7 +309,7 @@ class PlayerInfo(Interface):
 
     def update(self, final_surface, character, camera):
 
-        self.surface.fill((0, 0, 0))
+        self.surface.fill(self.BACKGROUND_COLOUR)
         text = ["Inspector location: " + str(camera.inspector_location),
                 "Character location: " + str(character.wizard.location),
                 "Casting string: " + str(character.casting_string),
@@ -316,7 +331,7 @@ class SpellBook(Interface):
 
     def update(self, final_surface, character):
 
-        self.surface.fill((0, 0, 0))
+        self.surface.fill(self.BACKGROUND_COLOUR)
         text = []
         i = 0
         for key, value in character.wizard.spell_dict.items():
@@ -351,10 +366,10 @@ class ItemTransfer(Interface):
                 target_text = self.font.render("{} ({}/{})".format(type(transfer_object.transfer_target).__name__, len(transfer_object.transfer_target.stock_list), transfer_object.transfer_target.stat_dict["stock_max"]), True, (255, 255, 255))
 
             # Draw item transfer information
-            self.surface.fill((0, 0, 0))
+            self.surface.fill(self.BACKGROUND_COLOUR)
             self.surface.blit(player_text, (0, 0))
             self.surface.blit(target_text, (150, 0))
-            self.draw_text_lines(transfer_object.options[0], (0, self.text_spacing))
-            self.draw_text_lines(transfer_object.options[1], (150, self.text_spacing))
-            pg.draw.rect(self.surface, (255, 255, 255), (transfer_object.current_option[0]*150+80, transfer_object.current_option[1]*self.text_spacing+self.text_spacing, 10, 10), 0)
+            self.draw_text_lines(transfer_object.options[0], (0, self.TEXT_SPACING))
+            self.draw_text_lines(transfer_object.options[1], (150, self.TEXT_SPACING))
+            pg.draw.rect(self.surface, (255, 255, 255), (transfer_object.current_option[0]*150+80, transfer_object.current_option[1]*self.TEXT_SPACING+self.TEXT_SPACING, 10, 10), 0)
             final_surface.blit(self.surface, self.position)
