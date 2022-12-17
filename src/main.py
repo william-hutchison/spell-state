@@ -11,6 +11,7 @@ import menus
 import audio
 import timer
 
+
 class Game:
     """Class to store, update and coordinate the objects required for gameplay, menus, user input and graphics."""
 
@@ -63,25 +64,63 @@ class Game:
             self.menu_manager.current_menu = self.menu_manager.menu_dict["Pause"]()
 
     def save_file(self, file_name):
-        """Store any necessary information outside the world object within the world object, then create a save file
+        """Store any necessary information outside of the world object within the world object, then create a save file
         from the world object."""
 
+        # Save information outside of the world object
         self.world.save_time = timer.timer.now()
         self.world.save_player = player.Player(self.world.state_list[0].wizard)
-        
-        with open('saves/'+file_name, 'wb') as f:
+
+        # Convert pygame surfaces to strings for pickle
+        for state in self.world.state_list:
+
+            for building in state.building_list:
+                building.sprite = pg.image.tostring(building.sprite, 'RGBA')
+
+            for person in state.person_list:
+                person.sprite = pg.image.tostring(person.sprite, 'RGBA')
+
+            for spell in state.wizard.spell_list:
+                spell.sprite = pg.image.tostring(spell.sprite, 'RGBA')
+
+            state.wizard.sprite = pg.image.tostring(state.wizard.sprite, 'RGBA')
+
+        # Copy world object to a file
+        with open('../saves/'+file_name, 'wb') as f:
             pickle.dump(self.world, f)
+            f.close()
+
+        # Restore world to playable format
+        self.load_file('../saves/'+file_name)
 
     def load_file(self, file_name):
-        """Restore the world object from the save file, then restore any necessary information outside the world
+        """Restore the world object from the save file, then restore any necessary information outside of the world
         object."""
 
-        with open('saves/'+file_name, 'rb') as f:
+        # TODO Play game immediately after load
+        # Copy file to world object
+        with open('../saves/'+file_name, 'rb') as f:
             self.world = pickle.load(f)
+            f.close()
 
+        # Restore information outside of world object
         timer.timer.set_time(self.world.save_time)
         self.player = self.world.save_player
 
+        # Convert strings to pygame surfaces
+        for state in self.world.state_list:
+
+            for building in state.building_list:
+                building.sprite = pg.image.fromstring(building.sprite, self.graphics_manager.terrain.TILE_SIZE, 'RGBA')
+
+            for person in state.person_list:
+                person.sprite = pg.image.fromstring(person.sprite, self.graphics_manager.terrain.TILE_SIZE, 'RGBA')
+
+            for spell in state.wizard.spell_list:
+                spell.sprite = pg.image.fromstring(spell.sprite, self.graphics_manager.terrain.TILE_SIZE, 'RGBA')
+
+            state.wizard.sprite = pg.image.fromstring(state.wizard.sprite, self.graphics_manager.terrain.TILE_SIZE, 'RGBA')
+        
     def exit_game(self):
         """Safely close the game."""
         
