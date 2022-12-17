@@ -32,18 +32,18 @@ class Game:
         loop."""
 
         events = event_loop()
+        timer.timer.update()
 
         # Run the game
         if not self.menu_manager.current_menu:
             self.play(events)
             audio.audio.stop_music()
-            timer.timer.update()
 
-        # TODO Stop time from increasing while the game is paused
         # Run the menu
         else:
             self.graphics_manager.update_menu(self.menu_manager.current_menu, self.menu_manager.current_menu.options, self.menu_manager.current_menu.current_option)
             self.menu_manager.update(events, self.graphics_manager.set_window_scale, self.save_file, self.load_file, self.exit_game)
+            timer.timer.pause()
 
         pg.display.update()
 
@@ -90,7 +90,7 @@ class Game:
 
 
 def event_loop():
-    """Checks for keyboard input. Returns True if any key is pressed this step, and returns all keys held this step."""
+    """Checks for keyboard input. Returns True if any key is pressed this step and returns all keys held this step."""
 
     key_press = False
     for event in pg.event.get():

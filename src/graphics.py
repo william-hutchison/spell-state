@@ -79,14 +79,18 @@ class StartMenu:
         self.position = (0, 0)
         self.size = (1200, 800)
         self.surface = pg.Surface(self.size)
-        self.background = pg.image.load('../sprites/menus/start_background.png')
+        self.background = pg.image.load('../sprites/menus/start_background_v3.png')
         self.select = pg.image.load('../sprites/menus/start_select.png')
+        self.anim_select = [pg.image.load('../sprites/menus/start_select_0.png'),
+                            pg.image.load('../sprites/menus/start_select_1.png'),
+                            pg.image.load('../sprites/menus/start_select_2.png'),
+                            pg.image.load('../sprites/menus/start_select_3.png')]
 
 
     def draw_menu(self, final_surface, options, current_option):
 
         self.surface.blit(self.background, self.position)
-        self.surface.blit(self.select, (420, 430 + 80 * current_option))
+        self.surface.blit(self.anim_select[timer.timer.frame()], (450, 440 + 80 * current_option))
 
         final_surface.blit(self.surface, self.position)
 
@@ -140,7 +144,8 @@ class Terrain:
         self.image_topology_3 = pg.image.load('../sprites/terrain/topology_3.png')
         self.anim_water = [pg.image.load('../sprites/terrain/water_0.png'),
                            pg.image.load('../sprites/terrain/water_1.png'),
-                           pg.image.load('../sprites/terrain/water_2.png')]
+                           pg.image.load('../sprites/terrain/water_2.png'),
+                           pg.image.load('../sprites/terrain/water_3.png')]
 
     def draw_terrain(self, final_surface, camera_location, topology, resources, items, entities):
         """Draw terrain tiles, items and entities onto the input final_surface."""

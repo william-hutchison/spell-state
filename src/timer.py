@@ -7,50 +7,61 @@ class Timer:
 
     def __init__(self):
 
-        self.TIME_FRAME = 1200
+        self.FRAME_DURATION = 800
+        self.FRAME_NUMBER = 4
 
         self.clock = pg.time.Clock()
-        self.time_now = 0
-        self.frame_now = 0
-        self.frame_last = 0
+
+        self.game_time = 0
+        self.world_time = 0
+
+        self.current_frame = 0
+        self.last_frame_time = 0
 
     def update(self):
-        """Update display frame, global time in milliseconds and global animation frame."""
+        """Update game_time, world_time, display frame and global animation frame."""
         
         self.clock.tick(20)
 
-        self.time_now += self.clock.get_time()
-
-        if self.check(self.frame_last, self.TIME_FRAME):
-            if self.frame_now < 2:
-                self.frame_now += 1
+        self.game_time += self.clock.get_time()
+        self.world_time += self.clock.get_time()
+        
+        # Cycle current animation frame when approriate
+        if self.game_time - self.last_frame_time >= self.FRAME_DURATION:
+            if self.current_frame < self.FRAME_NUMBER - 1:
+                self.current_frame += 1
             else:
-                self.frame_now = 0
+                self.current_frame = 0
 
-            self.frame_last = self.now()
+            self.last_frame_time = self.game_time
+
+    def pause(self):
+        """Deducts time elapsed this step from world_time to prevent world_time progression."""
+
+        self.world_time -= self.clock.get_time()
 
     def frame(self):
         """Returns the current global animation frame."""
 
-        return self.frame_now
+        return self.current_frame
 
     def now(self):
-        """Returns the current time in milliseconds."""
+        """Returns world_time in milliseconds."""
         
-        return self.time_now
+        return self.world_time
 
     def check(self, time_last, time_duration):
-        """Returns true if the duration has been exceeded, returns false if not."""
+        """Returns True if the time_duration has been exceeded, otherwise returns False."""
 
-        if self.time_now - time_last >= time_duration:
+        if self.world_time - time_last >= time_duration:
             return True
         else:
             return False
 
     def set_time(self, new_time):
-        """Set time_now to equal the input new_timer."""
+        """Set world_time to equal the input new_time."""
 
-        self.time_now = new_time
+        self.world_time = new_time
 
 
 # Time object stored within this file for easy access elsewhere in the program
