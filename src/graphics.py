@@ -47,11 +47,11 @@ class GraphicsManager:
         # TODO Prevent window being drawn twice
         self.window.blit(pg.transform.scale(self.surface, self.WINDOW_SIZES[self.scale]), (0, 0))
 
-    def update_terrain(self, camera_location, topology, resources, items, entities, inspector_location, inspector_mode, character_location, state_list):
+    def update_terrain(self, camera_location, topology, resources, items, entities, inspector_location, inspector_mode, character, state_list):
         """Update terrain objects and draw to the window."""
 
         self.terrain.draw_terrain(self.surface, camera_location, topology, resources, items, entities)
-        self.terrain.draw_overlay(self.surface, camera_location, inspector_location, inspector_mode, character_location, state_list)
+        self.terrain.draw_overlay(self.surface, camera_location, inspector_location, inspector_mode, character, state_list)
         self.window.blit(pg.transform.scale(self.surface, self.WINDOW_SIZES[self.scale]), (0, 0))
 
     def update_menu(self, current_menu, options, current_option):
@@ -200,18 +200,20 @@ class Terrain:
 
         final_surface.blit(self.surface, self.SURFACE_POSITION)
 
-    def draw_overlay(self, final_surface, camera_location, inspector_location, inspector_mode, character_location, state_list):
+    def draw_overlay(self, final_surface, camera_location, inspector_location, inspector_mode, character, state_list):
         """Draw spells and the inspector or selector onto the input final_surface."""
 
         # Draw spells
         for state in state_list:
-            for spell in state.wizard.spell_list:
-                final_surface.blit(spell.sprite, ((spell.location[0] - camera_location[0]) * self.TILE_SIZE[0], (spell.location[1] - camera_location[1]) * self.TILE_SIZE[1]))
+            if state.wizard:
+                for spell in state.wizard.spell_list:
+                    final_surface.blit(spell.sprite, ((spell.location[0] - camera_location[0]) * self.TILE_SIZE[0], (spell.location[1] - camera_location[1]) * self.TILE_SIZE[1]))
 
         # Draw inspector or selector if necessary
         if inspector_mode == "inspect":
-            if inspector_location != character_location:
-                final_surface.blit(self.image_inspector, ((inspector_location[0] - camera_location[0]) * self.TILE_SIZE[0] - 1, (inspector_location[1] - camera_location[1]) * self.TILE_SIZE[1] - 1))
+            if character:
+                if inspector_location != character.location:
+                    final_surface.blit(self.image_inspector, ((inspector_location[0] - camera_location[0]) * self.TILE_SIZE[0] - 1, (inspector_location[1] - camera_location[1]) * self.TILE_SIZE[1] - 1))
         elif inspector_mode == "select":
             final_surface.blit(self.image_selector, ((inspector_location[0] - camera_location[0]) * self.TILE_SIZE[0] - 1, (inspector_location[1] - camera_location[1]) * self.TILE_SIZE[1] - 1))
 
@@ -314,6 +316,10 @@ class PlayerInfo(Interface):
 
     def update(self, final_surface, character, camera):
 
+        # Prevent graphics update if the player wizard has been destroyed
+        if not character.wizard: 
+            return None
+
         self.surface.fill(self.BACKGROUND_COLOUR)
         text = ["Inspector location: " + str(camera.inspector_location),
                 "Character location: " + str(character.wizard.location),
@@ -335,6 +341,10 @@ class SpellBook(Interface):
         self.surface = pg.Surface(self.size)
 
     def update(self, final_surface, character):
+
+        # Prevent graphics update if the player wizard has been destroyed
+        if not character.wizard: 
+            return None
 
         self.surface.fill(self.BACKGROUND_COLOUR)
         text = []

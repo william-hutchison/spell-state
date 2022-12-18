@@ -18,6 +18,22 @@ class Opponent:
 
     def update(self, map_topology, map_resource, map_item, map_entities):
 
+        # Prevent wizard control if the wizard has been destroyed
+        if not self.subject_wizard:
+            return None
+
+        # Check for wizard destruction
+        if self.subject_wizard.stat_dict["health_current"] <= 0:
+            pathfinding.drop_items(self.subject_wizard.location, self.subject_wizard.stock_list, map_topology, map_item)
+            self.subject_wizard.spell_list = []
+            self.ruler_state.wizard = None
+            self.subject_wizard = None
+            return None
+
+        # Prevent wizard control if the state has been defeated
+        if self.ruler_state.defeated:
+            return None
+
         # TODO This is messy
         move_character_attempt = None
         move_spell_attempt = None
@@ -39,11 +55,12 @@ class Opponent:
 
         # Move to and attack the action_target entity
         elif self.action_super == "attack":
-            cast_attempt, move_spell_attempt = self.attempt_fireball(map_entities, self.action_target)
-            target_cross = pathfinding.find_within_cross(self.action_target.location, 4)
-            if self.subject_wizard.location not in target_cross:
-                # TODO Replace with dedicated pathfinding function. Use combo of astar and find_closest to check options one by one, also require line of sight
-                move_character_attempt = self.attempt_move(map_entities, map_topology, pathfinding.find_closest(self.subject_wizard.location, target_cross))
+            if self.action_target:
+                cast_attempt, move_spell_attempt = self.attempt_fireball(map_entities, self.action_target)
+                target_cross = pathfinding.find_within_cross(self.action_target.location, 4)
+                if self.subject_wizard.location not in target_cross:
+                    # TODO Replace with dedicated pathfinding function. Use combo of astar and find_closest to check options one by one, also require line of sight
+                    move_character_attempt = self.attempt_move(map_entities, map_topology, pathfinding.find_closest(self.subject_wizard.location, target_cross))
 
         self.subject_wizard.update(map_entities, map_topology, map_resource, map_item, cast_attempt, move_character_attempt, move_spell_attempt)
 

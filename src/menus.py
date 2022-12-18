@@ -21,6 +21,13 @@ class MenuManager:
                 self.current_menu = self.menu_dict[selection]
             else:
                 self.current_menu = self.menu_dict[selection]()
+    
+    def check_win_lose(self, states):
+
+        if states[0].defeated:
+            print("You have been defeated.")
+        if not [state for state in states[1:] if not state.defeated]:
+            print("You are victorious.")
 
 
 class Menu:

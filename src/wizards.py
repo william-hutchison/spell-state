@@ -47,11 +47,6 @@ class Wizard:
         if self.stat_dict["mana_current"] < self.stat_dict["mana_max"]:
             self.stat_dict["mana_current"] += 1
 
-        # Check for wizard destruction
-        if self.stat_dict["health_current"] <= 0:
-            pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
-            self.spell_list = []
-            self.ruler_state.wizard.location = (-1, -1) # TODO Replace with win / lose game state
 
     def move(self, move_attempt, map_entities, map_topology):
         """Attempt to move wizard in direction move_attempt, check for collision with map_entities or impassable terrain

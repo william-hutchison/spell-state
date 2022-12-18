@@ -58,7 +58,8 @@ class World:
                 map_entities[building.location[1]][building.location[0]] = building
             for person in state.person_list:
                 map_entities[person.location[1]][person.location[0]] = person
-            map_entities[state.wizard.location[1]][state.wizard.location[0]] = state.wizard
+            if state.wizard:
+                map_entities[state.wizard.location[1]][state.wizard.location[0]] = state.wizard
 
         return map_entities
 
@@ -123,4 +124,3 @@ def gen_noise(map_size, seed, scale=20, octaves=6, persistence=0.5, lacunarity=2
     map_new = norm_me(map_new)
     
     return map_new
-

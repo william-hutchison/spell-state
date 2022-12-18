@@ -56,8 +56,9 @@ class Game:
 
         self.player.update(self.world.map_topology, self.world.map_resource, self.world.map_item, self.world.map_entities, events)
         self.world.update()
-        self.graphics_manager.update_terrain(self.player.camera.location, self.world.map_topology, self.world.map_resource, self.world.map_item, self.world.map_entities, self.player.camera.inspector_location, self.player.camera.inspector_mode, self.player.character.wizard.location, self.world.state_list)
+        self.graphics_manager.update_terrain(self.player.camera.location, self.world.map_topology, self.world.map_resource, self.world.map_item, self.world.map_entities, self.player.camera.inspector_location, self.player.camera.inspector_mode, self.player.character.wizard, self.world.state_list)
         self.graphics_manager.update_interface(self.world.state_list[0], self.player.character, self.player.camera, self.player.camera.inspector_dict, self.player.interface, self.world.map_item)
+        self.menu_manager.check_win_lose(self.world.state_list)
 
         # Check for menu launch
         if events[0] and events[1][pg.K_ESCAPE]:

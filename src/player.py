@@ -1,5 +1,6 @@
 import pygame as pg
 
+import pathfinding
 import timer
 
 
@@ -34,6 +35,10 @@ class Camera:
         self.inspector_dict = {"Topology": "", "Resource": "", "Entity type": "", "Location": "", "Action": "", "Stock": "", "Health": "", "Construction remaining": ""}
 
     def update(self, player_character, map_topology, map_resource, map_item, map_entities, key_press, keys):
+
+        # Prevent camera control if the player wizard has been destroyed
+        if not self.ruler_player.character.wizard:
+            return None        
 
         # Prevent camera actions when interface object is in use
         if self.ruler_player.interface.transfer_target:
@@ -127,6 +132,18 @@ class Character:
         self.casting_string = []
 
     def update(self, map_entities, map_topology, map_resource, map_item, key_press, keys):
+
+        # Prevent wizard control if the player wizard has been destroyed
+        if not self.wizard:
+            return None
+
+        # Check for wizard destruction
+        if self.wizard.stat_dict["health_current"] <= 0:
+            pathfinding.drop_items(self.wizard.location, self.wizard.stock_list, map_topology, map_item)
+            self.wizard.spell_list = []
+            self.wizard.ruler_state.wizard = None
+            self.wizard = None
+            return None
 
         # TODO This is messy
         move_character_attempt = None

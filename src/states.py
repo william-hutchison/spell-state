@@ -45,7 +45,17 @@ class State:
         self.wizard = self.create_wizard(map_entities, map_topology, self.location)
         self.building_list.append(self.create_building("tower", map_entities, map_topology, map_traffic, self.location))
 
+        self.defeated = False
+
     def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
+
+        # Check for defeat   
+        if not self.wizard or not [building for building in self.building_list if 'Tower' in type(building).__name__]:
+            self.defeated = True
+
+        # Prevent updating state if the state is defeated
+        if self.defeated:
+            return None
 
         # Assign person actions
         self.tune_action_wight()
@@ -69,10 +79,10 @@ class State:
             self.time_last_birth = timer.timer.now()
 
         # Update entities
-        for building in self.building_list:
-            building.update(map_topology, map_item)
         for person in self.person_list:
             person.update(map_resource, map_entities, map_topology, map_item, map_traffic)
+        for building in self.building_list:
+            building.update(map_topology, map_item)
 
     def create_wizard(self, map_entities, map_topology, location_tower):
         """Create wizard at the edge of the tower. Returns new wizard object."""
