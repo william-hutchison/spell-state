@@ -26,9 +26,14 @@ class Building:
 
     def update(self, map_topology, map_item):
 
+        #Check for destruction
         if self.stat_dict["health_current"] <= 0:
             pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
             self.ruler_state.building_list.remove(self)
+
+        # Prevent updating person if the state is defeated
+        if self.ruler_state.defeated:
+            return None
 
         for item in self.stock_list_needed:
             if item in self.stock_list:

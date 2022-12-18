@@ -53,10 +53,6 @@ class State:
         if not self.wizard or not [building for building in self.building_list if 'Tower' in type(building).__name__]:
             self.defeated = True
 
-        # Prevent updating state if the state is defeated
-        if self.defeated:
-            return None
-
         # Assign person actions
         self.tune_action_wight()
         if timer.timer.check(self.time_last_order, self.stat_dict["order_duration"]):

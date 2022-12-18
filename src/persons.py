@@ -35,6 +35,15 @@ class Person:
 
     def update(self, map_resource, map_entities, map_topology, map_item, map_traffic):
 
+        # Check for destruction
+        if self.stat_dict["health_current"] <= 0:
+            pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
+            self.ruler_state.person_list.remove(self)
+
+        # Prevent updating person if the state is defeated
+        if self.ruler_state.defeated:
+            return None
+
         # Eat food
         if timer.timer.check(self.time_last_eat, self.stat_dict["eat_duration"]):
             self.eat()
@@ -43,11 +52,6 @@ class Person:
         # Act upon action_super
         if self.action_super:
             self.ruler_state.action_dict[self.action_super]["function"](self, map_entities, map_topology, map_resource, map_traffic, self.action_target)
-
-        # Check for destruction
-        if self.stat_dict["health_current"] <= 0:
-            pathfinding.drop_items(self.location, self.stock_list, map_topology, map_item)
-            self.ruler_state.person_list.remove(self)
 
     def work(self, map_entities, map_topology, map_resource, map_traffic, work_object):
         """Attempt to work at work_object. Move adjacent to work_object if necessary.."""
