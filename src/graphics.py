@@ -100,22 +100,25 @@ class Menu:
 
     def __init__(self):
 
+        self.BACKGROUND_COLOUR = (4, 9, 29)
+        self.TEXT_COLOUR = (206, 205, 233)
+
         self.position = (0, 0)
         self.size = (1200, 800)
         self.surface = pg.Surface(self.size)
-        self.font = pg.font.Font("../fonts/linden_hill.otf", 24)
+        self.font = pg.freetype.Font("../fonts/garamond.bdf")
         self.image_inspector = pg.image.load('../sprites/interface/inspector.png')
 
 
     def draw_menu(self, final_surface, options, current_option):
         """Draw menu comprised of options and current_option indicator onto the input final_surface."""
 
-        self.surface.fill((0, 0, 0))
+        self.surface.fill(self.BACKGROUND_COLOUR)
         for i in range(len(options)):
-            text = self.font.render(options[i], True, (255, 255, 255))
-            self.surface.blit(text, (10, 10 + 30 * i))
+            text = self.font.render(options[i], self.TEXT_COLOUR)
+            self.surface.blit(text[0], (10, 10 + 30 * i))
 
-        pg.draw.rect(self.surface, (255, 255, 255), (100, 15 + 30 * current_option, 10, 10), 0)
+        pg.draw.rect(self.surface, self.TEXT_COLOUR, (100, 15 + 30 * current_option, 10, 10), 0)
         final_surface.blit(self.surface, self.position)
 
 
@@ -228,13 +231,13 @@ class Interface:
         self.TEXT_SPACING = 24
         self.MARGIN_SPACING = 10
 
-        self.font = pg.font.Font("../fonts/linden_hill.otf", 16)
+        self.font = pg.freetype.Font("../fonts/garamond.bdf")
 
     def draw_text_lines(self, text_list, position):
         """Draw text_list of strings at position as lines of text."""
 
         for i, item in enumerate(text_list):
-            line = self.font.render(str(item), True, self.TEXT_COLOUR)
+            line = self.font.render(str(item), self.TEXT_COLOUR)[0]
             self.surface.blit(line, (position[0]+self.MARGIN_SPACING, position[1]+self.TEXT_SPACING*i))
 
 
@@ -371,20 +374,20 @@ class ItemTransfer(Interface):
         if transfer_object.transfer_target:
 
             # Determine item transfer headings
-            player_text = self.font.render("Player ({}/{})".format(len(character.wizard.stock_list), character.wizard.stat_dict["stock_max"]), True, (255, 255, 255))
+            player_text = self.font.render("Player ({}/{})".format(len(character.wizard.stock_list), character.wizard.stat_dict["stock_max"]), self.TEXT_COLOUR)
             if type(transfer_object.transfer_target) == tuple:
                 if map_item[transfer_object.transfer_target[1]][transfer_object.transfer_target[0]]:
-                    target_text = self.font.render("Tile (1/1)", True, (255, 255, 255))
+                    target_text = self.font.render("Tile (1/1)", self.TEXT_COLOUR)
                 else:
-                    target_text = self.font.render("Tile (0/1)", True, (255, 255, 255))
+                    target_text = self.font.render("Tile (0/1)", self.TEXT_COLOUR)
             else:
-                target_text = self.font.render("{} ({}/{})".format(type(transfer_object.transfer_target).__name__, len(transfer_object.transfer_target.stock_list), transfer_object.transfer_target.stat_dict["stock_max"]), True, (255, 255, 255))
+                target_text = self.font.render("{} ({}/{})".format(type(transfer_object.transfer_target).__name__, len(transfer_object.transfer_target.stock_list), transfer_object.transfer_target.stat_dict["stock_max"]), self.TEXT_COLOUR)
 
             # Draw item transfer information
             self.surface.fill(self.BACKGROUND_COLOUR)
-            self.surface.blit(player_text, (0, 0))
-            self.surface.blit(target_text, (150, 0))
+            self.surface.blit(player_text[0], (0, 0))
+            self.surface.blit(target_text[0], (150, 0))
             self.draw_text_lines(transfer_object.options[0], (0, self.TEXT_SPACING))
             self.draw_text_lines(transfer_object.options[1], (150, self.TEXT_SPACING))
-            pg.draw.rect(self.surface, (255, 255, 255), (transfer_object.current_option[0]*150+80, transfer_object.current_option[1]*self.TEXT_SPACING+self.TEXT_SPACING, 10, 10), 0)
+            pg.draw.rect(self.surface, self.TEXT_COLOUR, (transfer_object.current_option[0]*150+80, transfer_object.current_option[1]*self.TEXT_SPACING+self.TEXT_SPACING, 10, 10), 0)
             final_surface.blit(self.surface, self.position)
